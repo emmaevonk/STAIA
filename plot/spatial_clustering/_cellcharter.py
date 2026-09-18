@@ -14,7 +14,8 @@ from anndata import AnnData
 
 def _dim_red(
         adata: AnnData,
-        epoch: int = 20
+        epoch: int = 20,
+        accelerator="cpu"
 ):
     """
     Train an scVI model for dimensionality reduction on spatial transcriptomics data.
@@ -61,7 +62,8 @@ def _dim_red(
     model.train(
         max_epochs=epoch,
         early_stopping=True,
-        enable_progress_bar=True
+        enable_progress_bar=True,
+        accelerator="cpu",
     )
     return model
 
@@ -210,6 +212,7 @@ def prepare_cellcharter(
         epoch: int = 20,
         plot: bool = True,
         library_key: str = "sample",
+        accelerator="cpu",
     ):
     """
     Run CellCharter's preprocessing pipeline: scVI dimensionality reduction
@@ -255,8 +258,9 @@ def prepare_cellcharter(
     """
     seed_everything(12345)
     scvi.settings.seed = 12345
+    scvi.settings.accelerator = "cpu"
 
-    model = _dim_red(adata, epoch=epoch)
+    model = _dim_red(adata, epoch=epoch, accelerator=accelerator)
     if plot:
         _plot_epoch(model)
 
@@ -329,6 +333,7 @@ def run_cellcharter(
         epoch: int = 20,
         library_key: str = "sample",
         force_recompute: bool = False,
+        accelerator="cpu"
     ):
     """
     End-to-end CellCharter pipeline for spatial domain identification.
@@ -371,6 +376,8 @@ def run_cellcharter(
         If ``True``, always re-run scVI + neighbor aggregation even if
         ``adata.obsm["X_cellcharter"]`` already exists, using the ``epoch``
         and ``library_key`` given here.
+    accelerator : str, default = "cpu"
+        parameter showing either `gpu` or `cpu`
 
     Returns
     -------
@@ -401,7 +408,7 @@ def run_cellcharter(
         sc.settings.figdir = str(output_dir)
 
     if "X_cellcharter" not in adata.obsm or force_recompute:
-        adata = prepare_cellcharter(adata, epoch=epoch, plot=plot, library_key=library_key)
+        adata = prepare_cellcharter(adata, epoch=epoch, plot=plot, library_key=library_key, accelerator=accelerator)
     else:
         print(
             "adata.obsm['X_cellcharter'] already exists — reusing it and skipping "

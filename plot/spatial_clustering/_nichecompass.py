@@ -443,8 +443,7 @@ def niche_analysis_train(
     lambda_l1_addon=30.0,
     edge_batch_size=4096,
     n_sampled_neighbors=4,
-    use_cuda_if_available=True,
-    # analysis
+    use_cuda_if_available=False,
     cell_type_key=None,
     leiden_resolutions=None,
     spot_size=100,
@@ -511,8 +510,8 @@ def niche_analysis_train(
         leiden_resolutions = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 
     # Fixed AnnData keys
-    adj_key                          = "spatial_connectivities"
-    latent_key                       = "nichecompass_latent"
+    adj_key = "spatial_connectivities"
+    latent_key = "nichecompass_latent"
     differential_gp_test_results_key = "nichecompass_differential_gp_test_results"
 
     # Setup
