@@ -688,8 +688,7 @@ reproducibility across runs.</li>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>plot/spatial_clustering/_cellcharter.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">328</span>
-<span class="normal">329</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">329</span>
 <span class="normal">330</span>
 <span class="normal">331</span>
 <span class="normal">332</span>
@@ -787,7 +786,8 @@ reproducibility across runs.</li>
 <span class="normal">424</span>
 <span class="normal">425</span>
 <span class="normal">426</span>
-<span class="normal">427</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_cellcharter</span><span class="p">(</span>
+<span class="normal">427</span>
+<span class="normal">428</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_cellcharter</span><span class="p">(</span>
         <span class="n">adata</span><span class="p">:</span> <span class="n">AnnData</span><span class="p">,</span>
         <span class="n">n_clusters</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">18</span><span class="p">,</span>
         <span class="n">output_dir</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
@@ -878,7 +878,7 @@ reproducibility across runs.</li>
             <span class="s2">&quot;call. Pass force_recompute=True to recompute from scratch.&quot;</span>
         <span class="p">)</span>
 
-    <span class="n">adata</span> <span class="o">=</span> <span class="n">_cluster</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">n_cluster</span><span class="o">=</span><span class="n">n_clusters</span><span class="p">)</span>
+    <span class="n">adata</span> <span class="o">=</span> <span class="n">_cluster</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">n_cluster</span><span class="o">=</span><span class="n">n_clusters</span><span class="p">,</span> <span class="n">accelerator</span><span class="o">=</span><span class="n">accelerator</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">output_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">adata</span><span class="o">.</span><span class="n">write_h5ad</span><span class="p">(</span><span class="s2">&quot;adata_with_spatial_domains.h5ad&quot;</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="s2">&quot;gzip&quot;</span><span class="p">)</span>
@@ -1007,8 +1007,7 @@ internally and created if it doesn't exist yet.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>plot/spatial_clustering/_cellcharter.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">272</span>
-<span class="normal">273</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">273</span>
 <span class="normal">274</span>
 <span class="normal">275</span>
 <span class="normal">276</span>
@@ -1060,7 +1059,8 @@ internally and created if it doesn't exist yet.</p>
 <span class="normal">322</span>
 <span class="normal">323</span>
 <span class="normal">324</span>
-<span class="normal">325</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stability_cellcharter</span><span class="p">(</span>
+<span class="normal">325</span>
+<span class="normal">326</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stability_cellcharter</span><span class="p">(</span>
     <span class="n">adata</span><span class="p">:</span> <span class="n">AnnData</span><span class="p">,</span>
     <span class="n">n_clusters</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
     <span class="n">max_runs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>

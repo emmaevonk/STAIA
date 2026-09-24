@@ -544,7 +544,7 @@ with an automatically generated filename.</p>
 
 
 <h2 id="STAIA.pseudobulk_per_condition" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">pseudobulk_per_condition</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">all_conditions</span><span class="p">,</span> <span class="n">label_col</span><span class="o">=</span><span class="s1">&#39;label&#39;</span><span class="p">,</span> <span class="n">sample_id</span><span class="o">=</span><span class="s1">&#39;sample_id&#39;</span><span class="p">,</span> <span class="n">celltype_col</span><span class="o">=</span><span class="s1">&#39;leiden&#39;</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">pseudobulk_per_condition</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">all_conditions</span><span class="p">,</span> <span class="n">label_col</span><span class="o">=</span><span class="s1">&#39;label&#39;</span><span class="p">,</span> <span class="n">sample_id</span><span class="o">=</span><span class="s1">&#39;sample_id&#39;</span><span class="p">,</span> <span class="n">celltype_col</span><span class="o">=</span><span class="s1">&#39;leiden&#39;</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">output_path</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
 
 </h2>
 
@@ -614,6 +614,27 @@ It must match values provided in <code>all_conditions</code></p>
               –
               <div class="doc-md-description">
                 <p>Column in <code>adata.obs</code> speficying cell type annotations.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>save</code></b>
+                  (<code><span title="bool">bool</span></code>, default:
+                      <code>= True</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Whether to save the significant genes to a CSV file.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>output_path</code></b>
+                  (<code><span title="str">str</span> or None</code>, default:
+                      <code>= None</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Path to save the CSV file.. If None, saves to the curent working directory
+with an automatically generated filename.</p>
               </div>
             </li>
         </ul>
@@ -782,12 +803,30 @@ allowing the remaining comparisons to proceed.</li>
 <span class="normal">419</span>
 <span class="normal">420</span>
 <span class="normal">421</span>
-<span class="normal">422</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">pseudobulk_per_condition</span><span class="p">(</span>
+<span class="normal">422</span>
+<span class="normal">423</span>
+<span class="normal">424</span>
+<span class="normal">425</span>
+<span class="normal">426</span>
+<span class="normal">427</span>
+<span class="normal">428</span>
+<span class="normal">429</span>
+<span class="normal">430</span>
+<span class="normal">431</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span>
+<span class="normal">437</span>
+<span class="normal">438</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">pseudobulk_per_condition</span><span class="p">(</span>
     <span class="n">adata</span><span class="p">:</span> <span class="n">AnnData</span><span class="p">,</span>
     <span class="n">all_conditions</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
     <span class="n">label_col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;label&quot;</span><span class="p">,</span>
     <span class="n">sample_id</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;sample_id&quot;</span><span class="p">,</span>
     <span class="n">celltype_col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;leiden&quot;</span><span class="p">,</span>
+    <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Perform pseudobulk differential expression analysis across all condition</span>
@@ -811,6 +850,11 @@ allowing the remaining comparisons to proceed.</li>
 <span class="sd">        Column in ``adata.obs`` identifying biological samples.</span>
 <span class="sd">    celltype_col : str, default = &quot;leiden&quot;</span>
 <span class="sd">        Column in ``adata.obs`` speficying cell type annotations.</span>
+<span class="sd">    save : bool, default = True</span>
+<span class="sd">        Whether to save the significant genes to a CSV file.</span>
+<span class="sd">    output_path : str or None, default = None</span>
+<span class="sd">        Path to save the CSV file.. If None, saves to the curent working directory</span>
+<span class="sd">        with an automatically generated filename.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -842,6 +886,10 @@ allowing the remaining comparisons to proceed.</li>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The provided label column (</span><span class="si">{</span><span class="n">label_col</span><span class="si">}</span><span class="s2">) is not present in the data.</span><span class="se">\n</span><span class="s2"> Available columns: </span><span class="si">{</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">columns</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">return</span>  
 
+    <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
+        <span class="n">base_dir</span> <span class="o">=</span> <span class="n">output_path</span> <span class="k">if</span> <span class="n">output_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s2">&quot;pseudobulk_results&quot;</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">base_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
     <span class="k">for</span> <span class="n">cond_a</span><span class="p">,</span> <span class="n">cond_b</span> <span class="ow">in</span> <span class="n">condition_pairs</span><span class="p">:</span>
         <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">cond_a</span><span class="si">}</span><span class="s2">_vs_</span><span class="si">{</span><span class="n">cond_b</span><span class="si">}</span><span class="s2">&quot;</span>
         <span class="n">mask</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">label_col</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="n">cond_a</span><span class="p">,</span> <span class="n">cond_b</span><span class="p">])</span>
@@ -865,6 +913,11 @@ allowing the remaining comparisons to proceed.</li>
         <span class="k">for</span> <span class="n">ct_focus</span> <span class="ow">in</span> <span class="n">pb_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processing </span><span class="si">{</span><span class="n">ct_focus</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
             <span class="k">try</span><span class="p">:</span>
+                <span class="n">ct_output_path</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">ct_focus</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">.csv&quot;</span><span class="p">)</span> 
+                    <span class="k">if</span> <span class="n">save</span> <span class="k">else</span> <span class="kc">None</span>
+                <span class="p">)</span>
+
                 <span class="n">sig_genes</span> <span class="o">=</span> <span class="n">pseudobulk</span><span class="p">(</span>
                     <span class="n">adata_sub</span><span class="p">,</span>
                     <span class="n">celltype</span><span class="o">=</span><span class="n">ct_focus</span><span class="p">,</span>
@@ -873,8 +926,8 @@ allowing the remaining comparisons to proceed.</li>
                     <span class="n">cond</span><span class="o">=</span><span class="p">[</span><span class="n">cond_a</span><span class="p">,</span> <span class="n">cond_b</span><span class="p">],</span>
                     <span class="n">treatment_col</span><span class="o">=</span><span class="n">label_col</span><span class="p">,</span>
                     <span class="n">pb_dict</span><span class="o">=</span><span class="n">pb_dict</span><span class="p">,</span>
-                    <span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                    <span class="n">output_path</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;pseudobulk_results/</span><span class="si">{</span><span class="n">ct_focus</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">.csv&quot;</span>
+                    <span class="n">save</span><span class="o">=</span><span class="n">save</span><span class="p">,</span>
+                    <span class="n">output_path</span><span class="o">=</span><span class="n">ct_output_path</span>
                 <span class="p">)</span>
 
                 <span class="n">results</span><span class="p">[(</span><span class="n">ct_focus</span><span class="p">,</span> <span class="n">key</span><span class="p">)]</span> <span class="o">=</span> <span class="n">sig_genes</span>
