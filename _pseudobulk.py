@@ -216,6 +216,8 @@ def pseudobulk(
     pb_dict: dict | None = None,
     celltype_col: str = "cell_type",
     plot: bool = True,
+    lfc_threshold: float = 0.25,
+    padj_threshold: float = 0.05,
 ):
     """
     Perform pseudobulk diferential expression analysis for a specific cell type.
@@ -247,13 +249,17 @@ def pseudobulk(
         Pre-built pseudobulk dict from outside.
     plot : bool, default = True
         A boolean deciding whether or not to plot the volcano plot.
+    lfc_threshold : float, default = 0.25
+        Minimum absolute log2 fold change for a gene to be considered significant
+    padj_threshold : float, default = 0.05
+        Maximum adjusted p-value for a gene to be considered significant
 
     Returns
     -------
     pd.DataFrame
         Dataframe containing significant genes with:
-        - padj < 0.05
-        - |log2FoldChange| > 0.25
+        - ``padj`` < ``padj_threshold``
+        - ``|log2FoldChange|`` > ``lfc_threshold``
 
     Notes
     -----
@@ -313,13 +319,14 @@ def pseudobulk(
         )
 
     # Get significant genes
-    sig = de_df.query("padj < 0.05 & abs(log2FoldChange) > 0.25")
+    sig = de_df.query("padj < @padj_threshold & abs(log2FoldChange) > @lfc_threshold")
 
     if save:
         if output_path is None:
             output_path = os.path.join(os.getcwd(), f"sig_genes_{celltype}_{contrast_list[1]}_{contrast_list[2]}.csv")
         sig.to_csv(output_path)
         print(f"The significant genes are written to a CSV file in the current running directory: {output_path}")
+    return sig
 
 def pseudobulk_per_condition(
     adata: AnnData,
@@ -327,6 +334,10 @@ def pseudobulk_per_condition(
     label_col: str = "label",
     sample_id: str = "sample_id",
     celltype_col: str = "leiden",
+    save: bool = True,
+    output_path: str | None = None,
+    lfc_threshold: float = 0.25,
+    padj_threshold: float = 0.05,
 ):
     """
     Perform pseudobulk differential expression analysis across all condition
@@ -350,15 +361,27 @@ def pseudobulk_per_condition(
         Column in ``adata.obs`` identifying biological samples.
     celltype_col : str, default = "leiden"
         Column in ``adata.obs`` speficying cell type annotations.
+    save : bool, default = True
+        Whether to save the significant genes to a CSV file.
+    output_path : str or None, default = None
+        Path to save the CSV file.. If None, saves to the curent working directory
+        with an automatically generated filename.
+    lfc_threshold : float, default = 0.25
+        Minimum absolute log2 fold change for a gene to be considered significant
+        Passed to each ``pseudobulk`` call
+    padj_threshold : float, default = 0.05
+        Maximum adjusted p-value for a gene to be considered significant
+        Passed to each ``pseudobulk`` call
 
     Returns
     -------
     dict
         Nested dictionary with keys of the form ``(cell_type, "condA_vs_condB")``
-        and values being DataFrames of significant DE genes (``padj`` < 0.05,
-        ``|log2FoldChange|`` > 0.25) for that cell type and comparison.
-        Comparisons or cell types that fail or are skipped are excluded.
-
+        and values being DataFrames of significant DE genes (``padj`` 
+        ``padj_threshold``, ``|log2FoldChange|`` > ``lfc_threshold``) for that
+        cell type and comparison. Comparisons or cell types that fail or are
+        skipped are excluded.
+    
     Notes
     -----
     - Comparisons are skipped if either condition has fewer than 2 samples, 
@@ -380,6 +403,10 @@ def pseudobulk_per_condition(
     if label_col not in adata.obs:
         print(f"The provided label column ({label_col}) is not present in the data.\n Available columns: {adata.obs.columns}")
         return  
+
+    if save:
+        base_dir = output_path if output_path is not None else os.path.join(os.getcwd(), "pseudobulk_results")
+        os.makedirs(base_dir, exist_ok=True)
 
     for cond_a, cond_b in condition_pairs:
         key = f"{cond_a}_vs_{cond_b}"
@@ -404,6 +431,11 @@ def pseudobulk_per_condition(
         for ct_focus in pb_dict.keys():
             print(f"Processing {ct_focus}...")
             try:
+                ct_output_path = (
+                    os.path.join(base_dir, f"{ct_focus}_{key}.csv") 
+                    if save else None
+                )
+
                 sig_genes = pseudobulk(
                     adata_sub,
                     celltype=ct_focus,
@@ -412,8 +444,10 @@ def pseudobulk_per_condition(
                     cond=[cond_a, cond_b],
                     treatment_col=label_col,
                     pb_dict=pb_dict,
-                    save=True,
-                    output_path=f"pseudobulk_results/{ct_focus}_{key}.csv"
+                    save=save,
+                    output_path=ct_output_path,
+                    lfc_threshold=lfc_threshold,
+                    padj_threshold=padj_threshold
                 )
 
                 results[(ct_focus, key)] = sig_genes

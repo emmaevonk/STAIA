@@ -1,7 +1,7 @@
-# STAIA
-> *STAIA is a functional API for spatial transcriptomics with its aim to lower the computational barrier in spatial transcriptomics analysis. The software is currently focused on Xeniumd data from 10X Genomics.*
+# 📦 STAIA
+> *STAIA is a Python package for spatial transcriptomics with its aim to lower the computational barrier in spatial transcriptomics analysis. The software is currently focused on Xenium data from 10X Genomics.*
 
-## Highlights
+## 🌟 Highlights
 
 - End-to-end analyses in one pipeline
 - Recognizing samples from the same Xenium slide
@@ -10,19 +10,19 @@
 - Errorhandler
 - Using well known tools in spatial transcriptomics, e.g. Squidpy and Scanpy
 
-## Overview
+## ℹ️ Overview
 
 STAIA is a functional API for analyzing spatial transcriptomics data. It provides a Command Line Interface (CLI) to perform quality control, spatial statistics, neighborhood analysis, and visualization for datasets generated with the Xenium platform from 10X Genomics.
 
 The API is designed around a clean, functional workflow:
 ```py
-STAIA.method()
+STAIA.function()
 ```
 
 This makes it easy to build reproducible spatial analysis pipelines with minimal boilerplate.
 
-## Features
-STAIA supports a wide range of spatial transcriptomics analyses.
+## ✨ Features
+STAIA supports a wide range of spatial transcriptomics analyses. Beneat a few examples are mentioned.
 
 ### Input/Output
 The input and output for every function is mentioned in the documentation. The input is most commonly a SpatialData or an AnnData object.  

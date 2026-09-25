@@ -170,7 +170,8 @@ def _neigh_aggr(
 
 def _cluster(
         adata: AnnData,
-        n_cluster: int = 18
+        n_cluster: int = 18,
+        accelerator="cpu"
 ):
     """
     Assign spatial domain labels using Guassian Mixture Model clustering.
@@ -201,7 +202,7 @@ def _cluster(
     - Cluster labels are integer indices and do not carry inherent biological
     meaning until validated against known marker genes or tissue annotations.
     """
-    gmm = cc.tl.Cluster(n_clusters=n_cluster, random_state=12345)
+    gmm = cc.tl.Cluster(n_clusters=n_cluster, random_state=12345, trainer_params={"accelerator": accelerator})
     gmm.fit(adata, use_rep="X_cellcharter")
     adata.obs["spatial_domain"] = gmm.predict(adata, use_rep="X_cellcharter")
     return adata
@@ -416,7 +417,7 @@ def run_cellcharter(
             "call. Pass force_recompute=True to recompute from scratch."
         )
 
-    adata = _cluster(adata, n_cluster=n_clusters)
+    adata = _cluster(adata, n_cluster=n_clusters, accelerator=accelerator)
 
     if output_dir is None:
         adata.write_h5ad("adata_with_spatial_domains.h5ad", compression="gzip")
