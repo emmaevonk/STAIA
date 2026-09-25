@@ -148,7 +148,7 @@
 
 
 <h2 id="STAIA.pseudobulk" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">pseudobulk</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">celltype</span><span class="o">=</span><span class="s1">&#39;Macrophages&#39;</span><span class="p">,</span> <span class="n">cond</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;HC&#39;</span><span class="p">,</span> <span class="s1">&#39;TEST&#39;</span><span class="p">],</span> <span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">output_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sample_col</span><span class="o">=</span><span class="s1">&#39;sample_id&#39;</span><span class="p">,</span> <span class="n">treatment_col</span><span class="o">=</span><span class="s1">&#39;condition&#39;</span><span class="p">,</span> <span class="n">pb_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">celltype_col</span><span class="o">=</span><span class="s1">&#39;cell_type&#39;</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">pseudobulk</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">celltype</span><span class="o">=</span><span class="s1">&#39;Macrophages&#39;</span><span class="p">,</span> <span class="n">cond</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;HC&#39;</span><span class="p">,</span> <span class="s1">&#39;TEST&#39;</span><span class="p">],</span> <span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">output_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sample_col</span><span class="o">=</span><span class="s1">&#39;sample_id&#39;</span><span class="p">,</span> <span class="n">treatment_col</span><span class="o">=</span><span class="s1">&#39;condition&#39;</span><span class="p">,</span> <span class="n">pb_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">celltype_col</span><span class="o">=</span><span class="s1">&#39;cell_type&#39;</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">lfc_threshold</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">padj_threshold</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span></code>
 
 </h2>
 
@@ -262,6 +262,26 @@ with an automatically generated filename.</p>
                 <p>A boolean deciding whether or not to plot the volcano plot.</p>
               </div>
             </li>
+            <li>
+              <b><code>lfc_threshold</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>= 0.25</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Minimum absolute log2 fold change for a gene to be considered significant</p>
+              </div>
+            </li>
+            <li>
+              <b><code>padj_threshold</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>= 0.05</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Maximum adjusted p-value for a gene to be considered significant</p>
+              </div>
+            </li>
         </ul>
       </td>
     </tr>
@@ -283,8 +303,8 @@ with an automatically generated filename.</p>
               –
               <div class="doc-md-description">
                 <p>Dataframe containing significant genes with:
-- padj &lt; 0.05
-- |log2FoldChange| &gt; 0.25</p>
+- <code>padj</code> &lt; <code>padj_threshold</code>
+- <code>|log2FoldChange|</code> &gt; <code>lfc_threshold</code></p>
               </div>
             </li>
         </ul>
@@ -419,7 +439,14 @@ with an automatically generated filename.</p>
 <span class="normal">319</span>
 <span class="normal">320</span>
 <span class="normal">321</span>
-<span class="normal">322</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">pseudobulk</span><span class="p">(</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">pseudobulk</span><span class="p">(</span>
     <span class="n">adata</span><span class="p">:</span> <span class="n">AnnData</span><span class="p">,</span>
     <span class="n">celltype</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Macrophages&quot;</span><span class="p">,</span>
     <span class="n">cond</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;HC&quot;</span><span class="p">,</span> <span class="s2">&quot;TEST&quot;</span><span class="p">],</span>
@@ -430,6 +457,8 @@ with an automatically generated filename.</p>
     <span class="n">pb_dict</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">celltype_col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cell_type&quot;</span><span class="p">,</span>
     <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">lfc_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.25</span><span class="p">,</span>
+    <span class="n">padj_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Perform pseudobulk diferential expression analysis for a specific cell type.</span>
@@ -461,13 +490,17 @@ with an automatically generated filename.</p>
 <span class="sd">        Pre-built pseudobulk dict from outside.</span>
 <span class="sd">    plot : bool, default = True</span>
 <span class="sd">        A boolean deciding whether or not to plot the volcano plot.</span>
+<span class="sd">    lfc_threshold : float, default = 0.25</span>
+<span class="sd">        Minimum absolute log2 fold change for a gene to be considered significant</span>
+<span class="sd">    padj_threshold : float, default = 0.05</span>
+<span class="sd">        Maximum adjusted p-value for a gene to be considered significant</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    pd.DataFrame</span>
 <span class="sd">        Dataframe containing significant genes with:</span>
-<span class="sd">        - padj &lt; 0.05</span>
-<span class="sd">        - |log2FoldChange| &gt; 0.25</span>
+<span class="sd">        - ``padj`` &lt; ``padj_threshold``</span>
+<span class="sd">        - ``|log2FoldChange|`` &gt; ``lfc_threshold``</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
@@ -527,13 +560,14 @@ with an automatically generated filename.</p>
         <span class="p">)</span>
 
     <span class="c1"># Get significant genes</span>
-    <span class="n">sig</span> <span class="o">=</span> <span class="n">de_df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;padj &lt; 0.05 &amp; abs(log2FoldChange) &gt; 0.25&quot;</span><span class="p">)</span>
+    <span class="n">sig</span> <span class="o">=</span> <span class="n">de_df</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="s2">&quot;padj &lt; @padj_threshold &amp; abs(log2FoldChange) &gt; @lfc_threshold&quot;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">save</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">output_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">&quot;sig_genes_</span><span class="si">{</span><span class="n">celltype</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">contrast_list</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">contrast_list</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">.csv&quot;</span><span class="p">)</span>
         <span class="n">sig</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The significant genes are written to a CSV file in the current running directory: </span><span class="si">{</span><span class="n">output_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">sig</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -544,7 +578,7 @@ with an automatically generated filename.</p>
 
 
 <h2 id="STAIA.pseudobulk_per_condition" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">pseudobulk_per_condition</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">all_conditions</span><span class="p">,</span> <span class="n">label_col</span><span class="o">=</span><span class="s1">&#39;label&#39;</span><span class="p">,</span> <span class="n">sample_id</span><span class="o">=</span><span class="s1">&#39;sample_id&#39;</span><span class="p">,</span> <span class="n">celltype_col</span><span class="o">=</span><span class="s1">&#39;leiden&#39;</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">output_path</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">pseudobulk_per_condition</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">all_conditions</span><span class="p">,</span> <span class="n">label_col</span><span class="o">=</span><span class="s1">&#39;label&#39;</span><span class="p">,</span> <span class="n">sample_id</span><span class="o">=</span><span class="s1">&#39;sample_id&#39;</span><span class="p">,</span> <span class="n">celltype_col</span><span class="o">=</span><span class="s1">&#39;leiden&#39;</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">output_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lfc_threshold</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">padj_threshold</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span></code>
 
 </h2>
 
@@ -637,6 +671,28 @@ It must match values provided in <code>all_conditions</code></p>
 with an automatically generated filename.</p>
               </div>
             </li>
+            <li>
+              <b><code>lfc_threshold</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>= 0.25</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Minimum absolute log2 fold change for a gene to be considered significant
+Passed to each <code>pseudobulk</code> call</p>
+              </div>
+            </li>
+            <li>
+              <b><code>padj_threshold</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>= 0.05</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Maximum adjusted p-value for a gene to be considered significant
+Passed to each <code>pseudobulk</code> call</p>
+              </div>
+            </li>
         </ul>
       </td>
     </tr>
@@ -658,9 +714,10 @@ with an automatically generated filename.</p>
               –
               <div class="doc-md-description">
                 <p>Nested dictionary with keys of the form <code>(cell_type, "condA_vs_condB")</code>
-and values being DataFrames of significant DE genes (<code>padj</code> &lt; 0.05,
-<code>|log2FoldChange|</code> &gt; 0.25) for that cell type and comparison.
-Comparisons or cell types that fail or are skipped are excluded.</p>
+and values being DataFrames of significant DE genes (<code>padj</code> 
+<code>padj_threshold</code>, <code>|log2FoldChange|</code> &gt; <code>lfc_threshold</code>) for that
+cell type and comparison. Comparisons or cell types that fail or are
+skipped are excluded.</p>
               </div>
             </li>
         </ul>
@@ -705,14 +762,7 @@ allowing the remaining comparisons to proceed.</li>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>_pseudobulk.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">324</span>
-<span class="normal">325</span>
-<span class="normal">326</span>
-<span class="normal">327</span>
-<span class="normal">328</span>
-<span class="normal">329</span>
-<span class="normal">330</span>
-<span class="normal">331</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">331</span>
 <span class="normal">332</span>
 <span class="normal">333</span>
 <span class="normal">334</span>
@@ -819,7 +869,25 @@ allowing the remaining comparisons to proceed.</li>
 <span class="normal">435</span>
 <span class="normal">436</span>
 <span class="normal">437</span>
-<span class="normal">438</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">pseudobulk_per_condition</span><span class="p">(</span>
+<span class="normal">438</span>
+<span class="normal">439</span>
+<span class="normal">440</span>
+<span class="normal">441</span>
+<span class="normal">442</span>
+<span class="normal">443</span>
+<span class="normal">444</span>
+<span class="normal">445</span>
+<span class="normal">446</span>
+<span class="normal">447</span>
+<span class="normal">448</span>
+<span class="normal">449</span>
+<span class="normal">450</span>
+<span class="normal">451</span>
+<span class="normal">452</span>
+<span class="normal">453</span>
+<span class="normal">454</span>
+<span class="normal">455</span>
+<span class="normal">456</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">pseudobulk_per_condition</span><span class="p">(</span>
     <span class="n">adata</span><span class="p">:</span> <span class="n">AnnData</span><span class="p">,</span>
     <span class="n">all_conditions</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
     <span class="n">label_col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;label&quot;</span><span class="p">,</span>
@@ -827,6 +895,8 @@ allowing the remaining comparisons to proceed.</li>
     <span class="n">celltype_col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;leiden&quot;</span><span class="p">,</span>
     <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">lfc_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.25</span><span class="p">,</span>
+    <span class="n">padj_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Perform pseudobulk differential expression analysis across all condition</span>
@@ -855,14 +925,21 @@ allowing the remaining comparisons to proceed.</li>
 <span class="sd">    output_path : str or None, default = None</span>
 <span class="sd">        Path to save the CSV file.. If None, saves to the curent working directory</span>
 <span class="sd">        with an automatically generated filename.</span>
+<span class="sd">    lfc_threshold : float, default = 0.25</span>
+<span class="sd">        Minimum absolute log2 fold change for a gene to be considered significant</span>
+<span class="sd">        Passed to each ``pseudobulk`` call</span>
+<span class="sd">    padj_threshold : float, default = 0.05</span>
+<span class="sd">        Maximum adjusted p-value for a gene to be considered significant</span>
+<span class="sd">        Passed to each ``pseudobulk`` call</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    dict</span>
 <span class="sd">        Nested dictionary with keys of the form ``(cell_type, &quot;condA_vs_condB&quot;)``</span>
-<span class="sd">        and values being DataFrames of significant DE genes (``padj`` &lt; 0.05,</span>
-<span class="sd">        ``|log2FoldChange|`` &gt; 0.25) for that cell type and comparison.</span>
-<span class="sd">        Comparisons or cell types that fail or are skipped are excluded.</span>
+<span class="sd">        and values being DataFrames of significant DE genes (``padj`` </span>
+<span class="sd">        ``padj_threshold``, ``|log2FoldChange|`` &gt; ``lfc_threshold``) for that</span>
+<span class="sd">        cell type and comparison. Comparisons or cell types that fail or are</span>
+<span class="sd">        skipped are excluded.</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
@@ -927,7 +1004,9 @@ allowing the remaining comparisons to proceed.</li>
                     <span class="n">treatment_col</span><span class="o">=</span><span class="n">label_col</span><span class="p">,</span>
                     <span class="n">pb_dict</span><span class="o">=</span><span class="n">pb_dict</span><span class="p">,</span>
                     <span class="n">save</span><span class="o">=</span><span class="n">save</span><span class="p">,</span>
-                    <span class="n">output_path</span><span class="o">=</span><span class="n">ct_output_path</span>
+                    <span class="n">output_path</span><span class="o">=</span><span class="n">ct_output_path</span><span class="p">,</span>
+                    <span class="n">lfc_threshold</span><span class="o">=</span><span class="n">lfc_threshold</span><span class="p">,</span>
+                    <span class="n">padj_threshold</span><span class="o">=</span><span class="n">padj_threshold</span>
                 <span class="p">)</span>
 
                 <span class="n">results</span><span class="p">[(</span><span class="n">ct_focus</span><span class="p">,</span> <span class="n">key</span><span class="p">)]</span> <span class="o">=</span> <span class="n">sig_genes</span>
