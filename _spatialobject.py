@@ -84,7 +84,7 @@ def convert_sdata_adata(
     leiden_resolution: float = 1.0,
 ) -> AnnData:
     """
-    Extract an AnnData table from a SpatialData object and compute Leiden clustering.
+    Extract an AnnData table from a SpatialData object.
 
     Parameters
     ----------
@@ -157,6 +157,10 @@ def roi(
     -------
     AnnData
         AnnData object containing only cells within the bounding box.
+
+    Examples
+    --------
+    >>> adata = STAIA.roi(adata, x_min=0, x_max=200, y_min=0, y_min=300)
     """
     # check if spatial exists in data
     if spatial_key not in adata.obsm:

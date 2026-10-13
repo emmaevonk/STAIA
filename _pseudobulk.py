@@ -235,7 +235,8 @@ def pseudobulk(
     celltype : str, default = "Macrophages"
         Cell type to analyze.
     cond : list[str], default = ["HC", "TEST"].
-        Two treatment groups to compare. [reference_condition, comparison_condition]
+        Two treatment groups: [reference_condition, comparison_condition].
+        LFC is computed as log2(comparison / reference), i.e. log2(TEST / HC).
     save : bool, default = True
         Whether to save the significant genes to a CSV file.
     output_path : str or None, default = None
@@ -303,7 +304,7 @@ def pseudobulk(
 
     dds.deseq2()
 
-    contrast_list = [treatment_col, cond[0], cond[1]]
+    contrast_list = [treatment_col, cond[1], cond[0]]
     stat_res = DeseqStats(dds, contrast=contrast_list)
     stat_res.summary()
 

@@ -177,7 +177,7 @@ def perform_quality_control(
         thr: dict,
 ) -> AnnData:
     """
-    Filter cells based on QC thresholds and normalize expression.
+    Filter cells based on QC thresholds.
 
     Parameters
     ----------

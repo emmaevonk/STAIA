@@ -22,7 +22,7 @@ STAIA.function()
 This makes it easy to build reproducible spatial analysis pipelines with minimal boilerplate.
 
 ## ✨ Features
-STAIA supports a wide range of spatial transcriptomics analyses. Beneat a few examples are mentioned.
+STAIA supports a wide range of spatial transcriptomics analyses. Beneath a few examples are mentioned.
 
 ### Input/Output
 The input and output for every function is mentioned in the documentation. The input is most commonly a SpatialData or an AnnData object.  
