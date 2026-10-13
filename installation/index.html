@@ -129,8 +129,7 @@ python --version
 <p>The STAIA package is not (yet) available on the Python Packaging Index (Pypi), so the repository needs to be cloned from github:</p>
 <pre><code class="language-bash">git clone https://github.com/emmaevonk/STAIA.git
 cd STAIA
-pip install requirements_CPU.txt
-pip install -r requirements.txt --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -f https://data.pyg.org/whl/torch-2.6.0+cpu.htm
+pip install -r requirements_CPU.txt --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -f https://data.pyg.org/whl/torch-2.6.0+cpu.html
 pip install &quot;pybanksy[notebooks]&quot;
 </code></pre>
 <p>Now all necessary packages to run STAIA have been installed. Run <code>ipykernel</code> to make sure you can use the environment as a kernel in a Jupyter Notebook:</p>
@@ -151,8 +150,7 @@ python --version
 <p>The STAIA package is not (yet) available on the Python Packaging Index (Pypi), so the repository needs to be cloned from github:</p>
 <pre><code class="language-bash">git clone https://github.com/emmaevonk/STAIA.git
 cd STAIA
-pip install requirements_GPU.txt
-pip install -r requirements.txt --no-cache-dir' --extra-index-url https://download.pytorch.org/whl/cu126 -f https://data.pyg.org/whl/torch-2.6.0+cu126.html
+pip install -r requirements_GPU.txt --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cu126 -f https://data.pyg.org/whl/torch-2.6.0+cu126.html
 pip install &quot;pybanksy[notebooks]&quot;
 </code></pre>
 <p>Now all necessary packages to run STAIA have been installed. Run <code>ipykernel</code> to make sure you can use the environment as a kernel in a Jupyter Notebook:</p>
