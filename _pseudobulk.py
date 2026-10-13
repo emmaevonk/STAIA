@@ -122,7 +122,8 @@ def _make_pseudobulk(
     celltype_col,
     sample_col="sample_id",
     treatment_col="condition",
-    layer="raw_counts" 
+    layer="raw_counts",
+    expr_cells_threshold: float | None = None 
 ):
     """
     Create pseudobulk AnnData object for each cell type.
@@ -142,7 +143,11 @@ def _make_pseudobulk(
         Column in adata.obs specifying condition or treatment.
     layer : str, default = "raw_counts"
         Name of layer containing raw integer count data.
-
+    expr_cells_threshold : float or None, default=None
+        If set, genes are filtered per cell type before pseudobulk aggregation.
+        Only genes expressed (raw count > 0) in more than this fraction of cells
+        within the cell type are retained. For example, 0.10 keeps genes expressed
+        in more than 10% of cells. If None, no filtering is applied.
     Returns
     -------
     dict
@@ -161,8 +166,14 @@ def _make_pseudobulk(
 
     for ct in adata.obs[celltype_col].unique():
         print(f"Processing {ct}...")
-
         ad_ct = adata[adata.obs[celltype_col] == ct].copy()
+
+        if expr_cells_threshold is not None:
+            raw = ad_ct.layers[layer]
+            pct_expressing = np.asarray((raw > 0).mean(axis=0)).flatten()
+            genes_to_test = ad_ct.var_names[pct_expressing > expr_cells_threshold]
+            ad_ct = ad_ct[:, genes_to_test]
+            print(f"  {len(genes_to_test)} genes pass filter (>{expr_cells_threshold*100:.0f}% expressing cells)")
 
         # Use raw counts from layer
         X = ad_ct.layers[layer]
@@ -218,6 +229,7 @@ def pseudobulk(
     plot: bool = True,
     lfc_threshold: float = 0.25,
     padj_threshold: float = 0.05,
+    expr_cells_threshold: float | None = None,
 ):
     """
     Perform pseudobulk diferential expression analysis for a specific cell type.
@@ -254,6 +266,11 @@ def pseudobulk(
         Minimum absolute log2 fold change for a gene to be considered significant
     padj_threshold : float, default = 0.05
         Maximum adjusted p-value for a gene to be considered significant
+    expr_cells_threshold : float or None, default=None
+        Minimum fraction of cells within the cell type that must express a gene
+        (raw count > 0) for it to be included in the DE analysis. Filters out
+        lowly/non-expressed genes before running DESeq2, which can improve
+        statistical power and reduce noise. If None, all genes are tested.
 
     Returns
     -------
@@ -274,7 +291,8 @@ def pseudobulk(
             adata,
             sample_col=sample_col,
             treatment_col=treatment_col,
-            celltype_col=celltype_col
+            celltype_col=celltype_col,
+            expr_cells_threshold=expr_cells_threshold,
         )
     # pb_dict = _make_pseudobulk(adata, sample_col=sample_col, treatment_col=treatment_col)
     try:
@@ -339,6 +357,7 @@ def pseudobulk_per_condition(
     output_path: str | None = None,
     lfc_threshold: float = 0.25,
     padj_threshold: float = 0.05,
+    expr_cells_threshold: float | None = None,
 ):
     """
     Perform pseudobulk differential expression analysis across all condition
@@ -373,6 +392,8 @@ def pseudobulk_per_condition(
     padj_threshold : float, default = 0.05
         Maximum adjusted p-value for a gene to be considered significant
         Passed to each ``pseudobulk`` call
+    expr_cells_threshold : float or None, default=None
+        Passed to each ``pseudobulk`` call. See ``pseudobulk`` for details.
 
     Returns
     -------
@@ -426,7 +447,8 @@ def pseudobulk_per_condition(
             adata_sub,
             celltype_col=celltype_col,
             sample_col=sample_id,
-            treatment_col=label_col
+            treatment_col=label_col,
+            expr_cells_threshold=expr_cells_threshold
         )
 
         for ct_focus in pb_dict.keys():

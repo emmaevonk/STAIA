@@ -1,0 +1,34 @@
+# IMPORTANT: run 'export PYTHONNOUSERSITE=1' before installing the packages!
+# IMPORTANT: install with 'pip install -r requirements.txt --no-cache-dir' --extra-index-url https://download.pytorch.org/whl/cu126 -f https://data.pyg.org/whl/torch-2.6.0+cu126.html
+
+matplotlib==3.10.9
+numpy
+pandas==2.3.3
+scipy==1.17.1
+scikit-image==0.26.0
+anndata==0.12.13
+ipywidgets==8.1.8
+IPython
+scanpy==1.11.5
+spatialdata==0.6.1
+squidpy==1.7.0
+scvi-tools==1.4.2
+cellcharter==0.3.7
+lightning==2.6.1
+seaborn==0.13.2
+spatialdata-plot==0.2.14
+shapely==2.1.2
+geopandas==1.1.2
+pydeseq2==0.5.4
+# scikit-learn==1.8.0
+scikit-learn<1.7
+igraph
+leidenalg
+spatialdata-io==0.6.0
+ipympl
+torch==2.6.0
+pyg_lib
+torch_scatter
+torch_sparse
+nichecompass
+# pybanksy[notebooks] # install this later, cannot be installed via a requirements file
