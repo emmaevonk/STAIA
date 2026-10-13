@@ -157,7 +157,7 @@
 
     <div class="doc doc-contents ">
 
-        <p>Extract an AnnData table from a SpatialData object and compute Leiden clustering.</p>
+        <p>Extract an AnnData table from a SpatialData object.</p>
 
 
 <table class="field-list">
@@ -322,7 +322,7 @@
     <span class="n">leiden_resolution</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">AnnData</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Extract an AnnData table from a SpatialData object and compute Leiden clustering.</span>
+<span class="sd">    Extract an AnnData table from a SpatialData object.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -703,6 +703,11 @@ defined by a bounding box.</p>
   </tbody>
 </table>
 
+<p><span class="doc-section-title">Examples:</span></p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">adata</span> <span class="o">=</span> <span class="n">STAIA</span><span class="o">.</span><span class="n">roi</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">x_min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">x_max</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">y_min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">y_min</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+</code></pre></div>
+
+
             <details class="mkdocstrings-source">
               <summary>Source code in <code>_spatialobject.py</code></summary>
               <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">130</span>
@@ -760,7 +765,11 @@ defined by a bounding box.</p>
 <span class="normal">182</span>
 <span class="normal">183</span>
 <span class="normal">184</span>
-<span class="normal">185</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">roi</span><span class="p">(</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">roi</span><span class="p">(</span>
         <span class="n">adata</span><span class="p">:</span> <span class="n">AnnData</span><span class="p">,</span>
         <span class="n">x_min</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">x_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
@@ -790,6 +799,10 @@ defined by a bounding box.</p>
 <span class="sd">    -------</span>
 <span class="sd">    AnnData</span>
 <span class="sd">        AnnData object containing only cells within the bounding box.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; adata = STAIA.roi(adata, x_min=0, x_max=200, y_min=0, y_min=300)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># check if spatial exists in data</span>
     <span class="k">if</span> <span class="n">spatial_key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">adata</span><span class="o">.</span><span class="n">obsm</span><span class="p">:</span>
