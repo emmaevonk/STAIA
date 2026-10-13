@@ -198,7 +198,8 @@
 )
               –
               <div class="doc-md-description">
-                <p>Two treatment groups to compare. [reference_condition, comparison_condition]</p>
+                <p>Two treatment groups: [reference_condition, comparison_condition].
+LFC is computed as log2(comparison / reference), i.e. log2(TEST / HC).</p>
               </div>
             </li>
             <li>
@@ -446,7 +447,8 @@ with an automatically generated filename.</p>
 <span class="normal">326</span>
 <span class="normal">327</span>
 <span class="normal">328</span>
-<span class="normal">329</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">pseudobulk</span><span class="p">(</span>
+<span class="normal">329</span>
+<span class="normal">330</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">pseudobulk</span><span class="p">(</span>
     <span class="n">adata</span><span class="p">:</span> <span class="n">AnnData</span><span class="p">,</span>
     <span class="n">celltype</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Macrophages&quot;</span><span class="p">,</span>
     <span class="n">cond</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;HC&quot;</span><span class="p">,</span> <span class="s2">&quot;TEST&quot;</span><span class="p">],</span>
@@ -476,7 +478,8 @@ with an automatically generated filename.</p>
 <span class="sd">    celltype : str, default = &quot;Macrophages&quot;</span>
 <span class="sd">        Cell type to analyze.</span>
 <span class="sd">    cond : list[str], default = [&quot;HC&quot;, &quot;TEST&quot;].</span>
-<span class="sd">        Two treatment groups to compare. [reference_condition, comparison_condition]</span>
+<span class="sd">        Two treatment groups: [reference_condition, comparison_condition].</span>
+<span class="sd">        LFC is computed as log2(comparison / reference), i.e. log2(TEST / HC).</span>
 <span class="sd">    save : bool, default = True</span>
 <span class="sd">        Whether to save the significant genes to a CSV file.</span>
 <span class="sd">    output_path : str or None, default = None</span>
@@ -544,7 +547,7 @@ with an automatically generated filename.</p>
 
     <span class="n">dds</span><span class="o">.</span><span class="n">deseq2</span><span class="p">()</span>
 
-    <span class="n">contrast_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">treatment_col</span><span class="p">,</span> <span class="n">cond</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">cond</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+    <span class="n">contrast_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">treatment_col</span><span class="p">,</span> <span class="n">cond</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">cond</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
     <span class="n">stat_res</span> <span class="o">=</span> <span class="n">DeseqStats</span><span class="p">(</span><span class="n">dds</span><span class="p">,</span> <span class="n">contrast</span><span class="o">=</span><span class="n">contrast_list</span><span class="p">)</span>
     <span class="n">stat_res</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
 
@@ -762,8 +765,7 @@ allowing the remaining comparisons to proceed.</li>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>_pseudobulk.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">331</span>
-<span class="normal">332</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">332</span>
 <span class="normal">333</span>
 <span class="normal">334</span>
 <span class="normal">335</span>
@@ -887,7 +889,8 @@ allowing the remaining comparisons to proceed.</li>
 <span class="normal">453</span>
 <span class="normal">454</span>
 <span class="normal">455</span>
-<span class="normal">456</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">pseudobulk_per_condition</span><span class="p">(</span>
+<span class="normal">456</span>
+<span class="normal">457</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">pseudobulk_per_condition</span><span class="p">(</span>
     <span class="n">adata</span><span class="p">:</span> <span class="n">AnnData</span><span class="p">,</span>
     <span class="n">all_conditions</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
     <span class="n">label_col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;label&quot;</span><span class="p">,</span>
