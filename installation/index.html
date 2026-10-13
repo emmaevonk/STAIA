@@ -110,13 +110,26 @@
             <div class="section" itemprop="articleBody">
               
                 <h2 id="installation">⬇️ Installation</h2>
-<p>Currently, STAIA is not yet available on Pypi. Once development of the package is done, STAIA will be readily available on the Python Package Index.</p>
-<p>Installing from the source:</p>
+<p>STAIA is meant to be run from a conda environment, so create one:</p>
+<pre><code class="language-bash">conda create -n &quot;STAIA-env&quot; python=3.12 ipykernel
+</code></pre>
+<p>The conda environment is built with python 3.12, because the latest version of BANKSY (which is integrated in this package), does not support newer Python versions (yet).
+Now it's time to activate the environment and double check the python version present in the environment:</p>
+<pre><code class="language-bash">conda activate STAIA-env
+python --version
+</code></pre>
+<p>When working on an HPC, the home folder has limited space and can therefore be occupied very fast. Run this command to prevent this from happening when using an HPC (if not, this can be ignored):</p>
+<pre><code class="language-bash">export PYTHONNOUSERSITE=1
+</code></pre>
+<p>The STAIA package is not (yet) available on the Python Packaging Index (Pypi), so the repository needs to be cloned from github:</p>
 <pre><code class="language-bash">git clone https://github.com/emmaevonk/STAIA.git
 cd STAIA
-pip install -e .
+pip install requirements_v2.txt
+pip install &quot;pybanksy[notebooks]&quot;
 </code></pre>
-<p>Minimum requirements: shown in <a href="https://github.com/emmaevonk/STAIA/">the requirements</a> file on GitHub.  </p>
+<p>Now all necessary packages to run STAIA have been installed. Run <code>ipykernel</code> to make sure you can use the environment as a kernel in a Jupyter Notebook:</p>
+<pre><code class="language-bash">python -m ipykernel install --user --name STAIA-env --display-name &quot;STAIA-env&quot;
+</code></pre>
               
             </div>
           </div><footer>
