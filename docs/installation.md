@@ -20,8 +20,7 @@ The STAIA package is not (yet) available on the Python Packaging Index (Pypi), s
 ```bash
 git clone https://github.com/emmaevonk/STAIA.git
 cd STAIA
-pip install requirements_CPU.txt
-pip install -r requirements.txt --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -f https://data.pyg.org/whl/torch-2.6.0+cpu.htm
+pip install -r requirements_CPU.txt --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -f https://data.pyg.org/whl/torch-2.6.0+cpu.html
 pip install "pybanksy[notebooks]"
 ```
 
@@ -49,8 +48,7 @@ The STAIA package is not (yet) available on the Python Packaging Index (Pypi), s
 ```bash
 git clone https://github.com/emmaevonk/STAIA.git
 cd STAIA
-pip install requirements_GPU.txt
-pip install -r requirements.txt --no-cache-dir' --extra-index-url https://download.pytorch.org/whl/cu126 -f https://data.pyg.org/whl/torch-2.6.0+cu126.html
+pip install -r requirements_GPU.txt --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cu126 -f https://data.pyg.org/whl/torch-2.6.0+cu126.html
 pip install "pybanksy[notebooks]"
 ```
 
