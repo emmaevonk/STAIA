@@ -4,9 +4,9 @@
 ### Installation CPU
 STAIA is meant to be run from a conda environment, so create one:
 ```bash
-conda create -n "STAIA-env" python=3.12 ipykernel
+conda create -n "STAIA-env" python=3.11 ipykernel
 ```
-The conda environment is built with python 3.12, because the latest version of BANKSY (which is integrated in this package), does not support newer Python versions (yet).
+The conda environment is built with python 3.11, because the latest version of BANKSY (which is integrated in this package), does not support newer Python versions (yet).
 Now it's time to activate the environment and double check the python version present in the environment:
 ```bash
 conda activate STAIA-env
@@ -32,9 +32,9 @@ python -m ipykernel install --user --name STAIA-env --display-name "STAIA-env"
 ### Installation GPU
 STAIA is meant to be run from a conda environment, so create one:
 ```bash
-conda create -n "STAIA-env" python=3.12 ipykernel
+conda create -n "STAIA-env" python=3.11 ipykernel
 ```
-The conda environment is built with python 3.12, because the latest version of BANKSY (which is integrated in this package), does not support newer Python versions (yet).
+The conda environment is built with python 3.11, because the latest version of BANKSY (which is integrated in this package), does not support newer Python versions (yet).
 Now it's time to activate the environment and double check the python version present in the environment:
 ```bash
 conda activate STAIA-env
