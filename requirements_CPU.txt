@@ -27,7 +27,6 @@ leidenalg
 spatialdata-io==0.6.0
 ipympl
 torch==2.6.0+cpu
-pyg_lib
 torch_scatter
 torch_sparse
 nichecompass
