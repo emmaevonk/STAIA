@@ -224,7 +224,6 @@ def annotate_tangram(
     return adata_sp
 
 # 3. Cell2location
-
 def annotate_cell2location(
     adata_sp: ad.AnnData,
     adata_sc: ad.AnnData,
@@ -233,7 +232,7 @@ def annotate_cell2location(
     batch_key: Optional[str] = None,
     max_epochs_reference: int = 200,
     max_epochs_spatial: int = 30000,
-    use_gpu: bool = False,
+    accelerator: str = "cpu",
     inplace: bool = True,
 ) -> Optional[ad.AnnData]:
     """
@@ -261,7 +260,7 @@ def annotate_cell2location(
         Training epochs for the reference signature model.
     max_epochs_spatial : int
         Training epochs for the spatial deconvolution model.
-    use_gpu : bool
+    accelerator : bool
         Whether to use GPU acceleration via PyTorch.
  
     Returns
@@ -294,12 +293,12 @@ def annotate_cell2location(
     )
  
     ref_model = RegressionModel(adata_ref)
-    ref_model.train(max_epochs=max_epochs_reference, use_gpu=use_gpu)
+    ref_model.train(max_epochs=max_epochs_reference, accelerator=accelerator)
  
     # Export estimated expression signatures per cell type
     inf_aver = ref_model.export_posterior(
         adata_ref,
-        sample_kwargs={"num_samples": 1000, "batch_size": 2500, "use_gpu": use_gpu},
+        sample_kwargs={"num_samples": 1000, "batch_size": 2500},
     )
     inf_aver = inf_aver["means_per_cluster_mu_fg"][
         [f"means_per_cluster_mu_fg_{ct}" for ct in adata_ref.obs[annotation_key].unique()]
@@ -323,12 +322,12 @@ def annotate_cell2location(
         max_epochs=max_epochs_spatial,
         batch_size=None,
         train_size=1,
-        use_gpu=use_gpu,
+        accelerator=accelerator,
     )
  
     adata_sp = spatial_model.export_posterior(
         adata_sp,
-        sample_kwargs={"num_samples": 1000, "batch_size": 2500, "use_gpu": use_gpu},
+        sample_kwargs={"num_samples": 1000, "batch_size": 2500},
     )
  
     # Extract mean cell type abundance per spot

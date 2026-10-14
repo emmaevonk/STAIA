@@ -8,6 +8,8 @@ ipywidgets==8.1.8
 IPython
 scanpy==1.11.5
 spatialdata==0.6.1
+dask==2024.11.2
+dask-expr==1.1.19
 xarray==2026.1.0
 squidpy==1.7.0
 scvi-tools==1.4.2
