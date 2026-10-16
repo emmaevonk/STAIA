@@ -5,16 +5,7 @@
 
 [Documentation](https://emmaevonk.github.io/STAIA/) can be found [here](https://emmaevonk.github.io/STAIA/).
 
-Please note that STAIA is built for python 3.10, 3.11, and 3.12 (for now).
-
-## 🌟 Highlights
-
-- End-to-end analyses in one pipeline!
-- Recognizing samples from the same Xenium slide
-- Assigning labels to samples
-- Performing QC, clustering, multimodal segmentation, assigning conditions and pseudobulk DE analysis
-- Errorhandler
-- Using well known tools in spatial transcriptomics, e.g. Squidpy and Scanpy
+Please note that STAIA is built for python 3.10, 3.11, and 3.12.
 
 ## ℹ️ Overview
 
@@ -65,7 +56,7 @@ Installing from the source:
 ```bash
 git clone https://github.com/emmaevonk/STAIA.git
 cd STAIA
-pip install -e .
+bash scripts/install_cpu.sh   # or install_gpu.sh
 ```
 
 Minimum requirements: look at requirements_v2.txt file 

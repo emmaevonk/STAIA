@@ -1,6 +1,15 @@
 
 ## ⬇️ Installation
 
+### Simplified installation
+The installation of STAIA is simplified to running these 3 steps:
+```bash
+git clone https://github.com/emmaevonk/STAIA.git
+cd STAIA
+bash scripts/install_cpu.sh   # or install_gpu.sh
+```
+
+
 ### Installation CPU
 STAIA is meant to be run from a conda environment, so create one:
 ```bash
