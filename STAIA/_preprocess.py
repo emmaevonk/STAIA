@@ -6,6 +6,55 @@ import numpy as np
 import pandas as pd
 
 
+def batch_correct(sdata, batch_key="sample"):
+    """
+    Perform batch correction on spatial transcriptomics data using Harmony.
+
+    Parameters
+    ----------
+    sdata : SpatialData or AnnData
+        Spatial data object containing gene expression and metadata.
+        Must have PCA computed in obsm["X_pca"] prior to calling this function.
+    batch_key : str, optional
+        Column in adata.obs that defines batch labels (e.g. sample, slide, condition).
+        Default is "sample".
+
+    Returns
+    -------
+    SpatialData or AnnData
+        The input object with the Harmony-corrected PCA embedding added
+        to obsm["X_pca_harmony"].
+
+    Raises
+    ------
+    ValueError
+        If batch_key is not found in adata.obs.
+    KeyError
+        If obsm["X_pca"] is missing.
+
+    Notes
+    -----
+    Prerequisites:
+    - PCA must be computed before calling this function (e.g. via sc.pp.pca()).
+    - The batch_key column must be present in adata.obs.
+    - The corrected embedding can be used downstream by setting
+      use_rep="X_pca_harmony" in sc.pp.neighbors().
+
+    Examples
+    --------
+    >>> sdata = STAIA.batch_correct(sdata, batch_key="sample")
+    """
+    import harmonypy as hm
+
+    if batch_key not in sdata.obs:
+        raise ValueError(f"batch_key '{batch_key}' not found in adata.obs.")
+    if "X_pca" not in sdata.obsm:
+        raise KeyError("PCA embedding missing. Run sc.pp.pca() before batch correction.")
+
+    ho = hm.run_harmony(sdata.obsm["X_pca"], sdata.obs, batch_key)
+    sdata.obsm["X_pca_harmony"] = ho.Z_corr.T
+
+    return sdata
 # def size_normalization(
 #     adata: AnnData,
 #     cell_areas: pd.Series | None = None,
