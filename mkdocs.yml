@@ -31,6 +31,7 @@ nav:
       - Size Normalization: documentation/size_normalization.md
       - Compute Metrics: documentation/metrics.md
       - Adjusted Rand Index: documentation/ari.md
+      - Batch Correction: documentation/batch_correction.md
       - QC: documentation/qc.md
       - Plotting: documentation/plot.md
       - Neighbor Analysis: documentation/neighbor_analysis.md
