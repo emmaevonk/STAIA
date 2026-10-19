@@ -71,6 +71,8 @@
                   </li>
                   <li class="toctree-l1 current"><a class="reference internal current" href="#">Batch Correction</a>
     <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#STAIA.batch_correct">batch_correct</a>
+    </li>
     </ul>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../qc/">QC</a>
@@ -141,6 +143,229 @@
 
 
 
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="STAIA.batch_correct" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">batch_correct</span><span class="p">(</span><span class="n">sdata</span><span class="p">,</span> <span class="n">batch_key</span><span class="o">=</span><span class="s1">&#39;sample&#39;</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Perform batch correction on spatial transcriptomics data using Harmony.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>sdata</code></b>
+                  (<code><span title="spatialdata.SpatialData">SpatialData</span> or <span title="anndata.AnnData">AnnData</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Spatial data object containing gene expression and metadata.
+Must have PCA computed in obsm["X_pca"] prior to calling this function.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>batch_key</code></b>
+                  (<code><span title="str">str</span></code>, default:
+                      <code>&#39;sample&#39;</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Column in adata.obs that defines batch labels (e.g. sample, slide, condition).
+Default is "sample".</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="spatialdata.SpatialData">SpatialData</span> or <span title="anndata.AnnData">AnnData</span></code>
+              –
+              <div class="doc-md-description">
+                <p>The input object with the Harmony-corrected PCA embedding added
+to obsm["X_pca_harmony"].</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Raises:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="ValueError">ValueError</span></code>
+              –
+              <div class="doc-md-description">
+                <p>If batch_key is not found in adata.obs.</p>
+              </div>
+            </li>
+            <li>
+                  <code><span title="KeyError">KeyError</span></code>
+              –
+              <div class="doc-md-description">
+                <p>If obsm["X_pca"] is missing.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Prerequisites:
+- PCA must be computed before calling this function (e.g. via sc.pp.pca()).
+- The batch_key column must be present in adata.obs.
+- The corrected embedding can be used downstream by setting
+  use_rep="X_pca_harmony" in sc.pp.neighbors().</p>
+</details>
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">sdata</span> <span class="o">=</span> <span class="n">STAIA</span><span class="o">.</span><span class="n">batch_correct</span><span class="p">(</span><span class="n">sdata</span><span class="p">,</span> <span class="n">batch_key</span><span class="o">=</span><span class="s2">&quot;sample&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>_preprocess.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 9</span>
+<span class="normal">10</span>
+<span class="normal">11</span>
+<span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">batch_correct</span><span class="p">(</span><span class="n">sdata</span><span class="p">,</span> <span class="n">batch_key</span><span class="o">=</span><span class="s2">&quot;sample&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Perform batch correction on spatial transcriptomics data using Harmony.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sdata : SpatialData or AnnData</span>
+<span class="sd">        Spatial data object containing gene expression and metadata.</span>
+<span class="sd">        Must have PCA computed in obsm[&quot;X_pca&quot;] prior to calling this function.</span>
+<span class="sd">    batch_key : str, optional</span>
+<span class="sd">        Column in adata.obs that defines batch labels (e.g. sample, slide, condition).</span>
+<span class="sd">        Default is &quot;sample&quot;.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    SpatialData or AnnData</span>
+<span class="sd">        The input object with the Harmony-corrected PCA embedding added</span>
+<span class="sd">        to obsm[&quot;X_pca_harmony&quot;].</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        If batch_key is not found in adata.obs.</span>
+<span class="sd">    KeyError</span>
+<span class="sd">        If obsm[&quot;X_pca&quot;] is missing.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Prerequisites:</span>
+<span class="sd">    - PCA must be computed before calling this function (e.g. via sc.pp.pca()).</span>
+<span class="sd">    - The batch_key column must be present in adata.obs.</span>
+<span class="sd">    - The corrected embedding can be used downstream by setting</span>
+<span class="sd">      use_rep=&quot;X_pca_harmony&quot; in sc.pp.neighbors().</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; sdata = STAIA.batch_correct(sdata, batch_key=&quot;sample&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">harmonypy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">hm</span>
+
+    <span class="k">if</span> <span class="n">batch_key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sdata</span><span class="o">.</span><span class="n">obs</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;batch_key &#39;</span><span class="si">{</span><span class="n">batch_key</span><span class="si">}</span><span class="s2">&#39; not found in adata.obs.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;X_pca&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sdata</span><span class="o">.</span><span class="n">obsm</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;PCA embedding missing. Run sc.pp.pca() before batch correction.&quot;</span><span class="p">)</span>
+
+    <span class="n">ho</span> <span class="o">=</span> <span class="n">hm</span><span class="o">.</span><span class="n">run_harmony</span><span class="p">(</span><span class="n">sdata</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s2">&quot;X_pca&quot;</span><span class="p">],</span> <span class="n">sdata</span><span class="o">.</span><span class="n">obs</span><span class="p">,</span> <span class="n">batch_key</span><span class="p">)</span>
+    <span class="n">sdata</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s2">&quot;X_pca_harmony&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ho</span><span class="o">.</span><span class="n">Z_corr</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="k">return</span> <span class="n">sdata</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
 
 
 
