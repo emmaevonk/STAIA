@@ -47,6 +47,8 @@
               <ul class="current">
                 <li class="toctree-l1 current"><a class="reference internal current" href="#">Installation</a>
     <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#simplified-installation">Simplified installation</a>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#installation-cpu">Installation CPU</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#installation-gpu">Installation GPU</a>
@@ -114,6 +116,23 @@
             <div class="section" itemprop="articleBody">
               
                 <h2 id="installation">⬇️ Installation</h2>
+<h3 id="simplified-installation">Simplified installation</h3>
+<p>Currently, STAIA is not yet available on Pypi. </p>
+<p>Installing from the source:</p>
+<pre><code class="language-bash">conda create -n &quot;STAIA&quot; python=3.11 ipykernel
+conda activate STAIA
+export PYTHONNOUSERSITE=1
+
+git clone https://github.com/emmaevonk/STAIA.git
+cd STAIA
+pip install -r requirements/requirements_CPU.txt --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -f https://data.pyg.org/whl/torch-2.6.0+cpu.html
+pip install &quot;pybanksy[notebooks]&quot; --no-cache-dir
+pip install -e . --no-cache-dir
+python -m ipykernel install --user --name STAIA --display-name &quot;STAIA&quot;
+</code></pre>
+<p>If a GPU is available, change the <code>requirements/requirements_CPU.txt</code> to <code>requirements/requirements_GPU.txt</code> </p>
+<p>Minimum requirements: look at requirements_v2.txt file </p>
+<p>After running installation, STAIA can be imported by running <code>import STAIA</code>.</p>
 <h3 id="installation-cpu">Installation CPU</h3>
 <p>STAIA is meant to be run from a conda environment, so create one:</p>
 <pre><code class="language-bash">conda create -n &quot;STAIA-env&quot; python=3.11 ipykernel
