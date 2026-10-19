@@ -20,7 +20,7 @@ export PYTHONNOUSERSITE=1
 
 git clone https://github.com/emmaevonk/STAIA.git
 cd STAIA
-pip install -r requirements_CPU.txt --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -f https://data.pyg.org/whl/torch-2.6.0+cpu.html
+pip install -r requirements/requirements_CPU.txt --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -f https://data.pyg.org/whl/torch-2.6.0+cpu.html
 pip install "pybanksy[notebooks]" --no-cache-dir
 pip install -e . --no-cache-dir
 python -m ipykernel install --user --name STAIA --display-name "STAIA"
