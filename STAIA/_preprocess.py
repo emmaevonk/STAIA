@@ -6,13 +6,13 @@ import numpy as np
 import pandas as pd
 
 
-def batch_correct(sdata, batch_key="sample"):
+def batch_correct(adata, batch_key="sample"):
     """
     Perform batch correction on spatial transcriptomics data using Harmony.
 
     Parameters
     ----------
-    sdata : SpatialData or AnnData
+    adata : AnnData
         Spatial data object containing gene expression and metadata.
         Must have PCA computed in obsm["X_pca"] prior to calling this function.
     batch_key : str, optional
@@ -21,7 +21,7 @@ def batch_correct(sdata, batch_key="sample"):
 
     Returns
     -------
-    SpatialData or AnnData
+    AnnData
         The input object with the Harmony-corrected PCA embedding added
         to obsm["X_pca_harmony"].
 
@@ -46,66 +46,16 @@ def batch_correct(sdata, batch_key="sample"):
     """
     import harmonypy as hm
 
-    if batch_key not in sdata.obs:
+    if batch_key not in adata.obs:
         raise ValueError(f"batch_key '{batch_key}' not found in adata.obs.")
-    if "X_pca" not in sdata.obsm:
+    if "X_pca" not in adata.obsm:
         raise KeyError("PCA embedding missing. Run sc.pp.pca() before batch correction.")
 
-    ho = hm.run_harmony(sdata.obsm["X_pca"], sdata.obs, batch_key)
-    sdata.obsm["X_pca_harmony"] = ho.Z_corr.T
+    ho = hm.run_harmony(adata.obsm["X_pca"], adata.obs, batch_key)
+    adata.obsm["X_pca_harmony"] = ho.Z_corr
 
-    return sdata
-# def size_normalization(
-#     adata: AnnData,
-#     cell_areas: pd.Series | None = None,
-#     cellsize_key: str = "shapeSize",
-#     cell_id_col: str = "cell_ID",
-#     target_sum: float = 100.0,
-#     log1p: bool = True
-# ) -> AnnData:
-#     """
-#     Size-normalize an AnnData object by cell area.
+    return adata
 
-#     Parameters
-#     ----------
-#     adata : AnnData
-#         AnnData object containing spatial transcriptomic information.
-#     cell_areas : pd.Series or None, default = None
-#         Series mapping cell IDs to their areas. Required if `cellsize_key` is
-#         not already present in `adata.obs`.
-#     cellsize_key : str, default = "shapeSize"
-#         Column name for the cell sizes in `adata.obs`.
-#     cell_id_col : str, default = "cell_ID"
-#         Column in `adata.obs` where cell IDs can be found.
-#     target_sum : float, default = 100.0
-#         Scaling factor after area normalization (SPArrOW uses 100).
-#     log1p : bool, default = True
-#         Whether to apply log1p transformation after normalization.
-
-#     Returns
-#     -------
-#     AnnData with:
-#         - adata.layers['raw_counts']: counts before normalization
-#         - adata.layers['size_normalized']: size-normalized counts (before log1p)
-#         - adata.X: log1p-transformed size-normalized counts (if log1p=True)
-#     """
-#     adata = adata.copy()
-
-#     if cellsize_key not in adata.obs:
-#         if cell_areas is None:
-#             raise ValueError(
-#                 f"'{cellsize_key}' not found in adata.obs and no `cell_areas` "
-#                 "Series was provided. Please pass cell areas explicitly."
-#             )
-#         print(f"'{cellsize_key}' not in the data. Computing {cellsize_key}...")
-#         adata.obs[cellsize_key] = adata.obs[cell_id_col].map(cell_areas)
-
-#         # filter for invalid entries
-#         adata = adata[adata.obs[cellsize_key].notna()].copy()
-#         adata = adata[adata.obs[cellsize_key] > 0].copy()
-
-#     adata = _size_norm(adata, cellsize_key, target_sum, log1p)
-#     return adata
 
 def size_normalization(
     sdata: SpatialData,
