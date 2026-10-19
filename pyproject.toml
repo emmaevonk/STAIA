@@ -71,6 +71,22 @@ gpu = [
   "torch==2.6.0",   # placeholder — actual install needs the index URL (see above)
 ]
 
+[tool.hatch.build]
+artifacts = ["STAIA/docs/**/*"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["STAIA"]
+
+[tool.hatch.build.targets.wheel.sources]
+"STAIA" = "STAIA"
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "STAIA/**/*",
+  "README.md",
+  "LICENSE",
+]
+
 [project.urls]
 Homepage = "https://emmaevonk.github.io/STAIA/"
 Repository = "https://github.com/emmaevonk/STAIA"

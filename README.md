@@ -7,6 +7,20 @@
 
 Please note that STAIA is built for python 3.10, 3.11, and 3.12.
 
+
+## ⬇️ Installation
+
+Currently, SpaSTAIAtioFlow is not yet available on Pypi. 
+
+Installing from the source:
+```bash
+git clone https://github.com/emmaevonk/STAIA.git
+cd STAIA
+bash scripts/install_cpu.sh   # or install_gpu.sh
+```
+
+Minimum requirements: look at requirements_v2.txt file 
+
 ## ℹ️ Overview
 
 STAIA is a functional pipeline for analyzing spatial transcriptomics data. It provides a Command Line Interface (CLI) to perform quality control, spatial statistics, neighborhood analysis, and visualization for datasets generated with the Xenium platform from 10X Genomics.
@@ -48,18 +62,6 @@ STAIA.plot_image()
 - Spatial structure evaluation
 - Analysis-ready feature generation
 
-## ⬇️ Installation
-
-Currently, SpaSTAIAtioFlow is not yet available on Pypi. 
-
-Installing from the source:
-```bash
-git clone https://github.com/emmaevonk/STAIA.git
-cd STAIA
-bash scripts/install_cpu.sh   # or install_gpu.sh
-```
-
-Minimum requirements: look at requirements_v2.txt file 
 
 ## 🚀 Quick Start 
 A small example of steps that can be taken with STAIA. 
