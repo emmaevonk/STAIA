@@ -10,16 +10,25 @@ Please note that STAIA is built for python 3.10, 3.11, and 3.12.
 
 ## ⬇️ Installation
 
-Currently, SpaSTAIAtioFlow is not yet available on Pypi. 
+Currently, STAIA is not yet available on Pypi. 
 
 Installing from the source:
 ```bash
+conda create -n "STAIA" python=3.11 ipykernel
+conda activate STAIA
+export PYTHONNOUSERSITE=1
+
 git clone https://github.com/emmaevonk/STAIA.git
 cd STAIA
-bash scripts/install_cpu.sh   # or install_gpu.sh
+pip install -r requirements_CPU.txt --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -f https://data.pyg.org/whl/torch-2.6.0+cpu.html
+pip install "pybanksy[notebooks]" --no-cache-dir
+pip install -e . --no-cache-dir
+python -m ipykernel install --user --name STAIA --display-name "STAIA"
 ```
 
 Minimum requirements: look at requirements_v2.txt file 
+
+After running installation, STAIA can be imported by running `import STAIA`.
 
 ## ℹ️ Overview
 
