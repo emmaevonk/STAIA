@@ -84,5 +84,6 @@ with warnings.catch_warnings():
     from ._preprocess import (
         size_normalization,
         counts_normalized,
-        scaling
+        scaling,
+        batch_correct
     )
