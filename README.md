@@ -5,16 +5,30 @@
 
 [Documentation](https://emmaevonk.github.io/STAIA/) can be found [here](https://emmaevonk.github.io/STAIA/).
 
-Please note that STAIA is built for python 3.10, 3.11, and 3.12 (for now).
+Please note that STAIA is built for python 3.10, 3.11, and 3.12.
 
-## 🌟 Highlights
 
-- End-to-end analyses in one pipeline!
-- Recognizing samples from the same Xenium slide
-- Assigning labels to samples
-- Performing QC, clustering, multimodal segmentation, assigning conditions and pseudobulk DE analysis
-- Errorhandler
-- Using well known tools in spatial transcriptomics, e.g. Squidpy and Scanpy
+## ⬇️ Installation
+
+Currently, STAIA is not yet available on Pypi. 
+
+Installing from the source:
+```bash
+conda create -n "STAIA" python=3.11 ipykernel
+conda activate STAIA
+export PYTHONNOUSERSITE=1
+
+git clone https://github.com/emmaevonk/STAIA.git
+cd STAIA
+pip install -r requirements/requirements_CPU.txt --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -f https://data.pyg.org/whl/torch-2.6.0+cpu.html
+pip install "pybanksy[notebooks]" --no-cache-dir
+pip install -e . --no-cache-dir
+python -m ipykernel install --user --name STAIA --display-name "STAIA"
+```
+
+Minimum requirements: look at requirements_v2.txt file 
+
+After running installation, STAIA can be imported by running `import STAIA`.
 
 ## ℹ️ Overview
 
@@ -57,18 +71,6 @@ STAIA.plot_image()
 - Spatial structure evaluation
 - Analysis-ready feature generation
 
-## ⬇️ Installation
-
-Currently, SpaSTAIAtioFlow is not yet available on Pypi. 
-
-Installing from the source:
-```bash
-git clone https://github.com/emmaevonk/STAIA.git
-cd STAIA
-pip install -e .
-```
-
-Minimum requirements: look at requirements_v2.txt file 
 
 ## 🚀 Quick Start 
 A small example of steps that can be taken with STAIA. 

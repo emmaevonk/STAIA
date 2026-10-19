@@ -1,0 +1,4 @@
+site/
+backup/
+__pycache__/
+assignment/backup

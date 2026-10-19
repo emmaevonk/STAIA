@@ -93,11 +93,79 @@ def _assign_nuclei(
     return gdf
 
 
+#NOTE: original
+# def get_adata_nuclei(sdata: SpatialData):
+#     """
+#     Split each cell's transcripts into nuclear and fiber (non-nuclear) compartments.
+
+#     Uses the nucleus shapes layer added by `STAIA.add_nuclei()` (or if that hasn't been run, falls back to the raw `nucleus_boundaries` layer with a warning) to build two separate AnnData objects: one containing only transcripts whose coordinates fall within a cell's nucleus, and one containing the remainder (transcripts within th ecell boundary but outside the nucleus). Both objects are annotated with standard QC metrics (total counts, n_genes) and a per-cell `area` column via `_add_wc_col`.
+
+#     Parameters
+#     ----------
+#     sdata : SpatialData
+#         A SpatialData object containing a "table" element
+    
+#     Returns
+#     -------
+#     tuple[AnnData, AnnData]
+#         `(adata_fibers, adata_nuclei)` — AnnData objects with the same
+#         `obs`/`var` as the original table, but with `X` restricted to
+#         nuclear or fiber transcript counts respectively, and QC columns
+#         (`total_counts`, `n_genes_by_counts`, `area`) added to `.obs`.
+
+#     Notes
+#     -----
+#     This can take a while on large samples, since it aggregates transcripts
+#     over polygon geometries for every cell.
+#     """
+
+#     print("It takes a while to retrieve both the nuclei AnnData object, and the fiber AnnData object. Please wait...")
+#     if type(sdata) != SpatialData:
+#         print(f'The input provided should be SpatialData, not {type(sdata)}. Exiting code...')
+#         return
+#     # check if `STAIA.add_nuclei()` has been run
+#     if 'nucleus_boundaries_fixed' in sdata.shapes:
+#         sdata, nuc = _repair_nucleus(sdata)
+#     else: # use nucleus_boundaries and show a warning 
+#         print(f"STAIA.add_nuclei() function is not used before. Will use the 'nucleus_boundaries' column in sdata")
+#         sdata, nuc = _repair_nucleus(sdata, shape="nucleus_boundaries")
+
+#     agg_result = sd.aggregate(
+#         values=sdata.points["transcripts"],
+#         by=sdata.shapes["nucleus_boundaries_by_cell"],
+#         value_key="feature_name",
+#         agg_func="count",
+#     )
+#     adata_nuclei_raw = agg_result.tables["table"]
+    
+#     # raw_df = _to_df(adata_nuclei_raw)
+#     # raw_df.index = raw_df.index.astype(str)
+
+#     adata = sdata.tables["table"]  
+
+#     # nuc_counts = raw_df.reindex(index=adata.obs_names, columns=adata.var_names, fill_value=0)
+#     #NOTE: no counts come out of this function. Walk through all of this.
+#     nuc_counts = _to_df(adata_nuclei_raw).reindex(index=adata.obs_names, columns=adata.var_names, fill_value=0) # NOTE: what does `fill_value` do? Is this causing the problem
+#     # temporary check - can be removed later
+#     if nuc_counts.values.sum() == 0:
+#         print("WARNING: nuc_counts is all zeros — obs_names mismatch between "
+#             "adata_nuclei_raw and adata. Check: \n"
+#             f"  adata_nuclei_raw.obs_names[:5]: {adata_nuclei_raw.obs_names[:5].tolist()}\n"
+#             f"  adata.obs_names[:5]:            {adata.obs_names[:5].tolist()}")
+            
+#     whole_counts = _to_df(adata)
+#     fiber_counts = (whole_counts - nuc_counts).clip(lower=0)
+
+#     adata_nuclei = AnnData(X=sp.csr_matrix(nuc_counts.values), obs=adata.obs.copy(), var=adata.var.copy())
+#     adata_fibers = AnnData(X=sp.csr_matrix(fiber_counts.values), obs=adata.obs.copy(), var=adata.var.copy())
+#     adata_fiber, adata_nuclei= _add_qc_col(adata_nuclei, adata_fibers, nuc, sdata)
+#     return adata_fiber, adata_nuclei
+
 def get_adata_nuclei(sdata: SpatialData):
     """
     Split each cell's transcripts into nuclear and fiber (non-nuclear) compartments.
 
-    Uses the nucleus shapes layer added by `STAIA.add_nuclei()` (or if that hasn't been run, falls back to the raw `nucleus_boundaries` layer with a warning) to build two separate AnnData objects: one containing only transcripts whose coordinates fall within a cell's nucleus, and one containing the remainder (transcripts within th ecell boundary but outside the nucleus). Both objects are annotated with standard QC metrics (total counts, n_genes) and a per-cell `area` column via `_add_wc_col`.
+    Uses the nucleus shapes layer added by `STAIA.add_nuclei()` (or if that hasn't been run, falls back to the raw `nucleus_boundaries` layer with a warning) to build two separate AnnData objects: one containing only transcripts whose coordinates fall within a cell's nucleus, and one containing the remainder (transcripts within the cell boundary but outside the nucleus). Both objects are annotated with standard QC metrics (total counts, n_genes) and a per-cell `area` column via `_add_qc_col`.
 
     Parameters
     ----------
@@ -108,15 +176,18 @@ def get_adata_nuclei(sdata: SpatialData):
     -------
     tuple[AnnData, AnnData]
         `(adata_fibers, adata_nuclei)` — AnnData objects with the same
-        `obs`/`var` as the original table, but with `X` restricted to
-        nuclear or fiber transcript counts respectively, and QC columns
+        `obs`/`var`/`obsm`/`uns` as the original table, but with `X` restricted to
+        fiber or nuclear transcript counts respectively, and QC columns
         (`total_counts`, `n_genes_by_counts`, `area`) added to `.obs`.
+        Both tables are also stored in `sdata.tables` as `"adata_fibers"`
+        and `"adata_nuclei"`.
 
     Notes
     -----
     This can take a while on large samples, since it aggregates transcripts
     over polygon geometries for every cell.
     """
+    import copy
 
     print("It takes a while to retrieve both the nuclei AnnData object, and the fiber AnnData object. Please wait...")
     if type(sdata) != SpatialData:
@@ -137,13 +208,12 @@ def get_adata_nuclei(sdata: SpatialData):
     )
     adata_nuclei_raw = agg_result.tables["table"]
     
-    # raw_df = _to_df(adata_nuclei_raw)
-    # raw_df.index = raw_df.index.astype(str)
+    raw_df = _to_df(adata_nuclei_raw)
+    raw_df.index = raw_df.index.astype(str)
 
     adata = sdata.tables["table"]  
 
-    # nuc_counts = raw_df.reindex(index=adata.obs_names, columns=adata.var_names, fill_value=0)
-    nuc_counts = _to_df(adata_nuclei_raw).reindex(index=adata.obs_names, columns=adata.var_names, fill_value=0)
+    nuc_counts = raw_df.reindex(index=adata.obs_names, columns=adata.var_names, fill_value=0)
     # temporary check - can be removed later
     if nuc_counts.values.sum() == 0:
         print("WARNING: nuc_counts is all zeros — obs_names mismatch between "
@@ -154,10 +224,38 @@ def get_adata_nuclei(sdata: SpatialData):
     whole_counts = _to_df(adata)
     fiber_counts = (whole_counts - nuc_counts).clip(lower=0)
 
-    adata_nuclei = AnnData(X=sp.csr_matrix(nuc_counts.values), obs=adata.obs.copy(), var=adata.var.copy())
-    adata_fibers = AnnData(X=sp.csr_matrix(fiber_counts.values), obs=adata.obs.copy(), var=adata.var.copy())
-    adata_fiber, adata_nuclei= _add_qc_col(adata_nuclei, adata_fibers, nuc, sdata)
-    return adata_fiber, adata_nuclei
+    # Copy obsm so centroid coordinates are preserved in both tables
+    obsm = {"spatial": adata.obsm["spatial"].copy()} if "spatial" in adata.obsm else {}
+
+    # Build nuclei AnnData with corrected region pointer
+    nuc_attrs = copy.deepcopy(adata.uns.get("spatialdata_attrs", {}))
+    nuc_attrs["region"] = "nucleus_boundaries_fixed"
+    adata_nuclei = AnnData(
+        X=sp.csr_matrix(nuc_counts.values),
+        obs=adata.obs.copy(),
+        var=adata.var.copy(),
+        obsm=obsm,
+        uns={"spatialdata_attrs": nuc_attrs},
+    )
+
+    # Build fibers AnnData with corrected region pointer
+    fib_attrs = copy.deepcopy(adata.uns.get("spatialdata_attrs", {}))
+    fib_attrs["region"] = "cell_boundaries"
+    adata_fibers = AnnData(
+        X=sp.csr_matrix(fiber_counts.values),
+        obs=adata.obs.copy(),
+        var=adata.var.copy(),
+        obsm=obsm,
+        uns={"spatialdata_attrs": fib_attrs},
+    )
+
+    adata_fibers, adata_nuclei = _add_qc_col(adata_nuclei, adata_fibers, nuc, sdata)
+
+    # Store back into sdata so results are not lost if return values are not captured
+    sdata.tables["adata_nuclei"] = adata_nuclei
+    sdata.tables["adata_fibers"] = adata_fibers
+
+    return adata_fibers, adata_nuclei
 
 
 def _add_qc_col(adata_nuclei, adata_fibers, nuc, sdata):
