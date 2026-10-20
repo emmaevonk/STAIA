@@ -48,6 +48,19 @@ with warnings.catch_warnings():
         run_watershed,
         manual_split_samples
     )
+    from .annotation import (
+        annotate_celltypist,
+        annotate_tangam
+    )
+    from .cell_communication import (
+        run_liana,
+        plot_liana_dotplot,
+        plot_spatial_lr_scores,
+        plot_liana_circle,
+        morans_score,
+        svg_summary,
+        plot_svgs,
+    )
     from ._spatialobject import (
         read_data,
         convert_sdata_adata,
@@ -67,9 +80,7 @@ with warnings.catch_warnings():
         is_outlier,
         detect_outlier
     )
-    from ._cellcom import (
-        morans_score
-    )
+    
     from ._neighbors import (
         nhood_enrichment
     )

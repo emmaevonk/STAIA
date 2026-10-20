@@ -161,9 +161,6 @@ def _check_xenium_version_compatibility(
     #     )
     #     return False
 
-    print(f"Check if it works, analyzer version: {analyzer_ver}")
-    print(f"Check if it works, ranger version: {ranger_ver}")
-
     if analyzer_ver == (4, 0, 2) and (ranger_major,   ranger_minor) == (4, 0):
         needs_patch = True
     else: 
