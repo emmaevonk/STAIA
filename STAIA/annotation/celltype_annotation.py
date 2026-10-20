@@ -347,61 +347,70 @@ def annotate_tacco(
     annotation_key: str,
     result_key: str = "tacco_cell_type",
     method: str = "OT",
+    counts_layer: str = None,
 ) -> Optional[ad.AnnData]:
     """
     Annotate spatial spots with TACCO (Transfer of Annotations to Cells
     and their COmbinations).
- 
-    TACCO transfers compositional annotations from a labelled scRNA-seq
-    reference to spatial data, storing per-spot cell type fractions and
-    a dominant cell type label.
- 
+
     Parameters
     ----------
     adata_sp : AnnData
-        Spatial AnnData object.
+        Spatial AnnData object. X (or `counts_layer`) must contain raw
+        non-negative integer counts.
     adata_sc : AnnData
         scRNA-seq reference AnnData with cell type labels in ``.obs``.
     annotation_key : str
         Column in ``adata_sc.obs`` containing cell type labels.
     result_key : str
         Key written to ``adata_sp.obsm`` with the compositional fractions
-        (DataFrame, spots × cell types) and to ``adata_sp.obs`` for the
-        dominant cell type per spot.
+        and to ``adata_sp.obs`` for the dominant cell type per spot.
     method : str
-        Annotation method passed to ``tc.tl.annotate``:
-          - ``"OT"``     – optimal transport (default, recommended)
-          - ``"NMFreg"`` – NMF-based regression
-          - ``"NNLS"``   – non-negative least squares (fastest)
-          - ``"tangram"``– wraps Tangram inside TACCO
-          - ``"RCTD"``   – wraps RCTD inside TACCO (requires R)
-        See TACCO docs for the full list.
- 
+        Annotation method passed to ``tc.tl.annotate``.
+    counts_layer : str, optional
+        Layer in ``adata_sp.layers`` holding raw integer counts (e.g.
+        ``"counts"`` or ``"raw_counts"``). If provided, a temporary view
+        with that layer as ``.X`` is passed to TACCO, leaving the original
+        object untouched. If None, ``.X`` is used directly.
+
     Returns
     -------
-    AnnData or None
- 
-    Examples
-    --------
-    >>> annotate_tacco(adata_sp, adata_sc, annotation_key="cell_type")
-    >>> adata_sp.obs["tacco_cell_type_dominant"]
+    AnnData
     """
     import tacco as tc
- 
+
+    # --- resolve the AnnData that TACCO will see ---
+    if counts_layer is not None:
+        if counts_layer not in adata_sp.layers:
+            raise KeyError(
+                f"Layer '{counts_layer}' not found in adata_sp. "
+                f"Available layers: {list(adata_sp.layers.keys())}"
+            )
+        # Shallow copy: swap X for the raw counts layer
+        adata_sp_raw = adata_sp.copy()
+        adata_sp_raw.X = adata_sp.layers[counts_layer]
+    else:
+        adata_sp_raw = adata_sp
+
+    # --- same for the reference ---
+    # adata_sc also needs integer counts; if it was normalised, store raw in a layer
+    adata_sc_raw = adata_sc  # adjust similarly if needed
+
     tc.tl.annotate(
-        adata_sp,
-        adata_sc,
+        adata_sp_raw,
+        adata_sc_raw,
         annotation_key=annotation_key,
         result_key=result_key,
         method=method,
     )
- 
-    # adata_sp.obsm[result_key] is a DataFrame (spots × cell types)
+
+    # Copy results back to the original object
+    adata_sp.obsm[result_key] = adata_sp_raw.obsm[result_key]
+
     ct_df: pd.DataFrame = adata_sp.obsm[result_key]
     adata_sp.obs[f"{result_key}_dominant"] = ct_df.idxmax(axis=1).values
- 
-    return adata_sp
 
+    return adata_sp
 
 # TODO: add consensus of all functions
 def consensus_annotations():
