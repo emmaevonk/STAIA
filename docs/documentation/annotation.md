@@ -1,4 +1,4 @@
-# cell Type Annotation
+# Cell Type Annotation
 ::: STAIA
     options:
       members:
