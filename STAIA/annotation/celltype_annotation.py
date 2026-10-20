@@ -191,7 +191,7 @@ def annotate_tangram(
  
     Examples
     --------
-    >>> annotate_tangram(adata_sp, adata_sc, annotation_key="cell_type")
+    >>> STAIA.annotate_tangram(adata_sp, adata_sc, annotation_key="cell_type")
     >>> adata_sp.obs["tangram_cell_type_dominant"]
     """
     import tangram as tg
@@ -269,7 +269,7 @@ def annotate_cell2location(
  
     Examples
     --------
-    >>> annotate_cell2location(
+    >>> STAIA.annotate_cell2location(
     ...     adata_sp, adata_sc,
     ...     annotation_key="cell_type",
     ...     batch_key="sample",

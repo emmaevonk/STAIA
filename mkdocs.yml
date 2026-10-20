@@ -33,9 +33,11 @@ nav:
       - Adjusted Rand Index: documentation/ari.md
       - Batch Correction: documentation/batch_correction.md
       - QC: documentation/qc.md
+      - Annotation: documentation/annotation.md
       - Plotting: documentation/plot.md
+      - Ligand-Receptor: documentation/lr.md
+      - Spatially Variable Genes: documentation/svg.md
       - Neighbor Analysis: documentation/neighbor_analysis.md
       - Assigning Labels: documentation/assigning_labels.md
       - Spatial Clustering: documentation/spatial_clustering.md
-      - Cell Communication: documentation/cell_communication.md
       - Pseudobulk DE: documentation/pseudobulk.md
