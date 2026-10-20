@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Annotation - STAIA</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Annotation";
+        var mkdocs_page_input_path = "documentation/annotation.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> STAIA
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../installation/">Installation</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../quickstart/">Quickstart</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/tutorial/">Tutorial: using STAIA package</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Documentation</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../read_spatialobject/">Read Data</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../add_nuclei/">Add Nuclei</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../size_normalization/">Size Normalization</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../metrics/">Compute Metrics</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../ari/">Adjusted Rand Index</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../batch_correction/">Batch Correction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../qc/">QC</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Annotation</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#STAIA.annotate_celltypist">annotate_celltypist</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plot/">Plotting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../lr/">Ligand-Receptor</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../svg/">Spatially Variable Genes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../neighbor_analysis/">Neighbor Analysis</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../assigning_labels/">Assigning Labels</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../spatial_clustering/">Spatial Clustering</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../pseudobulk/">Pseudobulk DE</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">STAIA</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Documentation</li>
+      <li class="breadcrumb-item active">Annotation</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="cell-type-annotation">cell Type Annotation</h1>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+
+    <div class="doc doc-contents first">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="STAIA.annotate_celltypist" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">annotate_celltypist</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s1">&#39;Immune_All_Low.pkl&#39;</span><span class="p">,</span> <span class="n">majority_voting</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">over_clustering</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">result_key</span><span class="o">=</span><span class="s1">&#39;celltypist_cell_type&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Annotate cells using CellTypist (marker/classifier-based).</p>
+<p>Does <em>not</em> require an external scRNA-seq reference — uses pre-trained
+models that ship with the package or can be downloaded automatically.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>adata</code></b>
+                  (<code><span title="AnnData">AnnData</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Spatial or single-cell AnnData object.
+<code>adata.X</code> should contain normalised, log1p-transformed counts
+(CellTypist normalises to 10,000 counts/cell internally if needed).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>model</code></b>
+                  (<code><span title="str">str</span></code>, default:
+                      <code>&#39;Immune_All_Low.pkl&#39;</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>CellTypist model name or path to a local <code>.pkl</code> model file.
+Run <code>celltypist.models.get_all_models()</code> to list available models.
+Commonly used models:
+  - <code>"Immune_All_Low.pkl"</code>   – immune cells, fine-grained
+  - <code>"Immune_All_High.pkl"</code>  – immune cells, coarse
+  - <code>"Adult_Mouse_Gut.pkl"</code>  – mouse gut atlas</p>
+              </div>
+            </li>
+            <li>
+              <b><code>majority_voting</code></b>
+                  (<code><span title="bool">bool</span></code>, default:
+                      <code>True</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Whether to refine predictions by majority voting within clusters.
+Recommended for spatial data. Requires a clustering column to be set
+in <code>adata.obs</code> (see <code>over_clustering</code>).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>over_clustering</code></b>
+                  (<code><span title="str">str</span></code>, default:
+                      <code>None</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Column in <code>adata.obs</code> with cluster labels used for majority voting.
+If None, CellTypist performs its own over-clustering automatically.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>result_key</code></b>
+                  (<code><span title="str">str</span></code>, default:
+                      <code>&#39;celltypist_cell_type&#39;</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Column name written to <code>adata.obs</code> with the predicted cell types.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="AnnData">AnnData</span> or None</code>
+              –
+              <div class="doc-md-description">
+                
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">STAIA</span><span class="o">.</span><span class="n">annotate_celltypist</span><span class="p">(</span><span class="n">adata</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;celltypist_cell_type&quot;</span><span class="p">]</span>
+</code></pre></div>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>STAIA/annotation/celltype_annotation.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 24</span>
+<span class="normal"> 25</span>
+<span class="normal"> 26</span>
+<span class="normal"> 27</span>
+<span class="normal"> 28</span>
+<span class="normal"> 29</span>
+<span class="normal"> 30</span>
+<span class="normal"> 31</span>
+<span class="normal"> 32</span>
+<span class="normal"> 33</span>
+<span class="normal"> 34</span>
+<span class="normal"> 35</span>
+<span class="normal"> 36</span>
+<span class="normal"> 37</span>
+<span class="normal"> 38</span>
+<span class="normal"> 39</span>
+<span class="normal"> 40</span>
+<span class="normal"> 41</span>
+<span class="normal"> 42</span>
+<span class="normal"> 43</span>
+<span class="normal"> 44</span>
+<span class="normal"> 45</span>
+<span class="normal"> 46</span>
+<span class="normal"> 47</span>
+<span class="normal"> 48</span>
+<span class="normal"> 49</span>
+<span class="normal"> 50</span>
+<span class="normal"> 51</span>
+<span class="normal"> 52</span>
+<span class="normal"> 53</span>
+<span class="normal"> 54</span>
+<span class="normal"> 55</span>
+<span class="normal"> 56</span>
+<span class="normal"> 57</span>
+<span class="normal"> 58</span>
+<span class="normal"> 59</span>
+<span class="normal"> 60</span>
+<span class="normal"> 61</span>
+<span class="normal"> 62</span>
+<span class="normal"> 63</span>
+<span class="normal"> 64</span>
+<span class="normal"> 65</span>
+<span class="normal"> 66</span>
+<span class="normal"> 67</span>
+<span class="normal"> 68</span>
+<span class="normal"> 69</span>
+<span class="normal"> 70</span>
+<span class="normal"> 71</span>
+<span class="normal"> 72</span>
+<span class="normal"> 73</span>
+<span class="normal"> 74</span>
+<span class="normal"> 75</span>
+<span class="normal"> 76</span>
+<span class="normal"> 77</span>
+<span class="normal"> 78</span>
+<span class="normal"> 79</span>
+<span class="normal"> 80</span>
+<span class="normal"> 81</span>
+<span class="normal"> 82</span>
+<span class="normal"> 83</span>
+<span class="normal"> 84</span>
+<span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">annotate_celltypist</span><span class="p">(</span>
+    <span class="n">adata</span><span class="p">:</span> <span class="n">ad</span><span class="o">.</span><span class="n">AnnData</span><span class="p">,</span>
+    <span class="n">model</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Immune_All_Low.pkl&quot;</span><span class="p">,</span>
+    <span class="n">majority_voting</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">over_clustering</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">result_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;celltypist_cell_type&quot;</span><span class="p">,</span>
+    <span class="n">inplace</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Annotate cells using CellTypist (marker/classifier-based).</span>
+
+<span class="sd">    Does *not* require an external scRNA-seq reference — uses pre-trained</span>
+<span class="sd">    models that ship with the package or can be downloaded automatically.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    adata : AnnData</span>
+<span class="sd">        Spatial or single-cell AnnData object.</span>
+<span class="sd">        ``adata.X`` should contain normalised, log1p-transformed counts</span>
+<span class="sd">        (CellTypist normalises to 10,000 counts/cell internally if needed).</span>
+<span class="sd">    model : str</span>
+<span class="sd">        CellTypist model name or path to a local ``.pkl`` model file.</span>
+<span class="sd">        Run ``celltypist.models.get_all_models()`` to list available models.</span>
+<span class="sd">        Commonly used models:</span>
+<span class="sd">          - ``&quot;Immune_All_Low.pkl&quot;``   – immune cells, fine-grained</span>
+<span class="sd">          - ``&quot;Immune_All_High.pkl&quot;``  – immune cells, coarse</span>
+<span class="sd">          - ``&quot;Adult_Mouse_Gut.pkl&quot;``  – mouse gut atlas</span>
+<span class="sd">    majority_voting : bool</span>
+<span class="sd">        Whether to refine predictions by majority voting within clusters.</span>
+<span class="sd">        Recommended for spatial data. Requires a clustering column to be set</span>
+<span class="sd">        in ``adata.obs`` (see ``over_clustering``).</span>
+<span class="sd">    over_clustering : str, optional</span>
+<span class="sd">        Column in ``adata.obs`` with cluster labels used for majority voting.</span>
+<span class="sd">        If None, CellTypist performs its own over-clustering automatically.</span>
+<span class="sd">    result_key : str</span>
+<span class="sd">        Column name written to ``adata.obs`` with the predicted cell types.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    AnnData or None</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; STAIA.annotate_celltypist(adata)</span>
+<span class="sd">    &gt;&gt;&gt; adata.obs[&quot;celltypist_cell_type&quot;]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">celltypist</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">celltypist</span><span class="w"> </span><span class="kn">import</span> <span class="n">models</span>
+
+    <span class="kn">import</span><span class="w"> </span><span class="nn">scipy.sparse</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sp</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">scanpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sc</span>
+
+    <span class="n">X</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">X</span>
+    <span class="n">mat</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span> <span class="k">if</span> <span class="n">sp</span><span class="o">.</span><span class="n">issparse</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+    <span class="c1"># Heuristic 1 – raw counts: values are non-negative integers</span>
+    <span class="n">looks_raw</span> <span class="o">=</span> <span class="p">(</span><span class="n">mat</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">mat</span><span class="p">,</span> <span class="n">mat</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span>
+
+    <span class="c1"># Heuristic 2 – already normalised but not log1p: per-cell sums near 10 000</span>
+    <span class="c1">#   (log1p data has per-cell sums far below 10 000)</span>
+    <span class="n">per_cell_sums</span> <span class="o">=</span> <span class="n">mat</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">looks_normalised_not_logged</span> <span class="o">=</span> <span class="p">(</span><span class="n">per_cell_sums</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">)</span>
+
+    <span class="c1"># Heuristic 3 – already log1p: max value is small (log1p(10000) ≈ 9.2)</span>
+    <span class="n">looks_log1p</span> <span class="o">=</span> <span class="p">(</span><span class="n">mat</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mi">20</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">per_cell_sums</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">looks_log1p</span><span class="p">:</span>
+        <span class="c1"># Data already looks correctly preprocessed — proceed as-is</span>
+        <span class="k">pass</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">looks_raw</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s2">&quot;adata.X appears to contain raw counts (non-negative integers). &quot;</span>
+                <span class="s2">&quot;Automatically applying sc.pp.normalize_total(target_sum=1e4) &quot;</span>
+                <span class="s2">&quot;and sc.pp.log1p(). The result is stored in &quot;</span>
+                <span class="s2">&quot;adata.layers[&#39;log1p_norm&#39;] and used for CellTypist; &quot;</span>
+                <span class="s2">&quot;adata.X is left unchanged.&quot;</span><span class="p">,</span>
+                <span class="ne">UserWarning</span><span class="p">,</span>
+                <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s2">&quot;adata.X does not look like log1p-normalised data &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;(mean per-cell sum = </span><span class="si">{</span><span class="n">per_cell_sums</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;max value = </span><span class="si">{</span><span class="n">mat</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">). &quot;</span>
+                <span class="s2">&quot;Automatically applying sc.pp.normalize_total(target_sum=1e4) &quot;</span>
+                <span class="s2">&quot;and sc.pp.log1p(). The result is stored in &quot;</span>
+                <span class="s2">&quot;adata.layers[&#39;log1p_norm&#39;] and used for CellTypist; &quot;</span>
+                <span class="s2">&quot;adata.X is left unchanged.&quot;</span><span class="p">,</span>
+                <span class="ne">UserWarning</span><span class="p">,</span>
+                <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="c1"># Normalise into a temporary copy so we never overwrite .X</span>
+        <span class="n">adata_norm</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">normalize_total</span><span class="p">(</span><span class="n">adata_norm</span><span class="p">,</span> <span class="n">target_sum</span><span class="o">=</span><span class="mf">1e4</span><span class="p">)</span>
+        <span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">log1p</span><span class="p">(</span><span class="n">adata_norm</span><span class="p">)</span>
+
+        <span class="c1"># Cache the preprocessed matrix as a layer for transparency</span>
+        <span class="n">adata</span><span class="o">.</span><span class="n">layers</span><span class="p">[</span><span class="s2">&quot;log1p_norm&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata_norm</span><span class="o">.</span><span class="n">X</span>
+
+        <span class="c1"># Point .X at the normalised matrix for the CellTypist call,</span>
+        <span class="c1"># then restore it afterwards</span>
+        <span class="n">_original_X</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">X</span>
+        <span class="n">adata</span><span class="o">.</span><span class="n">X</span> <span class="o">=</span> <span class="n">adata_norm</span><span class="o">.</span><span class="n">X</span>
+
+
+    <span class="c1"># download model if it is not already cached</span>
+    <span class="n">models</span><span class="o">.</span><span class="n">download_models</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">force_update</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">ct_model</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">)</span>
+
+    <span class="n">predictions</span> <span class="o">=</span> <span class="n">celltypist</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span>
+        <span class="n">adata</span><span class="p">,</span>
+        <span class="n">model</span><span class="o">=</span><span class="n">ct_model</span><span class="p">,</span>
+        <span class="n">majority_voting</span><span class="o">=</span><span class="n">majority_voting</span><span class="p">,</span>
+        <span class="n">over_clustering</span><span class="o">=</span><span class="n">over_clustering</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">result_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">predictions</span><span class="o">.</span><span class="n">predicted_labels</span><span class="o">.</span><span class="n">predicted_labels</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result_key</span><span class="si">}</span><span class="s2">_score&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">predictions</span><span class="o">.</span><span class="n">probability_matrix</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
+
+    <span class="c1"># store full probability matrix in obsm</span>
+    <span class="n">adata</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result_key</span><span class="si">}</span><span class="s2">_prob_matrix&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">predictions</span><span class="o">.</span><span class="n">probability_matrix</span> <span class="c1">#TODO: maybe discard later?</span>
+    <span class="k">return</span> <span class="n">adata</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../qc/" class="btn btn-neutral float-left" title="QC"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../plot/" class="btn btn-neutral float-right" title="Plotting">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../qc/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../plot/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
