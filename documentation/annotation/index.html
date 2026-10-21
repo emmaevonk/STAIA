@@ -75,7 +75,9 @@
                   </li>
                   <li class="toctree-l1 current"><a class="reference internal current" href="#">Annotation</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#STAIA.annotate_celltypist">annotate_celltypist</a>
+    <li class="toctree-l2"><a class="reference internal" href="#STAIA.annotation.annotate_celltypist">annotate_celltypist</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#STAIA.annotation.annotate_tangram">annotate_tangram</a>
     </li>
     </ul>
                   </li>
@@ -151,7 +153,7 @@
 <div class="doc doc-object doc-function">
 
 
-<h2 id="STAIA.annotate_celltypist" class="doc doc-heading">
+<h2 id="STAIA.annotation.annotate_celltypist" class="doc doc-heading">
             <code class="highlight language-python"><span class="n">annotate_celltypist</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s1">&#39;Immune_All_Low.pkl&#39;</span><span class="p">,</span> <span class="n">majority_voting</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">over_clustering</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">result_key</span><span class="o">=</span><span class="s1">&#39;celltypist_cell_type&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
 
 </h2>
@@ -516,6 +518,294 @@ If None, CellTypist performs its own over-clustering automatically.</p>
     <span class="c1"># store full probability matrix in obsm</span>
     <span class="n">adata</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result_key</span><span class="si">}</span><span class="s2">_prob_matrix&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">predictions</span><span class="o">.</span><span class="n">probability_matrix</span> <span class="c1">#TODO: maybe discard later?</span>
     <span class="k">return</span> <span class="n">adata</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="STAIA.annotation.annotate_tangram" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">annotate_tangram</span><span class="p">(</span><span class="n">adata_sp</span><span class="p">,</span> <span class="n">adata_sc</span><span class="p">,</span> <span class="n">annotation_key</span><span class="p">,</span> <span class="n">result_key</span><span class="o">=</span><span class="s1">&#39;tangram_cell_type&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;clusters&#39;</span><span class="p">,</span> <span class="n">num_epochs</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Annotate spatial data via Tangram optimal-transport cell-to-space mapping.</p>
+<p>Requires a scRNA-seq reference with existing cell type labels.
+Tangram maps single cells onto spatial coordinates and transfers
+cell-type labels, producing per-spot cell type proportion estimates.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>adata_sp</code></b>
+                  (<code><span title="AnnData">AnnData</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Spatial AnnData object. Must have <code>obsm["spatial"]</code> with coordinates.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>adata_sc</code></b>
+                  (<code><span title="AnnData">AnnData</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>scRNA-seq reference AnnData with cell type labels in <code>.obs</code>.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>annotation_key</code></b>
+                  (<code><span title="str">str</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Column in <code>adata_sc.obs</code> containing cell type labels.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>result_key</code></b>
+                  (<code><span title="str">str</span></code>, default:
+                      <code>&#39;tangram_cell_type&#39;</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Prefix for columns written to <code>adata_sp.obsm</code> with cell type
+fractions (<code>adata_sp.obsm[result_key]</code>) and to <code>adata_sp.obs</code>
+with the most abundant cell type per spot
+(<code>adata_sp.obs[result_key + "_dominant"]</code>).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>mode</code></b>
+                  (<code><span title="str">str</span></code>, default:
+                      <code>&#39;clusters&#39;</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Tangram mapping mode:
+  - <code>"clusters"</code> – maps cell-type clusters (faster, recommended)
+  - <code>"cells"</code>    – maps individual cells (more granular, slower)</p>
+              </div>
+            </li>
+            <li>
+              <b><code>num_epochs</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>1000</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Number of optimisation epochs.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>device</code></b>
+                  (<code><span title="str">str</span></code>, default:
+                      <code>&#39;cpu&#39;</code>
+)
+              –
+              <div class="doc-md-description">
+                <p><code>"cpu"</code> or <code>"cuda"</code> (if a GPU is available).</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="AnnData">AnnData</span> or None</code>
+              –
+              <div class="doc-md-description">
+                
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">annotate_tangram</span><span class="p">(</span><span class="n">adata_sp</span><span class="p">,</span> <span class="n">adata_sc</span><span class="p">,</span> <span class="n">annotation_key</span><span class="o">=</span><span class="s2">&quot;cell_type&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">adata_sp</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;tangram_cell_type_dominant&quot;</span><span class="p">]</span>
+</code></pre></div>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>STAIA/annotation/celltype_annotation.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">annotate_tangram</span><span class="p">(</span>
+    <span class="n">adata_sp</span><span class="p">:</span> <span class="n">ad</span><span class="o">.</span><span class="n">AnnData</span><span class="p">,</span>
+    <span class="n">adata_sc</span><span class="p">:</span> <span class="n">ad</span><span class="o">.</span><span class="n">AnnData</span><span class="p">,</span>
+    <span class="n">annotation_key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">result_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;tangram_cell_type&quot;</span><span class="p">,</span>
+    <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;clusters&quot;</span><span class="p">,</span>
+    <span class="n">num_epochs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+    <span class="n">device</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">ad</span><span class="o">.</span><span class="n">AnnData</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Annotate spatial data via Tangram optimal-transport cell-to-space mapping.</span>
+
+<span class="sd">    Requires a scRNA-seq reference with existing cell type labels.</span>
+<span class="sd">    Tangram maps single cells onto spatial coordinates and transfers</span>
+<span class="sd">    cell-type labels, producing per-spot cell type proportion estimates.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    adata_sp : AnnData</span>
+<span class="sd">        Spatial AnnData object. Must have ``obsm[&quot;spatial&quot;]`` with coordinates.</span>
+<span class="sd">    adata_sc : AnnData</span>
+<span class="sd">        scRNA-seq reference AnnData with cell type labels in ``.obs``.</span>
+<span class="sd">    annotation_key : str</span>
+<span class="sd">        Column in ``adata_sc.obs`` containing cell type labels.</span>
+<span class="sd">    result_key : str</span>
+<span class="sd">        Prefix for columns written to ``adata_sp.obsm`` with cell type</span>
+<span class="sd">        fractions (``adata_sp.obsm[result_key]``) and to ``adata_sp.obs``</span>
+<span class="sd">        with the most abundant cell type per spot</span>
+<span class="sd">        (``adata_sp.obs[result_key + &quot;_dominant&quot;]``).</span>
+<span class="sd">    mode : str</span>
+<span class="sd">        Tangram mapping mode:</span>
+<span class="sd">          - ``&quot;clusters&quot;`` – maps cell-type clusters (faster, recommended)</span>
+<span class="sd">          - ``&quot;cells&quot;``    – maps individual cells (more granular, slower)</span>
+<span class="sd">    num_epochs : int</span>
+<span class="sd">        Number of optimisation epochs.</span>
+<span class="sd">    device : str</span>
+<span class="sd">        ``&quot;cpu&quot;`` or ``&quot;cuda&quot;`` (if a GPU is available).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    AnnData or None</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; annotate_tangram(adata_sp, adata_sc, annotation_key=&quot;cell_type&quot;)</span>
+<span class="sd">    &gt;&gt;&gt; adata_sp.obs[&quot;tangram_cell_type_dominant&quot;]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">tangram</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tg</span>
+
+    <span class="c1"># find shared markers between scRNAseq and spatial dataset</span>
+    <span class="n">tg</span><span class="o">.</span><span class="n">pp_adatas</span><span class="p">(</span><span class="n">adata_sc</span><span class="p">,</span> <span class="n">adata_sp</span><span class="p">,</span> <span class="n">genes</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+    <span class="c1"># learn cell-to-space mapping</span>
+    <span class="n">ad_map</span> <span class="o">=</span> <span class="n">tg</span><span class="o">.</span><span class="n">map_cells_to_space</span><span class="p">(</span>
+        <span class="n">adata_sc</span><span class="p">,</span>
+        <span class="n">adata_sp</span><span class="p">,</span>
+        <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
+        <span class="n">cluster_label</span><span class="o">=</span><span class="n">annotation_key</span><span class="p">,</span>
+        <span class="n">num_epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">,</span>
+        <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span>
+        <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># project cell type annotations onto spatial spots</span>
+    <span class="n">tg</span><span class="o">.</span><span class="n">project_cell_annotations</span><span class="p">(</span>
+        <span class="n">ad_map</span><span class="p">,</span>
+        <span class="n">adata_sp</span><span class="p">,</span>
+        <span class="n">annotation</span><span class="o">=</span><span class="n">annotation_key</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># store fractions in obsm and dominant type in obs</span>
+    <span class="n">ct_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="n">adata_sp</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s2">&quot;tangram_ct_pred&quot;</span><span class="p">]</span>
+    <span class="n">adata_sp</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="n">result_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">ct_df</span>
+    <span class="n">adata_sp</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">result_key</span><span class="si">}</span><span class="s2">_dominant&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ct_df</span><span class="o">.</span><span class="n">idxmax</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
+    <span class="k">return</span> <span class="n">adata_sp</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
