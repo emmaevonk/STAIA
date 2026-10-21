@@ -21,5 +21,8 @@ with warnings.catch_warnings():
         annotate_celltypist,
         annotate_tangram,
         annotate_tacco,
+    )
+
+    from .consensus_annotation import (
         annotate_consensus,
     )
