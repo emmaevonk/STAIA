@@ -50,7 +50,8 @@ with warnings.catch_warnings():
     )
     from .annotation import (
         annotate_celltypist,
-        annotate_tangram
+        annotate_tangram,
+        annotate_tacco,
     )
     from .cell_communication import (
         run_liana,
