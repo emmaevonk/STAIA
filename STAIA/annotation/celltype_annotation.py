@@ -139,7 +139,11 @@ def annotate_celltypist(
         over_clustering=over_clustering,
     )
 
-    adata.obs[result_key] = predictions.predicted_labels.predicted_labels.values
+    # adata.obs[result_key] = predictions.predicted_labels.predicted_labels.values
+    if majority_voting:
+        adata.obs[result_key] = predictions.predicted_labels.majority_voting.values
+    else:
+        adata.obs[result_key] = predictions.predicted_labels.predicted_labels.values
     adata.obs[f"{result_key}_score"] = predictions.probability_matrix.max(axis=1).values
 
     # store full probability matrix in obsm
@@ -351,7 +355,8 @@ def annotate_tacco(
 ) -> Optional[ad.AnnData]:
     """
     Annotate spatial spots with TACCO (Transfer of Annotations to Cells
-    and their COmbinations).
+    and their COmbinations). 
+    Requires a scRNA-seq reference with existing cell type labels and raw counts.
 
     Parameters
     ----------
@@ -379,26 +384,43 @@ def annotate_tacco(
     """
     import tacco as tc
 
-    # --- resolve the AnnData that TACCO will see ---
+    # --- ensure unique gene names ---
+    if adata_sp.var_names.duplicated().any():
+        adata_sp = adata_sp.copy()
+        adata_sp.var_names_make_unique()
+
+    if adata_sc.var_names.duplicated().any():
+        adata_sc = adata_sc.copy()
+        adata_sc.var_names_make_unique()
+
+    # --- drop cells with missing annotation in reference ---
+    mask = adata_sc.obs[annotation_key].notna()
+    if not mask.all():
+        n_dropped = (~mask).sum()
+        print(f"Dropping {n_dropped} cells with NaN in '{annotation_key}'")
+        adata_sc = adata_sc[mask].copy()
+
+    if len(adata_sc) == 0:
+        raise ValueError(
+            f"No cells remaining in reference after dropping NaN in '{annotation_key}'. "
+            f"Check that annotation_key='{annotation_key}' is the correct column."
+        )
+
+    # --- resolve counts layer ---
     if counts_layer is not None:
         if counts_layer not in adata_sp.layers:
             raise KeyError(
                 f"Layer '{counts_layer}' not found in adata_sp. "
                 f"Available layers: {list(adata_sp.layers.keys())}"
             )
-        # Shallow copy: swap X for the raw counts layer
         adata_sp_raw = adata_sp.copy()
         adata_sp_raw.X = adata_sp.layers[counts_layer]
     else:
         adata_sp_raw = adata_sp
 
-    # --- same for the reference ---
-    # adata_sc also needs integer counts; if it was normalised, store raw in a layer
-    adata_sc_raw = adata_sc  # adjust similarly if needed
-
     tc.tl.annotate(
         adata_sp_raw,
-        adata_sc_raw,
+        adata_sc,
         annotation_key=annotation_key,
         result_key=result_key,
         method=method,

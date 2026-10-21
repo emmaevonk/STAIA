@@ -19,5 +19,6 @@ with warnings.catch_warnings():
 
     from .celltype_annotation import (
         annotate_celltypist,
-        annotate_tangram
+        annotate_tangram,
+        annotate_tacco
     )
