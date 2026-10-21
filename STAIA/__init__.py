@@ -52,6 +52,7 @@ with warnings.catch_warnings():
         annotate_celltypist,
         annotate_tangram,
         annotate_tacco,
+        annotate_consensus,
     )
     from .cell_communication import (
         run_liana,

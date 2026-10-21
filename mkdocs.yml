@@ -11,7 +11,7 @@ plugins:
   - mkdocstrings:
       handlers:
         python:
-          paths: ["/exports/archive/hg-funcgenom-research/evonk/functionalAPI"] 
+          paths: ["/exports/archive/hg-funcgenom-research/evonk/functionalAPI/STAIA_package/"] 
           options:
             show_submodules: false
             filters:
