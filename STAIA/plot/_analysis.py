@@ -41,6 +41,17 @@ def dotplot(
     ------
     sc.tl.rank_genes needs to be run first before calling this function.
     """
+
+    if "rank_genes_groups" not in adata.uns:
+        if "leiden" not in adata.obs:
+            sc.tl.leiden(adata, resolution=res, random_state=42)
+
+        sc.tl.rank_genes_groups(
+            adata,
+            groupby="leiden",
+            method="wilcoxon"
+        )
+
     if markers is None:
         plot = sc.pl.rank_genes_groups_dotplot(
             adata,

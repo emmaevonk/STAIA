@@ -409,6 +409,9 @@ def plot_liana_circle(
     save
         File path to save the figure (e.g. ``'circle_plot.pdf'``).
     """
+    adata = adata.copy()
+    adata.uns["liana_res"] = liana_global
+
     ax = li.pl.circle_plot(
         adata=adata,
         liana_res=liana_global,
