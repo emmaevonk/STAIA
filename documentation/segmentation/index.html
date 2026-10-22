@@ -1,0 +1,1846 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Segmentation - STAIA</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Segmentation";
+        var mkdocs_page_input_path = "documentation/segmentation.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> STAIA
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../installation/">Installation</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../quickstart/">Quickstart</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/tutorial/">Tutorial: using STAIA package</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Documentation</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../read_spatialobject/">Read Data</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../add_nuclei/">Add Nuclei</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../size_normalization/">Size Normalization</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../metrics/">Compute Metrics</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../ari/">Adjusted Rand Index</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Segmentation</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#STAIA.segmentation.baysor">baysor</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#STAIA.segmentation.xeniumranger">xeniumranger</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../batch_correction/">Batch Correction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../qc/">QC</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../annotation/">Annotation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../plot/">Plotting</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../lr/">Ligand-Receptor</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../svg/">Spatially Variable Genes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../neighbor_analysis/">Neighbor Analysis</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../assigning_labels/">Assigning Labels</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../spatial_clustering/">Spatial Clustering</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../pseudobulk/">Pseudobulk DE</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">STAIA</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Documentation</li>
+      <li class="breadcrumb-item active">Segmentation</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="spatial-object">Spatial Object</h1>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+
+    <div class="doc doc-contents first">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="STAIA.segmentation.baysor" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">baysor</span><span class="p">(</span><span class="n">transcripts_path</span><span class="p">,</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">prior_type</span><span class="o">=</span><span class="s1">&#39;:Xenium_cell_idx&#39;</span><span class="p">,</span> <span class="n">config_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">x_column</span><span class="o">=</span><span class="s1">&#39;x_location&#39;</span><span class="p">,</span> <span class="n">y_column</span><span class="o">=</span><span class="s1">&#39;y_location&#39;</span><span class="p">,</span> <span class="n">z_column</span><span class="o">=</span><span class="s1">&#39;z_location&#39;</span><span class="p">,</span> <span class="n">gene_column</span><span class="o">=</span><span class="s1">&#39;feature_name&#39;</span><span class="p">,</span> <span class="n">min_molecules_cell</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">scale_um</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">scale_std</span><span class="o">=</span><span class="s1">&#39;25%&#39;</span><span class="p">,</span> <span class="n">prior_confidence</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">polygon_format</span><span class="o">=</span><span class="s1">&#39;FeatureCollection&#39;</span><span class="p">,</span> <span class="n">count_matrix_format</span><span class="o">=</span><span class="s1">&#39;loom&#39;</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">use_slurm</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">submit</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">slurm_args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">script_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">conda_env</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">baysor_path</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Run Baysor cell segmentation on spatial transcriptomics data.</p>
+<p>Baysor performs transcript-based cell segmentation, optionally guided by
+a prior segmentation (e.g. nuclei staining). It works directly on
+transcript coordinates, making it suitable for Xenium and similar
+imaging-based platforms.</p>
+<p>By default a SLURM batch script is generated and submitted via <code>sbatch</code>.
+Set <code>use_slurm=False</code> to run locally.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>transcripts_path</code></b>
+                  (<code><span title="str">str</span> or <span title="pathlib.Path">Path</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Path to the transcript file. Accepts <code>.csv</code> or <code>.parquet</code> format.
+For Xenium data, use <code>transcripts.parquet</code> from the Xenium output
+directory.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>output_path</code></b>
+                  (<code><span title="str">str</span> or <span title="pathlib.Path">Path</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Directory where Baysor writes its output files (<code>segmentation.csv</code>,
+polygon files, count matrix, etc.).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>prior_type</code></b>
+                  (<code><span title="str">str</span> or None</code>, default:
+                      <code>&#34;:Xenium_cell_idx&#34;</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Prior segmentation to guide Baysor. Two formats are supported:</p>
+<ul>
+<li>Column name in <code>transcripts_path</code>, preceded by <code>':'</code>,
+  e.g. <code>":Xenium_cell_idx"</code> to use Xenium's built-in cell ID column.</li>
+<li>Path to an image or MAT file with a segmentation mask.</li>
+</ul>
+<p>If <code>None</code>, Baysor runs without a prior (transcript-only mode).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>config_path</code></b>
+                  (<code>(<span title="str">str</span>, <span title="pathlib.Path">Path</span> or None)</code>, default:
+                      <code>None</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Path to a TOML configuration file. CLI flags in this function
+override values set in the config.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>x_column</code></b>
+                  (<code><span title="str">str</span></code>, default:
+                      <code>&#34;x_location&#34;</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Name of the x-coordinate column in <code>transcripts_path</code>.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>y_column</code></b>
+                  (<code><span title="str">str</span></code>, default:
+                      <code>&#34;y_location&#34;</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Name of the y-coordinate column in <code>transcripts_path</code>.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>z_column</code></b>
+                  (<code><span title="str">str</span></code>, default:
+                      <code>&#34;z_location&#34;</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Name of the z-coordinate column in <code>transcripts_path</code>.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>gene_column</code></b>
+                  (<code><span title="str">str</span></code>, default:
+                      <code>&#34;feature_name&#34;</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Name of the gene/feature column in <code>transcripts_path</code>.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>min_molecules_cell</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>10</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Minimum number of transcripts for a cell to be considered real.
+This is one of the most important parameters — tested with values
+of <code>10</code> (permissive) and <code>30</code> (stricter, fewer noise cells).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>scale_um</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>10</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Approximate expected cell radius in micrometres (must match the
+units of <code>x</code> / <code>y</code> coordinates). For Xenium data, <code>10</code> µm
+is a good starting point for most cell types.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>scale_std</code></b>
+                  (<code><span title="str">str</span></code>, default:
+                      <code>&#34;25%&#34;</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Allowed variation in cell radius. Either an absolute number
+(same units as coordinates) or a percentage of <code>scale</code>
+(e.g. <code>"25%"</code>).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>n_clusters</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>5</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Number of molecule clusters (broad cell types) for the NCV model.
+A value between 3 and 15 works well for most datasets.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>prior_confidence</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>0.7</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Confidence weight given to the prior segmentation. Range <code>[0, 1]</code>.
+<code>0.7</code> allows some flexibility while staying close to the Xenium
+prior; <code>1.0</code> locks Baysor to the prior boundaries exactly.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>polygon_format</code></b>
+                  (<code><span title="str">str</span></code>, default:
+                      <code>&#34;FeatureCollection&#34;</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Format for the output polygon file. Options:</p>
+<ul>
+<li><code>"FeatureCollection"</code> — GeoJSON compatible with XeniumRanger.</li>
+<li><code>"GeometryCollection"</code> — Baysor v0.6 legacy format.</li>
+<li><code>"none"</code> — do not save polygons.</li>
+</ul>
+              </div>
+            </li>
+            <li>
+              <b><code>count_matrix_format</code></b>
+                  (<code><span title="str">str</span></code>, default:
+                      <code>&#34;loom&#34;</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Storage format for the segmented cell count matrix.
+Either <code>"loom"</code> or <code>"tsv"</code>.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>plot</code></b>
+                  (<code><span title="bool">bool</span></code>, default:
+                      <code>False</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>If <code>True</code>, save an HTML file with an interactive segmentation plot.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>use_slurm</code></b>
+                  (<code><span title="bool">bool</span></code>, default:
+                      <code>True</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>If <code>True</code>, write a SLURM batch script and optionally submit it.
+If <code>False</code>, run Baysor directly in the current process.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>submit</code></b>
+                  (<code><span title="bool">bool</span></code>, default:
+                      <code>True</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Only relevant when <code>use_slurm=True</code>. If <code>True</code>, submit the
+script via <code>sbatch</code>. If <code>False</code>, only write the script
+(e.g. for manual inspection or non-SLURM schedulers).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>slurm_args</code></b>
+                  (<code><span title="dict">dict</span> or None</code>, default:
+                      <code>None</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>SLURM resource directives. Accepted keys:</p>
+<ul>
+<li><code>"time"</code> — wall-clock limit, e.g. <code>"04:00:00"</code></li>
+<li><code>"mem"</code> — memory per node, e.g. <code>"64G"</code></li>
+<li><code>"cpus"</code> — CPUs per task, e.g. <code>8</code></li>
+<li><code>"partition"</code> — queue name, e.g. <code>"gpu"</code></li>
+<li><code>"job_name"</code> — name shown in <code>squeue</code></li>
+<li><code>"account"</code> — billing account</li>
+</ul>
+<p>Values override the defaults (4 h, 64 GB, 8 CPUs).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>script_path</code></b>
+                  (<code>(<span title="str">str</span>, <span title="pathlib.Path">Path</span> or None)</code>, default:
+                      <code>None</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Where to write the generated SLURM script. Defaults to
+<code>&lt;output_path&gt;/segment_baysor.sh</code>.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>conda_env</code></b>
+                  (<code><span title="str">str</span> or None</code>, default:
+                      <code>None</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Conda environment to activate inside the job script. If <code>None</code>,
+no activation line is added.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>baysor_path</code></b>
+                  (<code>(<span title="str">str</span>, <span title="pathlib.Path">Path</span> or None)</code>, default:
+                      <code>None</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Full path to the <code>baysor</code> executable, e.g.
+<code>"/opt/software/baysor/bin/baysor"</code>. If <code>None</code>, <code>baysor</code> is
+assumed to be on <code>PATH</code>.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="str">str</span> or None</code>
+              –
+              <div class="doc-md-description">
+                <ul>
+<li>SLURM + submit: the job ID string returned by <code>sbatch</code>.</li>
+<li>SLURM + no submit: path to the generated <code>.sh</code> script.</li>
+<li>Local mode: <code>None</code>.</li>
+</ul>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Raises:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="FileNotFoundError">FileNotFoundError</span></code>
+              –
+              <div class="doc-md-description">
+                <p>If <code>transcripts_path</code> or <code>baysor_path</code> does not exist.</p>
+              </div>
+            </li>
+            <li>
+                  <code><span title="RuntimeError">RuntimeError</span></code>
+              –
+              <div class="doc-md-description">
+                <p>If the Baysor process or <code>sbatch</code> exits with a non-zero return code.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <p>SLURM submission with a prior segmentation column:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">staia</span><span class="o">.</span><span class="n">baysor</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">transcripts_path</span><span class="o">=</span><span class="s2">&quot;/data/transcripts.parquet&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">output_path</span><span class="o">=</span><span class="s2">&quot;/results/baysor/&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">prior_type</span><span class="o">=</span><span class="s2">&quot;:Xenium_cell_idx&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">min_molecules_cell</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">prior_confidence</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">slurm_args</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="s2">&quot;06:00:00&quot;</span><span class="p">,</span> <span class="s2">&quot;mem&quot;</span><span class="p">:</span> <span class="s2">&quot;128G&quot;</span><span class="p">},</span>
+<span class="gp">... </span><span class="p">)</span>
+</code></pre></div>
+    <p>Generate the script only, without submitting:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">staia</span><span class="o">.</span><span class="n">baysor</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">transcripts_path</span><span class="o">=</span><span class="s2">&quot;/data/transcripts.parquet&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">output_path</span><span class="o">=</span><span class="s2">&quot;/results/baysor/&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">submit</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+</code></pre></div>
+    <p>Local run (no SLURM):</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">staia</span><span class="o">.</span><span class="n">baysor</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">transcripts_path</span><span class="o">=</span><span class="s2">&quot;/data/transcripts.parquet&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">output_path</span><span class="o">=</span><span class="s2">&quot;/results/baysor/&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">use_slurm</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+</code></pre></div>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>STAIA/segmentation/segmentation.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span>
+<span class="normal">301</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span>
+<span class="normal">345</span>
+<span class="normal">346</span>
+<span class="normal">347</span>
+<span class="normal">348</span>
+<span class="normal">349</span>
+<span class="normal">350</span>
+<span class="normal">351</span>
+<span class="normal">352</span>
+<span class="normal">353</span>
+<span class="normal">354</span>
+<span class="normal">355</span>
+<span class="normal">356</span>
+<span class="normal">357</span>
+<span class="normal">358</span>
+<span class="normal">359</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span>
+<span class="normal">363</span>
+<span class="normal">364</span>
+<span class="normal">365</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span>
+<span class="normal">369</span>
+<span class="normal">370</span>
+<span class="normal">371</span>
+<span class="normal">372</span>
+<span class="normal">373</span>
+<span class="normal">374</span>
+<span class="normal">375</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span>
+<span class="normal">379</span>
+<span class="normal">380</span>
+<span class="normal">381</span>
+<span class="normal">382</span>
+<span class="normal">383</span>
+<span class="normal">384</span>
+<span class="normal">385</span>
+<span class="normal">386</span>
+<span class="normal">387</span>
+<span class="normal">388</span>
+<span class="normal">389</span>
+<span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
+<span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span>
+<span class="normal">401</span>
+<span class="normal">402</span>
+<span class="normal">403</span>
+<span class="normal">404</span>
+<span class="normal">405</span>
+<span class="normal">406</span>
+<span class="normal">407</span>
+<span class="normal">408</span>
+<span class="normal">409</span>
+<span class="normal">410</span>
+<span class="normal">411</span>
+<span class="normal">412</span>
+<span class="normal">413</span>
+<span class="normal">414</span>
+<span class="normal">415</span>
+<span class="normal">416</span>
+<span class="normal">417</span>
+<span class="normal">418</span>
+<span class="normal">419</span>
+<span class="normal">420</span>
+<span class="normal">421</span>
+<span class="normal">422</span>
+<span class="normal">423</span>
+<span class="normal">424</span>
+<span class="normal">425</span>
+<span class="normal">426</span>
+<span class="normal">427</span>
+<span class="normal">428</span>
+<span class="normal">429</span>
+<span class="normal">430</span>
+<span class="normal">431</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span>
+<span class="normal">437</span>
+<span class="normal">438</span>
+<span class="normal">439</span>
+<span class="normal">440</span>
+<span class="normal">441</span>
+<span class="normal">442</span>
+<span class="normal">443</span>
+<span class="normal">444</span>
+<span class="normal">445</span>
+<span class="normal">446</span>
+<span class="normal">447</span>
+<span class="normal">448</span>
+<span class="normal">449</span>
+<span class="normal">450</span>
+<span class="normal">451</span>
+<span class="normal">452</span>
+<span class="normal">453</span>
+<span class="normal">454</span>
+<span class="normal">455</span>
+<span class="normal">456</span>
+<span class="normal">457</span>
+<span class="normal">458</span>
+<span class="normal">459</span>
+<span class="normal">460</span>
+<span class="normal">461</span>
+<span class="normal">462</span>
+<span class="normal">463</span>
+<span class="normal">464</span>
+<span class="normal">465</span>
+<span class="normal">466</span>
+<span class="normal">467</span>
+<span class="normal">468</span>
+<span class="normal">469</span>
+<span class="normal">470</span>
+<span class="normal">471</span>
+<span class="normal">472</span>
+<span class="normal">473</span>
+<span class="normal">474</span>
+<span class="normal">475</span>
+<span class="normal">476</span>
+<span class="normal">477</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">baysor</span><span class="p">(</span>
+    <span class="n">transcripts_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">prior_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">&quot;:Xenium_cell_idx&quot;</span><span class="p">,</span>
+    <span class="n">config_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">x_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;x_location&quot;</span><span class="p">,</span>
+    <span class="n">y_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;y_location&quot;</span><span class="p">,</span>
+    <span class="n">z_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;z_location&quot;</span><span class="p">,</span>
+    <span class="n">gene_column</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;feature_name&quot;</span><span class="p">,</span>
+    <span class="n">min_molecules_cell</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="n">scale_um</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="n">scale_std</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;25%&quot;</span><span class="p">,</span>
+    <span class="c1"># n_clusters: int = 5,</span>
+    <span class="n">prior_confidence</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.7</span><span class="p">,</span>
+    <span class="n">polygon_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;FeatureCollection&quot;</span><span class="p">,</span>
+    <span class="n">count_matrix_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;loom&quot;</span><span class="p">,</span>
+    <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">use_slurm</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">submit</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">slurm_args</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">script_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">conda_env</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">baysor_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Run Baysor cell segmentation on spatial transcriptomics data.</span>
+
+<span class="sd">    Baysor performs transcript-based cell segmentation, optionally guided by</span>
+<span class="sd">    a prior segmentation (e.g. nuclei staining). It works directly on</span>
+<span class="sd">    transcript coordinates, making it suitable for Xenium and similar</span>
+<span class="sd">    imaging-based platforms.</span>
+
+<span class="sd">    By default a SLURM batch script is generated and submitted via ``sbatch``.</span>
+<span class="sd">    Set ``use_slurm=False`` to run locally.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    transcripts_path : str or Path</span>
+<span class="sd">        Path to the transcript file. Accepts ``.csv`` or ``.parquet`` format.</span>
+<span class="sd">        For Xenium data, use ``transcripts.parquet`` from the Xenium output</span>
+<span class="sd">        directory.</span>
+<span class="sd">    output_path : str or Path</span>
+<span class="sd">        Directory where Baysor writes its output files (``segmentation.csv``,</span>
+<span class="sd">        polygon files, count matrix, etc.).</span>
+<span class="sd">    prior_type : str or None, default=&quot;:Xenium_cell_idx&quot;</span>
+<span class="sd">        Prior segmentation to guide Baysor. Two formats are supported:</span>
+
+<span class="sd">        - Column name in ``transcripts_path``, preceded by ``&#39;:&#39;``,</span>
+<span class="sd">          e.g. ``&quot;:Xenium_cell_idx&quot;`` to use Xenium&#39;s built-in cell ID column.</span>
+<span class="sd">        - Path to an image or MAT file with a segmentation mask.</span>
+
+<span class="sd">        If ``None``, Baysor runs without a prior (transcript-only mode).</span>
+<span class="sd">    config_path : str, Path or None, default=None</span>
+<span class="sd">        Path to a TOML configuration file. CLI flags in this function</span>
+<span class="sd">        override values set in the config.</span>
+<span class="sd">    x_column : str, default=&quot;x_location&quot;</span>
+<span class="sd">        Name of the x-coordinate column in ``transcripts_path``.</span>
+<span class="sd">    y_column : str, default=&quot;y_location&quot;</span>
+<span class="sd">        Name of the y-coordinate column in ``transcripts_path``.</span>
+<span class="sd">    z_column : str, default=&quot;z_location&quot;</span>
+<span class="sd">        Name of the z-coordinate column in ``transcripts_path``.</span>
+<span class="sd">    gene_column : str, default=&quot;feature_name&quot;</span>
+<span class="sd">        Name of the gene/feature column in ``transcripts_path``.</span>
+<span class="sd">    min_molecules_cell : int, default=10</span>
+<span class="sd">        Minimum number of transcripts for a cell to be considered real.</span>
+<span class="sd">        This is one of the most important parameters — tested with values</span>
+<span class="sd">        of ``10`` (permissive) and ``30`` (stricter, fewer noise cells).</span>
+<span class="sd">    scale_um : float, default=10</span>
+<span class="sd">        Approximate expected cell radius in micrometres (must match the</span>
+<span class="sd">        units of ``x`` / ``y`` coordinates). For Xenium data, ``10`` µm</span>
+<span class="sd">        is a good starting point for most cell types.</span>
+<span class="sd">    scale_std : str, default=&quot;25%&quot;</span>
+<span class="sd">        Allowed variation in cell radius. Either an absolute number</span>
+<span class="sd">        (same units as coordinates) or a percentage of ``scale``</span>
+<span class="sd">        (e.g. ``&quot;25%&quot;``).</span>
+<span class="sd">    n_clusters : int, default=5</span>
+<span class="sd">        Number of molecule clusters (broad cell types) for the NCV model.</span>
+<span class="sd">        A value between 3 and 15 works well for most datasets.</span>
+<span class="sd">    prior_confidence : float, default=0.7</span>
+<span class="sd">        Confidence weight given to the prior segmentation. Range ``[0, 1]``.</span>
+<span class="sd">        ``0.7`` allows some flexibility while staying close to the Xenium</span>
+<span class="sd">        prior; ``1.0`` locks Baysor to the prior boundaries exactly.</span>
+<span class="sd">    polygon_format : str, default=&quot;FeatureCollection&quot;</span>
+<span class="sd">        Format for the output polygon file. Options:</span>
+
+<span class="sd">        - ``&quot;FeatureCollection&quot;`` — GeoJSON compatible with XeniumRanger.</span>
+<span class="sd">        - ``&quot;GeometryCollection&quot;`` — Baysor v0.6 legacy format.</span>
+<span class="sd">        - ``&quot;none&quot;`` — do not save polygons.</span>
+<span class="sd">    count_matrix_format : str, default=&quot;loom&quot;</span>
+<span class="sd">        Storage format for the segmented cell count matrix.</span>
+<span class="sd">        Either ``&quot;loom&quot;`` or ``&quot;tsv&quot;``.</span>
+<span class="sd">    plot : bool, default=False</span>
+<span class="sd">        If ``True``, save an HTML file with an interactive segmentation plot.</span>
+<span class="sd">    use_slurm : bool, default=True</span>
+<span class="sd">        If ``True``, write a SLURM batch script and optionally submit it.</span>
+<span class="sd">        If ``False``, run Baysor directly in the current process.</span>
+<span class="sd">    submit : bool, default=True</span>
+<span class="sd">        Only relevant when ``use_slurm=True``. If ``True``, submit the</span>
+<span class="sd">        script via ``sbatch``. If ``False``, only write the script</span>
+<span class="sd">        (e.g. for manual inspection or non-SLURM schedulers).</span>
+<span class="sd">    slurm_args : dict or None, default=None</span>
+<span class="sd">        SLURM resource directives. Accepted keys:</span>
+
+<span class="sd">        - ``&quot;time&quot;`` — wall-clock limit, e.g. ``&quot;04:00:00&quot;``</span>
+<span class="sd">        - ``&quot;mem&quot;`` — memory per node, e.g. ``&quot;64G&quot;``</span>
+<span class="sd">        - ``&quot;cpus&quot;`` — CPUs per task, e.g. ``8``</span>
+<span class="sd">        - ``&quot;partition&quot;`` — queue name, e.g. ``&quot;gpu&quot;``</span>
+<span class="sd">        - ``&quot;job_name&quot;`` — name shown in ``squeue``</span>
+<span class="sd">        - ``&quot;account&quot;`` — billing account</span>
+
+<span class="sd">        Values override the defaults (4 h, 64 GB, 8 CPUs).</span>
+<span class="sd">    script_path : str, Path or None, default=None</span>
+<span class="sd">        Where to write the generated SLURM script. Defaults to</span>
+<span class="sd">        ``&lt;output_path&gt;/segment_baysor.sh``.</span>
+<span class="sd">    conda_env : str or None, default=None</span>
+<span class="sd">        Conda environment to activate inside the job script. If ``None``,</span>
+<span class="sd">        no activation line is added.</span>
+<span class="sd">    baysor_path : str, Path or None, default=None</span>
+<span class="sd">        Full path to the ``baysor`` executable, e.g.</span>
+<span class="sd">        ``&quot;/opt/software/baysor/bin/baysor&quot;``. If ``None``, ``baysor`` is</span>
+<span class="sd">        assumed to be on ``PATH``.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str or None</span>
+<span class="sd">        - SLURM + submit: the job ID string returned by ``sbatch``.</span>
+<span class="sd">        - SLURM + no submit: path to the generated ``.sh`` script.</span>
+<span class="sd">        - Local mode: ``None``.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    FileNotFoundError</span>
+<span class="sd">        If ``transcripts_path`` or ``baysor_path`` does not exist.</span>
+<span class="sd">    RuntimeError</span>
+<span class="sd">        If the Baysor process or ``sbatch`` exits with a non-zero return code.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    SLURM submission with a prior segmentation column:</span>
+
+<span class="sd">    &gt;&gt;&gt; staia.baysor(</span>
+<span class="sd">    ...     transcripts_path=&quot;/data/transcripts.parquet&quot;,</span>
+<span class="sd">    ...     output_path=&quot;/results/baysor/&quot;,</span>
+<span class="sd">    ...     prior_type=&quot;:Xenium_cell_idx&quot;,</span>
+<span class="sd">    ...     min_molecules_cell=10,</span>
+<span class="sd">    ...     prior_confidence=0.7,</span>
+<span class="sd">    ...     slurm_args={&quot;time&quot;: &quot;06:00:00&quot;, &quot;mem&quot;: &quot;128G&quot;},</span>
+<span class="sd">    ... )</span>
+
+<span class="sd">    Generate the script only, without submitting:</span>
+
+<span class="sd">    &gt;&gt;&gt; staia.baysor(</span>
+<span class="sd">    ...     transcripts_path=&quot;/data/transcripts.parquet&quot;,</span>
+<span class="sd">    ...     output_path=&quot;/results/baysor/&quot;,</span>
+<span class="sd">    ...     submit=False,</span>
+<span class="sd">    ... )</span>
+
+<span class="sd">    Local run (no SLURM):</span>
+
+<span class="sd">    &gt;&gt;&gt; staia.baysor(</span>
+<span class="sd">    ...     transcripts_path=&quot;/data/transcripts.parquet&quot;,</span>
+<span class="sd">    ...     output_path=&quot;/results/baysor/&quot;,</span>
+<span class="sd">    ...     use_slurm=False,</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">transcripts_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">transcripts_path</span><span class="p">)</span>
+    <span class="n">output_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">transcripts_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;transcripts_path does not exist: &#39;</span><span class="si">{</span><span class="n">transcripts_path</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">baysor_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">Path</span><span class="p">(</span><span class="n">baysor_path</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;baysor_path does not exist: &#39;</span><span class="si">{</span><span class="n">baysor_path</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+
+    <span class="n">output_path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">executable</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">baysor_path</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;baysor&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">baysor_path</span> <span class="k">else</span> <span class="s2">&quot;baysor&quot;</span>
+    <span class="n">command</span> <span class="o">=</span> <span class="n">_build_baysor_command</span><span class="p">(</span>
+        <span class="n">executable</span><span class="o">=</span><span class="n">executable</span><span class="p">,</span>
+        <span class="n">transcripts_path</span><span class="o">=</span><span class="n">transcripts_path</span><span class="p">,</span>
+        <span class="n">output_path</span><span class="o">=</span><span class="n">output_path</span><span class="p">,</span>
+        <span class="n">prior_type</span><span class="o">=</span><span class="n">prior_type</span><span class="p">,</span>
+        <span class="n">config_path</span><span class="o">=</span><span class="n">config_path</span><span class="p">,</span>
+        <span class="n">x_column</span><span class="o">=</span><span class="n">x_column</span><span class="p">,</span>
+        <span class="n">y_column</span><span class="o">=</span><span class="n">y_column</span><span class="p">,</span>
+        <span class="n">z_column</span><span class="o">=</span><span class="n">z_column</span><span class="p">,</span>
+        <span class="n">gene_column</span><span class="o">=</span><span class="n">gene_column</span><span class="p">,</span>
+        <span class="n">min_molecules_cell</span><span class="o">=</span><span class="n">min_molecules_cell</span><span class="p">,</span>
+        <span class="n">scale_um</span><span class="o">=</span><span class="n">scale_um</span><span class="p">,</span>
+        <span class="n">scale_std</span><span class="o">=</span><span class="n">scale_std</span><span class="p">,</span>
+        <span class="c1"># n_clusters=n_clusters,</span>
+        <span class="n">prior_confidence</span><span class="o">=</span><span class="n">prior_confidence</span><span class="p">,</span>
+        <span class="n">polygon_format</span><span class="o">=</span><span class="n">polygon_format</span><span class="p">,</span>
+        <span class="n">count_matrix_format</span><span class="o">=</span><span class="n">count_matrix_format</span><span class="p">,</span>
+        <span class="n">plot</span><span class="o">=</span><span class="n">plot</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">use_slurm</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_run_slurm</span><span class="p">(</span>
+            <span class="n">method</span><span class="o">=</span><span class="s2">&quot;baysor&quot;</span><span class="p">,</span>
+            <span class="n">command</span><span class="o">=</span><span class="n">command</span><span class="p">,</span>
+            <span class="n">output_path</span><span class="o">=</span><span class="n">output_path</span><span class="p">,</span>
+            <span class="n">submit</span><span class="o">=</span><span class="n">submit</span><span class="p">,</span>
+            <span class="n">slurm_args</span><span class="o">=</span><span class="n">slurm_args</span> <span class="ow">or</span> <span class="p">{},</span>
+            <span class="n">script_path</span><span class="o">=</span><span class="n">script_path</span><span class="p">,</span>
+            <span class="n">conda_env</span><span class="o">=</span><span class="n">conda_env</span><span class="p">,</span>
+            <span class="n">meta</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;Input (transcripts)&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">transcripts_path</span><span class="p">),</span>
+                <span class="s2">&quot;Output&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">output_path</span><span class="p">),</span>
+                <span class="s2">&quot;Prior type&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">prior_type</span><span class="p">)</span> <span class="k">if</span> <span class="n">prior_type</span> <span class="k">else</span> <span class="s2">&quot;none&quot;</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_run_local</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;baysor&quot;</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="n">command</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="STAIA.segmentation.xeniumranger" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">xeniumranger</span><span class="p">(</span><span class="n">xenium_bundle</span><span class="p">,</span> <span class="n">run_id</span><span class="p">,</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">expansion_distance</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">boundary_stain</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">interior_stain</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">segment_large_cells</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">localcores</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">localmem</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">use_slurm</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">submit</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">slurm_args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">script_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">conda_env</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xeniumranger_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">patch_version_mismatch</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Re-segment Xenium data using XeniumRanger.</p>
+<p>XeniumRanger <code>resegment</code> re-runs cell segmentation on an existing
+Xenium bundle, allowing you to tune expansion distance, boundary stain,
+and large-cell handling.</p>
+<p>By default a SLURM batch script is generated and submitted via <code>sbatch</code>.
+Set <code>use_slurm=False</code> to run locally (not recommended).</p>
+
+
+<details class="version-compatibility" open>
+  <summary>Version compatibility</summary>
+  <p>The XeniumAnalyzer version embedded in the bundle is compared against the
+installed XeniumRanger version before building the job. If XeniumAnalyzer
+produced the bundle with a newer minor version than XeniumRanger supports
+(e.g. XeniumAnalyzer 4.0.2 vs XeniumRanger 4.0.0), the
+<code>experiment.xenium</code> file inside the bundle is patched automatically:</p>
+<ul>
+<li>The <code>"segmented_cell_boundary_large_frac"</code> key is removed.</li>
+<li>All <code>minor_version</code> fields are reset to <code>0</code>.</li>
+</ul>
+<p>A backup (<code>experiment.xenium.orig</code>) is always written before any
+changes. Set <code>patch_version_mismatch=False</code> to disable this behaviour.</p>
+</details>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>xenium_bundle</code></b>
+                  (<code><span title="str">str</span> or <span title="pathlib.Path">Path</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Path to the Xenium bundle directory passed to <code>--xenium-bundle</code>.
+This is the top-level output folder produced by the Xenium instrument
+(contains <code>experiment.xenium</code>, <code>transcripts.parquet</code>, etc.).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>run_id</code></b>
+                  (<code><span title="str">str</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Unique identifier for this run, passed to <code>--id</code>. XeniumRanger
+uses this as the name of its output subdirectory, so it must be
+unique per invocation (e.g. <code>"sample_01_reseg"</code>).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>output_path</code></b>
+                  (<code><span title="str">str</span> or <span title="pathlib.Path">Path</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Parent directory where XeniumRanger creates its <code>&lt;run_id&gt;/</code> output
+folder. Results land in <code>&lt;output_path&gt;/&lt;run_id&gt;/outs/</code>.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>expansion_distance</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Number of pixels to expand nuclei outward to approximate cell
+boundaries, passed to <code>--expansion-distance</code>. A value of <code>0</code>
+uses only the nucleus boundary. Larger values capture more cytoplasm.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>boundary_stain</code></b>
+                  (<code><span title="str">str</span> or None</code>, default:
+                      <code>None</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Name of the stain channel used to define cell boundaries, passed to
+<code>--boundary-stain</code> (e.g. <code>"ATP1A1/CD45/E-Cadherin"</code>). If <code>None</code>
+the flag is omitted and XeniumRanger uses its default boundary channel.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>interior_stain</code></b>
+                  (<code><span title="str">str</span> or None</code>, default:
+                      <code>None</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Name of the stain channel used to identify the cell interior, passed
+to <code>--interior-stain</code> (e.g. <code>"DAPI"</code>). If <code>None</code> the flag is
+omitted.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>segment_large_cells</code></b>
+                  (<code><span title="bool">bool</span></code>, default:
+                      <code>True</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Whether to apply the large-cell segmentation step, passed to
+<code>--segment-large-cells</code>. Disable this if your tissue does not
+contain large cells to speed up the run.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>localcores</code></b>
+                  (<code><span title="int">int</span> or None</code>, default:
+                      <code>None</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Maximum number of CPU cores XeniumRanger may use. If <code>None</code>,
+XeniumRanger uses all cores available on the node.
+Tip: set this to match <code>slurm_args["cpus"]</code> to avoid
+over-subscribing the node.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>localmem</code></b>
+                  (<code><span title="int">int</span> or None</code>, default:
+                      <code>None</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Maximum memory in GB XeniumRanger may use. If <code>None</code>,
+XeniumRanger auto-detects available memory.
+Tip: set this slightly below your SLURM <code>mem</code> request (e.g. <code>120</code>
+when requesting <code>128G</code>) to leave headroom for the OS.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>use_slurm</code></b>
+                  (<code><span title="bool">bool</span></code>, default:
+                      <code>True</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>If <code>True</code>, write a SLURM batch script and optionally submit it.
+If <code>False</code>, run XeniumRanger directly in the current process.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>submit</code></b>
+                  (<code><span title="bool">bool</span></code>, default:
+                      <code>True</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Only relevant when <code>use_slurm=True</code>. If <code>True</code>, submit the
+script via <code>sbatch</code>. If <code>False</code>, only write the script (useful
+for inspection or non-SLURM schedulers).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>slurm_args</code></b>
+                  (<code><span title="dict">dict</span> or None</code>, default:
+                      <code>None</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>SLURM resource directives. Accepted keys:</p>
+<ul>
+<li><code>"time"</code> — wall-clock limit, e.g. <code>"08:00:00"</code></li>
+<li><code>"mem"</code> — memory per node, e.g. <code>"256G"</code></li>
+<li><code>"cpus"</code> — CPUs per task, e.g. <code>16</code></li>
+<li><code>"partition"</code> — queue name</li>
+<li><code>"job_name"</code> — name shown in <code>squeue</code></li>
+<li><code>"account"</code> — billing account</li>
+</ul>
+<p>Values override the defaults (8 h, 256 GB, 16 CPUs).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>script_path</code></b>
+                  (<code>(<span title="str">str</span>, <span title="pathlib.Path">Path</span> or None)</code>, default:
+                      <code>None</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Where to write the generated SLURM script. Defaults to
+<code>&lt;output_path&gt;/segment_xeniumranger.sh</code>.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>conda_env</code></b>
+                  (<code><span title="str">str</span> or None</code>, default:
+                      <code>None</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Conda environment to activate inside the job script. If <code>None</code>,
+no activation line is added.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>xeniumranger_path</code></b>
+                  (<code>(<span title="str">str</span>, <span title="pathlib.Path">Path</span> or None)</code>, default:
+                      <code>None</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Full path to the directory containing the <code>xeniumranger</code> executable,
+e.g. <code>"/opt/software/xeniumranger-3.0.1"</code>. If <code>None</code>,
+<code>xeniumranger</code> is assumed to be on <code>PATH</code>.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>patch_version_mismatch</code></b>
+                  (<code><span title="bool">bool</span></code>, default:
+                      <code>True</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>If <code>True</code> (the default), automatically check for XeniumAnalyzer /
+XeniumRanger version mismatches and patch <code>experiment.xenium</code> when
+needed. Set to <code>False</code> to skip the check and patch entirely.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="str">str</span> or None</code>
+              –
+              <div class="doc-md-description">
+                <ul>
+<li>SLURM + submit: the job ID string returned by <code>sbatch</code>.</li>
+<li>SLURM + no submit: path to the generated <code>.sh</code> script.</li>
+<li>Local mode: <code>None</code>.</li>
+</ul>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Raises:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="FileNotFoundError">FileNotFoundError</span></code>
+              –
+              <div class="doc-md-description">
+                <p>If <code>xenium_bundle</code> or <code>xeniumranger_path</code> does not exist.</p>
+              </div>
+            </li>
+            <li>
+                  <code><span title="RuntimeError">RuntimeError</span></code>
+              –
+              <div class="doc-md-description">
+                <p>If the XeniumRanger process or <code>sbatch</code> exits with a non-zero
+return code.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <p>SLURM submission matching your team's typical usage:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">staia</span><span class="o">.</span><span class="n">xeniumranger</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">xenium_bundle</span><span class="o">=</span><span class="s2">&quot;/path/to/xenium/bundle&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">run_id</span><span class="o">=</span><span class="s2">&quot;sample_01&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">output_path</span><span class="o">=</span><span class="s2">&quot;/results/xeniumranger/&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">expansion_distance</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">boundary_stain</span><span class="o">=</span><span class="s2">&quot;ATP1A1/CD45/E-Cadherin&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">segment_large_cells</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">localcores</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">localmem</span><span class="o">=</span><span class="mi">120</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">slurm_args</span><span class="o">=</span><span class="p">{</span>
+<span class="gp">... </span>        <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="s2">&quot;08:00:00&quot;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="s2">&quot;mem&quot;</span><span class="p">:</span> <span class="s2">&quot;128G&quot;</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="s2">&quot;cpus&quot;</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
+<span class="gp">... </span>        <span class="s2">&quot;partition&quot;</span><span class="p">:</span> <span class="s2">&quot;gpu-long&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="p">},</span>
+<span class="gp">... </span><span class="p">)</span>
+</code></pre></div>
+    <p>Generate the script only, without submitting:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">staia</span><span class="o">.</span><span class="n">xeniumranger</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">xenium_bundle</span><span class="o">=</span><span class="s2">&quot;/path/to/xenium/bundle&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">run_id</span><span class="o">=</span><span class="s2">&quot;sample_01&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">output_path</span><span class="o">=</span><span class="s2">&quot;/results/xeniumranger/&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">submit</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+</code></pre></div>
+    <p>Local run (no SLURM):</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">staia</span><span class="o">.</span><span class="n">xeniumranger</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">xenium_bundle</span><span class="o">=</span><span class="s2">&quot;/path/to/xenium/bundle&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">run_id</span><span class="o">=</span><span class="s2">&quot;sample_01&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">output_path</span><span class="o">=</span><span class="s2">&quot;/results/xeniumranger/&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">use_slurm</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+</code></pre></div>
+    <p>Disable automatic version patching:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">staia</span><span class="o">.</span><span class="n">xeniumranger</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">xenium_bundle</span><span class="o">=</span><span class="s2">&quot;/path/to/xenium/bundle&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">run_id</span><span class="o">=</span><span class="s2">&quot;sample_01&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">output_path</span><span class="o">=</span><span class="s2">&quot;/results/xeniumranger/&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">patch_version_mismatch</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="gp">... </span><span class="p">)</span>
+</code></pre></div>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>STAIA/segmentation/segmentation.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">480</span>
+<span class="normal">481</span>
+<span class="normal">482</span>
+<span class="normal">483</span>
+<span class="normal">484</span>
+<span class="normal">485</span>
+<span class="normal">486</span>
+<span class="normal">487</span>
+<span class="normal">488</span>
+<span class="normal">489</span>
+<span class="normal">490</span>
+<span class="normal">491</span>
+<span class="normal">492</span>
+<span class="normal">493</span>
+<span class="normal">494</span>
+<span class="normal">495</span>
+<span class="normal">496</span>
+<span class="normal">497</span>
+<span class="normal">498</span>
+<span class="normal">499</span>
+<span class="normal">500</span>
+<span class="normal">501</span>
+<span class="normal">502</span>
+<span class="normal">503</span>
+<span class="normal">504</span>
+<span class="normal">505</span>
+<span class="normal">506</span>
+<span class="normal">507</span>
+<span class="normal">508</span>
+<span class="normal">509</span>
+<span class="normal">510</span>
+<span class="normal">511</span>
+<span class="normal">512</span>
+<span class="normal">513</span>
+<span class="normal">514</span>
+<span class="normal">515</span>
+<span class="normal">516</span>
+<span class="normal">517</span>
+<span class="normal">518</span>
+<span class="normal">519</span>
+<span class="normal">520</span>
+<span class="normal">521</span>
+<span class="normal">522</span>
+<span class="normal">523</span>
+<span class="normal">524</span>
+<span class="normal">525</span>
+<span class="normal">526</span>
+<span class="normal">527</span>
+<span class="normal">528</span>
+<span class="normal">529</span>
+<span class="normal">530</span>
+<span class="normal">531</span>
+<span class="normal">532</span>
+<span class="normal">533</span>
+<span class="normal">534</span>
+<span class="normal">535</span>
+<span class="normal">536</span>
+<span class="normal">537</span>
+<span class="normal">538</span>
+<span class="normal">539</span>
+<span class="normal">540</span>
+<span class="normal">541</span>
+<span class="normal">542</span>
+<span class="normal">543</span>
+<span class="normal">544</span>
+<span class="normal">545</span>
+<span class="normal">546</span>
+<span class="normal">547</span>
+<span class="normal">548</span>
+<span class="normal">549</span>
+<span class="normal">550</span>
+<span class="normal">551</span>
+<span class="normal">552</span>
+<span class="normal">553</span>
+<span class="normal">554</span>
+<span class="normal">555</span>
+<span class="normal">556</span>
+<span class="normal">557</span>
+<span class="normal">558</span>
+<span class="normal">559</span>
+<span class="normal">560</span>
+<span class="normal">561</span>
+<span class="normal">562</span>
+<span class="normal">563</span>
+<span class="normal">564</span>
+<span class="normal">565</span>
+<span class="normal">566</span>
+<span class="normal">567</span>
+<span class="normal">568</span>
+<span class="normal">569</span>
+<span class="normal">570</span>
+<span class="normal">571</span>
+<span class="normal">572</span>
+<span class="normal">573</span>
+<span class="normal">574</span>
+<span class="normal">575</span>
+<span class="normal">576</span>
+<span class="normal">577</span>
+<span class="normal">578</span>
+<span class="normal">579</span>
+<span class="normal">580</span>
+<span class="normal">581</span>
+<span class="normal">582</span>
+<span class="normal">583</span>
+<span class="normal">584</span>
+<span class="normal">585</span>
+<span class="normal">586</span>
+<span class="normal">587</span>
+<span class="normal">588</span>
+<span class="normal">589</span>
+<span class="normal">590</span>
+<span class="normal">591</span>
+<span class="normal">592</span>
+<span class="normal">593</span>
+<span class="normal">594</span>
+<span class="normal">595</span>
+<span class="normal">596</span>
+<span class="normal">597</span>
+<span class="normal">598</span>
+<span class="normal">599</span>
+<span class="normal">600</span>
+<span class="normal">601</span>
+<span class="normal">602</span>
+<span class="normal">603</span>
+<span class="normal">604</span>
+<span class="normal">605</span>
+<span class="normal">606</span>
+<span class="normal">607</span>
+<span class="normal">608</span>
+<span class="normal">609</span>
+<span class="normal">610</span>
+<span class="normal">611</span>
+<span class="normal">612</span>
+<span class="normal">613</span>
+<span class="normal">614</span>
+<span class="normal">615</span>
+<span class="normal">616</span>
+<span class="normal">617</span>
+<span class="normal">618</span>
+<span class="normal">619</span>
+<span class="normal">620</span>
+<span class="normal">621</span>
+<span class="normal">622</span>
+<span class="normal">623</span>
+<span class="normal">624</span>
+<span class="normal">625</span>
+<span class="normal">626</span>
+<span class="normal">627</span>
+<span class="normal">628</span>
+<span class="normal">629</span>
+<span class="normal">630</span>
+<span class="normal">631</span>
+<span class="normal">632</span>
+<span class="normal">633</span>
+<span class="normal">634</span>
+<span class="normal">635</span>
+<span class="normal">636</span>
+<span class="normal">637</span>
+<span class="normal">638</span>
+<span class="normal">639</span>
+<span class="normal">640</span>
+<span class="normal">641</span>
+<span class="normal">642</span>
+<span class="normal">643</span>
+<span class="normal">644</span>
+<span class="normal">645</span>
+<span class="normal">646</span>
+<span class="normal">647</span>
+<span class="normal">648</span>
+<span class="normal">649</span>
+<span class="normal">650</span>
+<span class="normal">651</span>
+<span class="normal">652</span>
+<span class="normal">653</span>
+<span class="normal">654</span>
+<span class="normal">655</span>
+<span class="normal">656</span>
+<span class="normal">657</span>
+<span class="normal">658</span>
+<span class="normal">659</span>
+<span class="normal">660</span>
+<span class="normal">661</span>
+<span class="normal">662</span>
+<span class="normal">663</span>
+<span class="normal">664</span>
+<span class="normal">665</span>
+<span class="normal">666</span>
+<span class="normal">667</span>
+<span class="normal">668</span>
+<span class="normal">669</span>
+<span class="normal">670</span>
+<span class="normal">671</span>
+<span class="normal">672</span>
+<span class="normal">673</span>
+<span class="normal">674</span>
+<span class="normal">675</span>
+<span class="normal">676</span>
+<span class="normal">677</span>
+<span class="normal">678</span>
+<span class="normal">679</span>
+<span class="normal">680</span>
+<span class="normal">681</span>
+<span class="normal">682</span>
+<span class="normal">683</span>
+<span class="normal">684</span>
+<span class="normal">685</span>
+<span class="normal">686</span>
+<span class="normal">687</span>
+<span class="normal">688</span>
+<span class="normal">689</span>
+<span class="normal">690</span>
+<span class="normal">691</span>
+<span class="normal">692</span>
+<span class="normal">693</span>
+<span class="normal">694</span>
+<span class="normal">695</span>
+<span class="normal">696</span>
+<span class="normal">697</span>
+<span class="normal">698</span>
+<span class="normal">699</span>
+<span class="normal">700</span>
+<span class="normal">701</span>
+<span class="normal">702</span>
+<span class="normal">703</span>
+<span class="normal">704</span>
+<span class="normal">705</span>
+<span class="normal">706</span>
+<span class="normal">707</span>
+<span class="normal">708</span>
+<span class="normal">709</span>
+<span class="normal">710</span>
+<span class="normal">711</span>
+<span class="normal">712</span>
+<span class="normal">713</span>
+<span class="normal">714</span>
+<span class="normal">715</span>
+<span class="normal">716</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">xeniumranger</span><span class="p">(</span>
+    <span class="n">xenium_bundle</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">run_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">expansion_distance</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">boundary_stain</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">interior_stain</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">segment_large_cells</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">localcores</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">localmem</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">use_slurm</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">submit</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">slurm_args</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">script_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">conda_env</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">xeniumranger_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">patch_version_mismatch</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Re-segment Xenium data using XeniumRanger.</span>
+
+<span class="sd">    XeniumRanger ``resegment`` re-runs cell segmentation on an existing</span>
+<span class="sd">    Xenium bundle, allowing you to tune expansion distance, boundary stain,</span>
+<span class="sd">    and large-cell handling.</span>
+
+<span class="sd">    By default a SLURM batch script is generated and submitted via ``sbatch``.</span>
+<span class="sd">    Set ``use_slurm=False`` to run locally (not recommended).</span>
+
+<span class="sd">    Version compatibility</span>
+<span class="sd">    ---------------------</span>
+<span class="sd">    The XeniumAnalyzer version embedded in the bundle is compared against the</span>
+<span class="sd">    installed XeniumRanger version before building the job. If XeniumAnalyzer</span>
+<span class="sd">    produced the bundle with a newer minor version than XeniumRanger supports</span>
+<span class="sd">    (e.g. XeniumAnalyzer 4.0.2 vs XeniumRanger 4.0.0), the</span>
+<span class="sd">    ``experiment.xenium`` file inside the bundle is patched automatically:</span>
+
+<span class="sd">    - The ``&quot;segmented_cell_boundary_large_frac&quot;`` key is removed.</span>
+<span class="sd">    - All ``minor_version`` fields are reset to ``0``.</span>
+
+<span class="sd">    A backup (``experiment.xenium.orig``) is always written before any</span>
+<span class="sd">    changes. Set ``patch_version_mismatch=False`` to disable this behaviour.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    xenium_bundle : str or Path</span>
+<span class="sd">        Path to the Xenium bundle directory passed to ``--xenium-bundle``.</span>
+<span class="sd">        This is the top-level output folder produced by the Xenium instrument</span>
+<span class="sd">        (contains ``experiment.xenium``, ``transcripts.parquet``, etc.).</span>
+<span class="sd">    run_id : str</span>
+<span class="sd">        Unique identifier for this run, passed to ``--id``. XeniumRanger</span>
+<span class="sd">        uses this as the name of its output subdirectory, so it must be</span>
+<span class="sd">        unique per invocation (e.g. ``&quot;sample_01_reseg&quot;``).</span>
+<span class="sd">    output_path : str or Path</span>
+<span class="sd">        Parent directory where XeniumRanger creates its ``&lt;run_id&gt;/`` output</span>
+<span class="sd">        folder. Results land in ``&lt;output_path&gt;/&lt;run_id&gt;/outs/``.</span>
+<span class="sd">    expansion_distance : int, default=0</span>
+<span class="sd">        Number of pixels to expand nuclei outward to approximate cell</span>
+<span class="sd">        boundaries, passed to ``--expansion-distance``. A value of ``0``</span>
+<span class="sd">        uses only the nucleus boundary. Larger values capture more cytoplasm.</span>
+<span class="sd">    boundary_stain : str or None, default=None</span>
+<span class="sd">        Name of the stain channel used to define cell boundaries, passed to</span>
+<span class="sd">        ``--boundary-stain`` (e.g. ``&quot;ATP1A1/CD45/E-Cadherin&quot;``). If ``None``</span>
+<span class="sd">        the flag is omitted and XeniumRanger uses its default boundary channel.</span>
+<span class="sd">    interior_stain : str or None, default=None</span>
+<span class="sd">        Name of the stain channel used to identify the cell interior, passed</span>
+<span class="sd">        to ``--interior-stain`` (e.g. ``&quot;DAPI&quot;``). If ``None`` the flag is</span>
+<span class="sd">        omitted.</span>
+<span class="sd">    segment_large_cells : bool, default=True</span>
+<span class="sd">        Whether to apply the large-cell segmentation step, passed to</span>
+<span class="sd">        ``--segment-large-cells``. Disable this if your tissue does not</span>
+<span class="sd">        contain large cells to speed up the run.</span>
+<span class="sd">    localcores : int or None, default=None</span>
+<span class="sd">        Maximum number of CPU cores XeniumRanger may use. If ``None``,</span>
+<span class="sd">        XeniumRanger uses all cores available on the node.</span>
+<span class="sd">        Tip: set this to match ``slurm_args[&quot;cpus&quot;]`` to avoid</span>
+<span class="sd">        over-subscribing the node.</span>
+<span class="sd">    localmem : int or None, default=None</span>
+<span class="sd">        Maximum memory in GB XeniumRanger may use. If ``None``,</span>
+<span class="sd">        XeniumRanger auto-detects available memory.</span>
+<span class="sd">        Tip: set this slightly below your SLURM ``mem`` request (e.g. ``120``</span>
+<span class="sd">        when requesting ``128G``) to leave headroom for the OS.</span>
+<span class="sd">    use_slurm : bool, default=True</span>
+<span class="sd">        If ``True``, write a SLURM batch script and optionally submit it.</span>
+<span class="sd">        If ``False``, run XeniumRanger directly in the current process.</span>
+<span class="sd">    submit : bool, default=True</span>
+<span class="sd">        Only relevant when ``use_slurm=True``. If ``True``, submit the</span>
+<span class="sd">        script via ``sbatch``. If ``False``, only write the script (useful</span>
+<span class="sd">        for inspection or non-SLURM schedulers).</span>
+<span class="sd">    slurm_args : dict or None, default=None</span>
+<span class="sd">        SLURM resource directives. Accepted keys:</span>
+
+<span class="sd">        - ``&quot;time&quot;`` — wall-clock limit, e.g. ``&quot;08:00:00&quot;``</span>
+<span class="sd">        - ``&quot;mem&quot;`` — memory per node, e.g. ``&quot;256G&quot;``</span>
+<span class="sd">        - ``&quot;cpus&quot;`` — CPUs per task, e.g. ``16``</span>
+<span class="sd">        - ``&quot;partition&quot;`` — queue name</span>
+<span class="sd">        - ``&quot;job_name&quot;`` — name shown in ``squeue``</span>
+<span class="sd">        - ``&quot;account&quot;`` — billing account</span>
+
+<span class="sd">        Values override the defaults (8 h, 256 GB, 16 CPUs).</span>
+<span class="sd">    script_path : str, Path or None, default=None</span>
+<span class="sd">        Where to write the generated SLURM script. Defaults to</span>
+<span class="sd">        ``&lt;output_path&gt;/segment_xeniumranger.sh``.</span>
+<span class="sd">    conda_env : str or None, default=None</span>
+<span class="sd">        Conda environment to activate inside the job script. If ``None``,</span>
+<span class="sd">        no activation line is added.</span>
+<span class="sd">    xeniumranger_path : str, Path or None, default=None</span>
+<span class="sd">        Full path to the directory containing the ``xeniumranger`` executable,</span>
+<span class="sd">        e.g. ``&quot;/opt/software/xeniumranger-3.0.1&quot;``. If ``None``,</span>
+<span class="sd">        ``xeniumranger`` is assumed to be on ``PATH``.</span>
+<span class="sd">    patch_version_mismatch : bool, default=True</span>
+<span class="sd">        If ``True`` (the default), automatically check for XeniumAnalyzer /</span>
+<span class="sd">        XeniumRanger version mismatches and patch ``experiment.xenium`` when</span>
+<span class="sd">        needed. Set to ``False`` to skip the check and patch entirely.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str or None</span>
+<span class="sd">        - SLURM + submit: the job ID string returned by ``sbatch``.</span>
+<span class="sd">        - SLURM + no submit: path to the generated ``.sh`` script.</span>
+<span class="sd">        - Local mode: ``None``.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    FileNotFoundError</span>
+<span class="sd">        If ``xenium_bundle`` or ``xeniumranger_path`` does not exist.</span>
+<span class="sd">    RuntimeError</span>
+<span class="sd">        If the XeniumRanger process or ``sbatch`` exits with a non-zero</span>
+<span class="sd">        return code.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    SLURM submission matching your team&#39;s typical usage:</span>
+
+<span class="sd">    &gt;&gt;&gt; staia.xeniumranger(</span>
+<span class="sd">    ...     xenium_bundle=&quot;/path/to/xenium/bundle&quot;,</span>
+<span class="sd">    ...     run_id=&quot;sample_01&quot;,</span>
+<span class="sd">    ...     output_path=&quot;/results/xeniumranger/&quot;,</span>
+<span class="sd">    ...     expansion_distance=0,</span>
+<span class="sd">    ...     boundary_stain=&quot;ATP1A1/CD45/E-Cadherin&quot;,</span>
+<span class="sd">    ...     segment_large_cells=True,</span>
+<span class="sd">    ...     localcores=16,</span>
+<span class="sd">    ...     localmem=120,</span>
+<span class="sd">    ...     slurm_args={</span>
+<span class="sd">    ...         &quot;time&quot;: &quot;08:00:00&quot;,</span>
+<span class="sd">    ...         &quot;mem&quot;: &quot;128G&quot;,</span>
+<span class="sd">    ...         &quot;cpus&quot;: 16,</span>
+<span class="sd">    ...         &quot;partition&quot;: &quot;gpu-long&quot;,</span>
+<span class="sd">    ...     },</span>
+<span class="sd">    ... )</span>
+
+<span class="sd">    Generate the script only, without submitting:</span>
+
+<span class="sd">    &gt;&gt;&gt; staia.xeniumranger(</span>
+<span class="sd">    ...     xenium_bundle=&quot;/path/to/xenium/bundle&quot;,</span>
+<span class="sd">    ...     run_id=&quot;sample_01&quot;,</span>
+<span class="sd">    ...     output_path=&quot;/results/xeniumranger/&quot;,</span>
+<span class="sd">    ...     submit=False,</span>
+<span class="sd">    ... )</span>
+
+<span class="sd">    Local run (no SLURM):</span>
+
+<span class="sd">    &gt;&gt;&gt; staia.xeniumranger(</span>
+<span class="sd">    ...     xenium_bundle=&quot;/path/to/xenium/bundle&quot;,</span>
+<span class="sd">    ...     run_id=&quot;sample_01&quot;,</span>
+<span class="sd">    ...     output_path=&quot;/results/xeniumranger/&quot;,</span>
+<span class="sd">    ...     use_slurm=False,</span>
+<span class="sd">    ... )</span>
+
+<span class="sd">    Disable automatic version patching:</span>
+
+<span class="sd">    &gt;&gt;&gt; staia.xeniumranger(</span>
+<span class="sd">    ...     xenium_bundle=&quot;/path/to/xenium/bundle&quot;,</span>
+<span class="sd">    ...     run_id=&quot;sample_01&quot;,</span>
+<span class="sd">    ...     output_path=&quot;/results/xeniumranger/&quot;,</span>
+<span class="sd">    ...     patch_version_mismatch=False,</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">xenium_bundle</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">xenium_bundle</span><span class="p">)</span>
+    <span class="n">output_path</span>   <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">xenium_bundle</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;xenium_bundle does not exist: &#39;</span><span class="si">{</span><span class="n">xenium_bundle</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">xeniumranger_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">Path</span><span class="p">(</span><span class="n">xeniumranger_path</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;xeniumranger_path does not exist: &#39;</span><span class="si">{</span><span class="n">xeniumranger_path</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+
+    <span class="n">output_path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">executable</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">xeniumranger_path</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;xeniumranger&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">xeniumranger_path</span>
+        <span class="k">else</span> <span class="s2">&quot;xeniumranger&quot;</span>
+    <span class="p">)</span>
+
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="c1"># Version check + patch (runs before the job is submitted / started)</span>
+    <span class="c1"># A COPY of the bundle is patched — the original is never modified.</span>
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="n">bundle_to_use</span> <span class="o">=</span> <span class="n">xenium_bundle</span>
+    <span class="k">if</span> <span class="n">patch_version_mismatch</span><span class="p">:</span>
+        <span class="n">needs_patch</span> <span class="o">=</span> <span class="n">_check_xenium_version_compatibility</span><span class="p">(</span><span class="n">xenium_bundle</span><span class="p">,</span> <span class="n">executable</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">needs_patch</span><span class="p">:</span>
+            <span class="n">bundle_to_use</span> <span class="o">=</span> <span class="n">_patch_experiment_xenium</span><span class="p">(</span><span class="n">xenium_bundle</span><span class="p">,</span> <span class="n">output_path</span><span class="p">)</span>
+
+    <span class="n">command</span> <span class="o">=</span> <span class="n">_build_xeniumranger_command</span><span class="p">(</span>
+        <span class="n">executable</span><span class="o">=</span><span class="n">executable</span><span class="p">,</span>
+        <span class="n">xenium_bundle</span><span class="o">=</span><span class="n">bundle_to_use</span><span class="p">,</span>
+        <span class="n">run_id</span><span class="o">=</span><span class="n">run_id</span><span class="p">,</span>
+        <span class="n">output_path</span><span class="o">=</span><span class="n">output_path</span><span class="p">,</span>
+        <span class="n">expansion_distance</span><span class="o">=</span><span class="n">expansion_distance</span><span class="p">,</span>
+        <span class="n">boundary_stain</span><span class="o">=</span><span class="n">boundary_stain</span><span class="p">,</span>
+        <span class="n">interior_stain</span><span class="o">=</span><span class="n">interior_stain</span><span class="p">,</span>
+        <span class="n">segment_large_cells</span><span class="o">=</span><span class="n">segment_large_cells</span><span class="p">,</span>
+        <span class="n">localcores</span><span class="o">=</span><span class="n">localcores</span><span class="p">,</span>
+        <span class="n">localmem</span><span class="o">=</span><span class="n">localmem</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">use_slurm</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_run_slurm</span><span class="p">(</span>
+            <span class="n">method</span><span class="o">=</span><span class="s2">&quot;xeniumranger&quot;</span><span class="p">,</span>
+            <span class="n">command</span><span class="o">=</span><span class="n">command</span><span class="p">,</span>
+            <span class="n">output_path</span><span class="o">=</span><span class="n">output_path</span><span class="p">,</span>
+            <span class="n">submit</span><span class="o">=</span><span class="n">submit</span><span class="p">,</span>
+            <span class="n">slurm_args</span><span class="o">=</span><span class="n">slurm_args</span> <span class="ow">or</span> <span class="p">{},</span>
+            <span class="n">script_path</span><span class="o">=</span><span class="n">script_path</span><span class="p">,</span>
+            <span class="n">conda_env</span><span class="o">=</span><span class="n">conda_env</span><span class="p">,</span>
+            <span class="n">meta</span><span class="o">=</span><span class="p">{</span>
+                <span class="s2">&quot;Input (xenium bundle)&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">xenium_bundle</span><span class="p">),</span>
+                <span class="s2">&quot;Output&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">output_path</span><span class="p">),</span>
+                <span class="s2">&quot;Run ID&quot;</span><span class="p">:</span> <span class="n">run_id</span><span class="p">,</span>
+                <span class="s2">&quot;Expansion distance&quot;</span><span class="p">:</span> <span class="n">expansion_distance</span><span class="p">,</span>
+                <span class="s2">&quot;Boundary stain&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">boundary_stain</span><span class="p">)</span> <span class="k">if</span> <span class="n">boundary_stain</span> <span class="k">else</span> <span class="s2">&quot;default&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;Segment large cells&quot;</span><span class="p">:</span> <span class="n">segment_large_cells</span><span class="p">,</span>
+            <span class="p">},</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_run_local</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s2">&quot;xeniumranger&quot;</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="n">command</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../ari/" class="btn btn-neutral float-left" title="Adjusted Rand Index"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../batch_correction/" class="btn btn-neutral float-right" title="Batch Correction">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../ari/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../batch_correction/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
