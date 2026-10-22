@@ -122,7 +122,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="spatial-object">Spatial Object</h1>
+                <h1 id="segmentation">Segmentation</h1>
 
 
 <div class="doc doc-object doc-module">
@@ -302,17 +302,6 @@ is a good starting point for most cell types.</p>
                 <p>Allowed variation in cell radius. Either an absolute number
 (same units as coordinates) or a percentage of <code>scale</code>
 (e.g. <code>"25%"</code>).</p>
-              </div>
-            </li>
-            <li>
-              <b><code>n_clusters</code></b>
-                  (<code><span title="int">int</span></code>, default:
-                      <code>5</code>
-)
-              –
-              <div class="doc-md-description">
-                <p>Number of molecule clusters (broad cell types) for the NCV model.
-A value between 3 and 15 works well for most datasets.</p>
               </div>
             </li>
             <li>
@@ -739,12 +728,7 @@ assumed to be on <code>PATH</code>.</p>
 <span class="normal">469</span>
 <span class="normal">470</span>
 <span class="normal">471</span>
-<span class="normal">472</span>
-<span class="normal">473</span>
-<span class="normal">474</span>
-<span class="normal">475</span>
-<span class="normal">476</span>
-<span class="normal">477</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">baysor</span><span class="p">(</span>
+<span class="normal">472</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">baysor</span><span class="p">(</span>
     <span class="n">transcripts_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
     <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
     <span class="n">prior_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="s2">&quot;:Xenium_cell_idx&quot;</span><span class="p">,</span>
@@ -756,7 +740,6 @@ assumed to be on <code>PATH</code>.</p>
     <span class="n">min_molecules_cell</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
     <span class="n">scale_um</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
     <span class="n">scale_std</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;25%&quot;</span><span class="p">,</span>
-    <span class="c1"># n_clusters: int = 5,</span>
     <span class="n">prior_confidence</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.7</span><span class="p">,</span>
     <span class="n">polygon_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;FeatureCollection&quot;</span><span class="p">,</span>
     <span class="n">count_matrix_format</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;loom&quot;</span><span class="p">,</span>
@@ -819,9 +802,6 @@ assumed to be on <code>PATH</code>.</p>
 <span class="sd">        Allowed variation in cell radius. Either an absolute number</span>
 <span class="sd">        (same units as coordinates) or a percentage of ``scale``</span>
 <span class="sd">        (e.g. ``&quot;25%&quot;``).</span>
-<span class="sd">    n_clusters : int, default=5</span>
-<span class="sd">        Number of molecule clusters (broad cell types) for the NCV model.</span>
-<span class="sd">        A value between 3 and 15 works well for most datasets.</span>
 <span class="sd">    prior_confidence : float, default=0.7</span>
 <span class="sd">        Confidence weight given to the prior segmentation. Range ``[0, 1]``.</span>
 <span class="sd">        ``0.7`` allows some flexibility while staying close to the Xenium</span>
@@ -934,7 +914,6 @@ assumed to be on <code>PATH</code>.</p>
         <span class="n">min_molecules_cell</span><span class="o">=</span><span class="n">min_molecules_cell</span><span class="p">,</span>
         <span class="n">scale_um</span><span class="o">=</span><span class="n">scale_um</span><span class="p">,</span>
         <span class="n">scale_std</span><span class="o">=</span><span class="n">scale_std</span><span class="p">,</span>
-        <span class="c1"># n_clusters=n_clusters,</span>
         <span class="n">prior_confidence</span><span class="o">=</span><span class="n">prior_confidence</span><span class="p">,</span>
         <span class="n">polygon_format</span><span class="o">=</span><span class="n">polygon_format</span><span class="p">,</span>
         <span class="n">count_matrix_format</span><span class="o">=</span><span class="n">count_matrix_format</span><span class="p">,</span>
@@ -1310,7 +1289,12 @@ return code.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>STAIA/segmentation/segmentation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">480</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">475</span>
+<span class="normal">476</span>
+<span class="normal">477</span>
+<span class="normal">478</span>
+<span class="normal">479</span>
+<span class="normal">480</span>
 <span class="normal">481</span>
 <span class="normal">482</span>
 <span class="normal">483</span>
@@ -1541,12 +1525,7 @@ return code.</p>
 <span class="normal">708</span>
 <span class="normal">709</span>
 <span class="normal">710</span>
-<span class="normal">711</span>
-<span class="normal">712</span>
-<span class="normal">713</span>
-<span class="normal">714</span>
-<span class="normal">715</span>
-<span class="normal">716</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">xeniumranger</span><span class="p">(</span>
+<span class="normal">711</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">xeniumranger</span><span class="p">(</span>
     <span class="n">xenium_bundle</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
     <span class="n">run_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="n">Path</span><span class="p">,</span>
