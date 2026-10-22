@@ -54,6 +54,10 @@ with warnings.catch_warnings():
         annotate_tacco,
         annotate_consensus,
     )
+    from .segmentation import(
+        baysor,
+        xeniumranger
+    )
     from .cell_communication import (
         run_liana,
         plot_liana_dotplot,
