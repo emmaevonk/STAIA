@@ -11,7 +11,6 @@ plugins:
   - mkdocstrings:
       handlers:
         python:
-          paths: ["/exports/archive/hg-funcgenom-research/evonk/functionalAPI/STAIA_package/"] 
           options:
             show_submodules: false
             filters:
@@ -28,17 +27,17 @@ nav:
   - Documentation: 
       - Read Data: documentation/read_spatialobject.md
       - Add Nuclei: documentation/add_nuclei.md
+      - QC: documentation/qc.md
       - Size Normalization: documentation/size_normalization.md
+      - Batch Correction: documentation/batch_correction.md
+      - Annotation: documentation/annotation.md
+      - Assigning Labels: documentation/assigning_labels.md
       - Compute Metrics: documentation/metrics.md
       - Adjusted Rand Index: documentation/ari.md
       - Segmentation: documentation/segmentation.md
-      - Batch Correction: documentation/batch_correction.md
-      - QC: documentation/qc.md
-      - Annotation: documentation/annotation.md
-      - Plotting: documentation/plot.md
-      - Ligand-Receptor: documentation/lr.md
-      - Spatially Variable Genes: documentation/svg.md
       - Neighbor Analysis: documentation/neighbor_analysis.md
-      - Assigning Labels: documentation/assigning_labels.md
       - Spatial Clustering: documentation/spatial_clustering.md
+      - Spatially Variable Genes: documentation/svg.md
+      - Ligand-Receptor: documentation/lr.md
       - Pseudobulk DE: documentation/pseudobulk.md
+      - Plotting: documentation/plot.md
