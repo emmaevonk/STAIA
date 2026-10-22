@@ -273,7 +273,6 @@ def baysor(
     min_molecules_cell: int = 10,
     scale_um: float = 10,
     scale_std: str = "25%",
-    # n_clusters: int = 5,
     prior_confidence: float = 0.7,
     polygon_format: str = "FeatureCollection",
     count_matrix_format: str = "loom",
@@ -336,9 +335,6 @@ def baysor(
         Allowed variation in cell radius. Either an absolute number
         (same units as coordinates) or a percentage of ``scale``
         (e.g. ``"25%"``).
-    n_clusters : int, default=5
-        Number of molecule clusters (broad cell types) for the NCV model.
-        A value between 3 and 15 works well for most datasets.
     prior_confidence : float, default=0.7
         Confidence weight given to the prior segmentation. Range ``[0, 1]``.
         ``0.7`` allows some flexibility while staying close to the Xenium
@@ -451,7 +447,6 @@ def baysor(
         min_molecules_cell=min_molecules_cell,
         scale_um=scale_um,
         scale_std=scale_std,
-        # n_clusters=n_clusters,
         prior_confidence=prior_confidence,
         polygon_format=polygon_format,
         count_matrix_format=count_matrix_format,

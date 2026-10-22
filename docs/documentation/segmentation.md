@@ -1,4 +1,4 @@
-# Spatial Object
+# Segmentation
 ::: STAIA.segmentation
     options:
       members:
