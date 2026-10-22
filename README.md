@@ -104,6 +104,9 @@ session = STAIA.SplitSession(df_split_base)
 session.show()
 ```
 6. Perform annotation
+```py
+STAIA.annotate_celltypist(adata)
+```
 7. Analysis
 ```py
 STAIA.dotplot(adata)
