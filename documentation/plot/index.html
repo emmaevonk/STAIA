@@ -319,7 +319,18 @@ by the caller (e.g. an agent).</p>
 <span class="normal">62</span>
 <span class="normal">63</span>
 <span class="normal">64</span>
-<span class="normal">65</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">dotplot</span><span class="p">(</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">dotplot</span><span class="p">(</span>
     <span class="n">adata</span><span class="p">:</span> <span class="n">AnnData</span><span class="p">,</span>
     <span class="n">markers</span><span class="p">:</span> <span class="nb">list</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">cluster</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;leiden&#39;</span><span class="p">,</span>
@@ -351,6 +362,17 @@ by the caller (e.g. an agent).</p>
 <span class="sd">    ------</span>
 <span class="sd">    sc.tl.rank_genes needs to be run first before calling this function.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="s2">&quot;rank_genes_groups&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">&quot;leiden&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">:</span>
+            <span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">leiden</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="n">res</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+
+        <span class="n">sc</span><span class="o">.</span><span class="n">tl</span><span class="o">.</span><span class="n">rank_genes_groups</span><span class="p">(</span>
+            <span class="n">adata</span><span class="p">,</span>
+            <span class="n">groupby</span><span class="o">=</span><span class="s2">&quot;leiden&quot;</span><span class="p">,</span>
+            <span class="n">method</span><span class="o">=</span><span class="s2">&quot;wilcoxon&quot;</span>
+        <span class="p">)</span>
+
     <span class="k">if</span> <span class="n">markers</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">plot</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">rank_genes_groups_dotplot</span><span class="p">(</span>
             <span class="n">adata</span><span class="p">,</span>
@@ -474,18 +496,7 @@ the cell type composition graph separately.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>STAIA/plot/_analysis.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 67</span>
-<span class="normal"> 68</span>
-<span class="normal"> 69</span>
-<span class="normal"> 70</span>
-<span class="normal"> 71</span>
-<span class="normal"> 72</span>
-<span class="normal"> 73</span>
-<span class="normal"> 74</span>
-<span class="normal"> 75</span>
-<span class="normal"> 76</span>
-<span class="normal"> 77</span>
-<span class="normal"> 78</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 78</span>
 <span class="normal"> 79</span>
 <span class="normal"> 80</span>
 <span class="normal"> 81</span>
@@ -523,7 +534,18 @@ the cell type composition graph separately.</p>
 <span class="normal">113</span>
 <span class="normal">114</span>
 <span class="normal">115</span>
-<span class="normal">116</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">celltype_composition</span><span class="p">(</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">celltype_composition</span><span class="p">(</span>
         <span class="n">adata</span><span class="p">:</span> <span class="n">AnnData</span><span class="p">,</span>
         <span class="n">condition</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;condition&quot;</span><span class="p">,</span>
         <span class="n">celltype</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;cell_type&#39;</span><span class="p">,</span>

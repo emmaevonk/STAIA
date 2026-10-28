@@ -93,6 +93,8 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#STAIA.plot.spatial_clustering.stability_cellcharter">stability_cellcharter</a>
     </li>
+    <li class="toctree-l2"><a class="reference internal" href="#STAIA.plot.spatial_clustering.prepare_cellcharter">prepare_cellcharter</a>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#nichecompass">NicheCompass</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#STAIA.plot.spatial_clustering.save_gp_dict">save_gp_dict</a>
@@ -1122,6 +1124,247 @@ internally and created if it doesn't exist yet.</p>
     <span class="p">)</span>
     <span class="n">autok</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">use_rep</span><span class="o">=</span><span class="s2">&quot;X_cellcharter&quot;</span><span class="p">)</span>
     <span class="n">cc</span><span class="o">.</span><span class="n">pl</span><span class="o">.</span><span class="n">autok_stability</span><span class="p">(</span><span class="n">autok</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="n">output_dir</span> <span class="o">/</span> <span class="s2">&quot;clustering_stability_cellcharter.png&quot;</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="STAIA.plot.spatial_clustering.prepare_cellcharter" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">prepare_cellcharter</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">epoch</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">library_key</span><span class="o">=</span><span class="s1">&#39;sample&#39;</span><span class="p">,</span> <span class="n">accelerator</span><span class="o">=</span><span class="s1">&#39;cpu&#39;</span><span class="p">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Run CellCharter's preprocessing pipeline: scVI dimensionality reduction
+followed by spatial neighborhood-graph construction and neighbor
+embedding aggregation.</p>
+<p>This produces <code>adata.obsm["X_cellcharter"]</code>, the representation used
+by both :func:<code>stability_cellcharter</code> (to help choose the number of
+spatial domains) and :func:<code>run_cellcharter</code> (to perform the final
+clustering). Splitting this out of <code>run_cellcharter</code> means the
+stability analysis can run <em>before</em> committing to a cluster count,
+rather than being forced through a full clustering pass first.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>adata</code></b>
+                  (<code><span title="anndata.AnnData">AnnData</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Annotated data matrix containing raw gene expression counts and
+spatial coordinates.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>epoch</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>= 20</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Maximum number of scVI training epochs. Early stopping may halt
+training before this limit is reached.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>plot</code></b>
+                  (<code><span title="bool">bool</span></code>, default:
+                      <code>= True</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>If <code>True</code>, display the scVI training loss curve after model fitting.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>library_key</code></b>
+                  (<code><span title="str">str</span></code>, default:
+                      <code>= &#34;sample&#34;</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Column in <code>adata.obs</code> used to distinguish tissue sections or
+samples.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="anndata.AnnData">AnnData</span></code>
+              –
+              <div class="doc-md-description">
+                <p>The input <code>adata</code> object, updated in-place with:
+- <code>adata.obsm["X_scVI"]</code>: scVI latent representation (float32)
+- <code>adata.obsp["spatial_connectivities"]</code>: spatial connectivity matrix
+- <code>adata.obsm["X_cellcharter"]</code>: aggregated neighbor embeddings</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Recommended workflow::</p>
+<pre><code>prepare_cellcharter(adata)
+stability_cellcharter(adata, output_dir="results")   # inspect plot, pick k
+run_cellcharter(adata, n_clusters=k, output_dir="results")
+</code></pre>
+</details>
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>STAIA/plot/spatial_clustering/_cellcharter.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">prepare_cellcharter</span><span class="p">(</span>
+        <span class="n">adata</span><span class="p">:</span> <span class="n">AnnData</span><span class="p">,</span>
+        <span class="n">epoch</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span>
+        <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">library_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;sample&quot;</span><span class="p">,</span>
+        <span class="n">accelerator</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Run CellCharter&#39;s preprocessing pipeline: scVI dimensionality reduction</span>
+<span class="sd">    followed by spatial neighborhood-graph construction and neighbor</span>
+<span class="sd">    embedding aggregation.</span>
+
+<span class="sd">    This produces ``adata.obsm[&quot;X_cellcharter&quot;]``, the representation used</span>
+<span class="sd">    by both :func:`stability_cellcharter` (to help choose the number of</span>
+<span class="sd">    spatial domains) and :func:`run_cellcharter` (to perform the final</span>
+<span class="sd">    clustering). Splitting this out of ``run_cellcharter`` means the</span>
+<span class="sd">    stability analysis can run *before* committing to a cluster count,</span>
+<span class="sd">    rather than being forced through a full clustering pass first.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    adata : AnnData</span>
+<span class="sd">        Annotated data matrix containing raw gene expression counts and</span>
+<span class="sd">        spatial coordinates.</span>
+<span class="sd">    epoch : int, default = 20</span>
+<span class="sd">        Maximum number of scVI training epochs. Early stopping may halt</span>
+<span class="sd">        training before this limit is reached.</span>
+<span class="sd">    plot : bool, default = True</span>
+<span class="sd">        If ``True``, display the scVI training loss curve after model fitting.</span>
+<span class="sd">    library_key : str, default = &quot;sample&quot;</span>
+<span class="sd">        Column in ``adata.obs`` used to distinguish tissue sections or</span>
+<span class="sd">        samples.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    AnnData</span>
+<span class="sd">        The input ``adata`` object, updated in-place with:</span>
+<span class="sd">        - ``adata.obsm[&quot;X_scVI&quot;]``: scVI latent representation (float32)</span>
+<span class="sd">        - ``adata.obsp[&quot;spatial_connectivities&quot;]``: spatial connectivity matrix</span>
+<span class="sd">        - ``adata.obsm[&quot;X_cellcharter&quot;]``: aggregated neighbor embeddings</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Recommended workflow::</span>
+
+<span class="sd">        prepare_cellcharter(adata)</span>
+<span class="sd">        stability_cellcharter(adata, output_dir=&quot;results&quot;)   # inspect plot, pick k</span>
+<span class="sd">        run_cellcharter(adata, n_clusters=k, output_dir=&quot;results&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">seed_everything</span><span class="p">(</span><span class="mi">12345</span><span class="p">)</span>
+    <span class="n">scvi</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">seed</span> <span class="o">=</span> <span class="mi">12345</span>
+    <span class="n">scvi</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">accelerator</span> <span class="o">=</span> <span class="s2">&quot;cpu&quot;</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">_dim_red</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">epoch</span><span class="o">=</span><span class="n">epoch</span><span class="p">,</span> <span class="n">accelerator</span><span class="o">=</span><span class="n">accelerator</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">plot</span><span class="p">:</span>
+        <span class="n">_plot_epoch</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+    <span class="n">adata</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s2">&quot;X_scVI&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_latent_representation</span><span class="p">(</span><span class="n">adata</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">adata</span> <span class="o">=</span> <span class="n">_neigh_aggr</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">library_key</span><span class="o">=</span><span class="n">library_key</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">adata</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
