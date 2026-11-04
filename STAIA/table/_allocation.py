@@ -2,6 +2,7 @@ from spatialdata.transformations import get_transformation
 from shapely.validation import make_valid
 from spatialdata.transformations import get_transformation, set_transformation
 from spatialdata.models import ShapesModel
+from scipy.sparse import csr_matrix
 from shapely.geometry import Polygon
 from spatialdata import SpatialData
 from spatialdata import read_zarr
@@ -161,6 +162,48 @@ def _assign_nuclei(
 #     adata_fiber, adata_nuclei= _add_qc_col(adata_nuclei, adata_fibers, nuc, sdata)
 #     return adata_fiber, adata_nuclei
 
+def _aggregate_in_chunks(sdata, shapes_layer, chunk_size=2000):
+    """Private function that aggregates transcripts per shape in chunks to avoid memory exhaustion."""
+    shapes = sdata.shapes[shapes_layer]
+    n = len(shapes)
+    
+    chunk_matrices = []
+    all_obs_names = []
+    var_names = None
+
+    for start in range(0, n, chunk_size):
+        end = min(start + chunk_size, n)
+        print(f"Processing nuclei {start}-{end} of {n}...")
+
+        chunk_gdf = shapes.iloc[start:end].copy()
+        tmp = "_agg_chunk_temp"
+        parsed_chunk = ShapesModel.parse(chunk_gdf[["geometry"]].copy())
+        transformations = get_transformation(sdata.shapes[shapes_layer], get_all=True)
+        set_transformation(parsed_chunk, transformations, set_all=True)
+        sdata.shapes[tmp] = parsed_chunk
+
+        agg = sd.aggregate(
+            values=sdata.points["transcripts"],
+            by=sdata.shapes[tmp],
+            value_key="feature_name",
+            agg_func="count",
+        )
+        del sdata.shapes[tmp]
+
+        chunk_adata = agg.tables["table"]
+        X = chunk_adata.X if sp.issparse(chunk_adata.X) else sp.csr_matrix(chunk_adata.X)
+        chunk_matrices.append(X)
+        all_obs_names.extend(chunk_adata.obs_names.tolist())
+    
+        if var_names is None:
+            var_names = chunk_adata.var_names.tolist()
+        
+        del agg, chunk_adata
+    
+    combined_x = sp.vstack(chunk_matrices, format="csr")
+    return pd.concat(chunks, axis=0)
+
+
 def get_adata_nuclei(sdata: SpatialData):
     """
     Split each cell's transcripts into nuclear and fiber (non-nuclear) compartments.
@@ -200,15 +243,18 @@ def get_adata_nuclei(sdata: SpatialData):
         print(f"STAIA.add_nuclei() function is not used before. Will use the 'nucleus_boundaries' column in sdata")
         sdata, nuc = _repair_nucleus(sdata, shape="nucleus_boundaries")
 
-    agg_result = sd.aggregate(
-        values=sdata.points["transcripts"],
-        by=sdata.shapes["nucleus_boundaries_by_cell"],
-        value_key="feature_name",
-        agg_func="count",
-    )
-    adata_nuclei_raw = agg_result.tables["table"]
+    # NOTE: this part of the code is too computationally intensive
+    # agg_result = sd.aggregate(
+    #     values=sdata.points["transcripts"],
+    #     by=sdata.shapes["nucleus_boundaries_by_cell"],
+    #     value_key="feature_name",
+    #     agg_func="count",
+    # )
+    # adata_nuclei_raw = agg_result.tables["table"]
     
-    raw_df = _to_df(adata_nuclei_raw)
+    # raw_df = _to_df(adata_nuclei_raw)
+
+    raw_df = _aggregate_in_chunks(sdata, "nucleus_boundaries_by_cell", chunk_size=2000)
     raw_df.index = raw_df.index.astype(str)
 
     adata = sdata.tables["table"]  

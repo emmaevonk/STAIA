@@ -35,7 +35,6 @@ dependencies = [
   "IPython",
   "scanpy==1.11.5",
   "spatialdata==0.6.1",
-  "setuptools==81.0.0",
   "xarray==2026.1.0",
   "squidpy==1.7.0",
   "scvi-tools==1.4.2",
