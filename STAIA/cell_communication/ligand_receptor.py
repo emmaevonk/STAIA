@@ -150,6 +150,18 @@ def run_liana(
             f"cell_type_key '{cell_type_key}' not found in adata.obs. "
             f"Available columns: {list(adata.obs.columns)}"
         )
+
+
+    resource = li.rs.select_resource(resource_name)
+    resource_genes = set(resource["ligand"].tolist() + resource["receptor"].tolist())
+    your_genes = set(adata.var_names.tolist())
+
+    overlap = resource_genes & your_genes
+    print(f"Resource has {len(resource_genes)} unique genes")
+    print(f"Your data has {len(your_genes)} genes")
+    print(f"Overlap: {len(overlap)} genes ({len(overlap)/len(resource_genes)*100:.1f}% of resource)")
+    print(f"\nMatched genes: {sorted(overlap)}")
+
     adata = adata.copy()
     if verbose:
         n_types = adata.obs[cell_type_key].nunique()
@@ -158,6 +170,23 @@ def run_liana(
             f"{adata.n_vars} genes, {n_types} cell types"
         )
     
+    # Ensure .X contains log-normalised counts, not scaled data
+    if (adata.X.data if sp.issparse(adata.X) else adata.X).min() < 0:
+        if "lognorm" in adata.layers:
+            if verbose:
+                print("[STAIA | LIANA+] Detected scaled data in .X — switching to 'lognorm' layer.")
+            adata.X = adata.layers["lognorm"].copy()
+        elif "log_size_norm" in adata.layers:
+            if verbose:
+                print("[STAIA | LIANA+] Detected scaled data in .X — switching to 'log_size_norm' layer.")
+            adata.X = adata.layers["log_size_norm"].copy()
+        else:
+            raise ValueError(
+                "adata.X contains negative values (scaled data) but no log-normalised "
+                "layer ('lognorm' or 'log_size_norm') was found. "
+                "Please set adata.X to log-normalised counts before running LIANA."
+            )
+
     adata = _filter_small_types(adata, cell_type_key, min_cells, verbose)
 
     # spatial neighbors
@@ -189,6 +218,7 @@ def run_liana(
     if verbose:
         print(f"[STAIA | LIANA+] Running global scoring (method='{method}') …")
  
+
     call_kwargs = dict(
         groupby=cell_type_key,
         resource_name=resource_name,
@@ -268,6 +298,9 @@ def plot_liana_dotplot(
         File path to save the figure (e.g. ``'dotplot.pdf'``).
     """
     df = liana_global.copy()
+
+    # Drop rows where key columns are NaN (causes matplotlib ConversionError)
+    df = df.dropna(subset=["source", "target", "ligand_complex", "receptor_complex", "magnitude_rank", "cellphone_pvals"])
 
     if source_groups:
         df = df[df["source"].isin(source_groups)]

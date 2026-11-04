@@ -117,54 +117,117 @@ def plot_volcano(
     plt.show()
     return fig, ax
 
+# def _make_pseudobulk(
+#     adata,
+#     celltype_col,
+#     sample_col="sample_id",
+#     treatment_col="condition",
+#     layer="raw_counts",
+#     expr_cells_threshold: float | None = None 
+# ):
+#     """
+#     Create pseudobulk AnnData object for each cell type.
+
+#     For each cell type, raw counts are summed across cells belonging to the same
+#     biological sample, producing a sample-level count matrix suitable for bulk DE analysis.
+
+#     Parameters
+#     ----------
+#     adata : AnnData
+#         Annotated data matrix containing raw counts and metadata.
+#     sample_col : str, default="assigned_sample"
+#         Column in adata.obs identifying biological samples.
+#     celltype_col : str, default = "cell_type"
+#         column in adata.obs specifying cell type annotations.
+#     treatment_col : str, default = "assigned_treatment"
+#         Column in adata.obs specifying condition or treatment.
+#     layer : str, default = "raw_counts"
+#         Name of layer containing raw integer count data.
+#     expr_cells_threshold : float or None, default=None
+#         If set, genes are filtered per cell type before pseudobulk aggregation.
+#         Only genes expressed (raw count > 0) in more than this fraction of cells
+#         within the cell type are retained. For example, 0.10 keeps genes expressed
+#         in more than 10% of cells. If None, no filtering is applied.
+#     Returns
+#     -------
+#     dict
+#         Dictionary mapping each cell type to a pseudobulk AnnData object where:
+#             - rows = samples
+#             - columns = genes
+#             - .obs contains sample-level treatment metadata
+    
+#     Notes
+#     -----
+#     - Counts are summed per sample within each cell type
+#     - Assumes the specified layer contains raw (unnormalized) counts
+#     """
+#     pseudobulk_dict = {}
+#     genes = adata.var_names
+
+#     for ct in adata.obs[celltype_col].unique():
+#         print(f"Processing {ct}...")
+#         ad_ct = adata[adata.obs[celltype_col] == ct].copy()
+
+#         if expr_cells_threshold is not None:
+#             raw = ad_ct.layers[layer]
+#             pct_expressing = np.asarray((raw > 0).mean(axis=0)).flatten()
+#             genes_to_test = ad_ct.var_names[pct_expressing > expr_cells_threshold]
+#             ad_ct = ad_ct[:, genes_to_test]
+#             print(f"  {len(genes_to_test)} genes pass filter (>{expr_cells_threshold*100:.0f}% expressing cells)")
+
+#         # Use raw counts from layer
+#         X = ad_ct.layers[layer]
+
+#         df = pd.DataFrame.sparse.from_spmatrix(
+#             X,
+#             index=ad_ct.obs[sample_col],
+#             columns=genes
+#         )
+
+#         # Sum counts per sample
+#         pb_df = df.groupby(level=0).sum()
+
+#         pb_df.index = pb_df.index.astype(str) 
+
+#         # Create AnnData
+#         pb = sc.AnnData(pb_df)
+
+#         # Add metadata
+#         treatment_map = (
+#             ad_ct.obs[[sample_col, treatment_col]]
+#             .drop_duplicates()
+#             .set_index(sample_col)
+#         )
+#         # pb.obs = treatment_map.loc[pb_df.index, [treatment_col]]  # only treatment col, index = sample_id
+#         pb.obs = treatment_map.loc[~treatment_map.index.duplicated(keep="first")].loc[pb_df.index, [treatment_col]]
+
+
+#         pseudobulk_dict[ct] = pb
+#         # print(sample_col, treatment_col)
+#         # print(pb_df)
+#         # pb.obs[sample_col] = pb_df.index
+
+#         # pb.obs[treatment_col] = (
+#         #     ad_ct.obs[[sample_col, treatment_col]]
+#         #     .drop_duplicates()
+#         #     .set_index(sample_col)
+#         #     .loc[pb_df.index, treatment_col]
+#         # )
+
+#         # pseudobulk_dict[ct] = pb
+#     return pseudobulk_dict
+
 def _make_pseudobulk(
     adata,
     celltype_col,
     sample_col="sample_id",
     treatment_col="condition",
     layer="raw_counts",
-    expr_cells_threshold: float | None = None 
+    expr_cells_threshold: float | None = None
 ):
-    """
-    Create pseudobulk AnnData object for each cell type.
-
-    For each cell type, raw counts are summed across cells belonging to the same
-    biological sample, producing a sample-level count matrix suitable for bulk DE analysis.
-
-    Parameters
-    ----------
-    adata : AnnData
-        Annotated data matrix containing raw counts and metadata.
-    sample_col : str, default="assigned_sample"
-        Column in adata.obs identifying biological samples.
-    celltype_col : str, default = "cell_type"
-        column in adata.obs specifying cell type annotations.
-    treatment_col : str, default = "assigned_treatment"
-        Column in adata.obs specifying condition or treatment.
-    layer : str, default = "raw_counts"
-        Name of layer containing raw integer count data.
-    expr_cells_threshold : float or None, default=None
-        If set, genes are filtered per cell type before pseudobulk aggregation.
-        Only genes expressed (raw count > 0) in more than this fraction of cells
-        within the cell type are retained. For example, 0.10 keeps genes expressed
-        in more than 10% of cells. If None, no filtering is applied.
-    Returns
-    -------
-    dict
-        Dictionary mapping each cell type to a pseudobulk AnnData object where:
-            - rows = samples
-            - columns = genes
-            - .obs contains sample-level treatment metadata
-    
-    Notes
-    -----
-    - Counts are summed per sample within each cell type
-    - Assumes the specified layer contains raw (unnormalized) counts
-    """
     pseudobulk_dict = {}
-    genes = adata.var_names
 
-    for ct in adata.obs[celltype_col].unique():
+    for ct in adata.obs[celltype_col].dropna().unique():  # dropna() prevents "nan" cell type
         print(f"Processing {ct}...")
         ad_ct = adata[adata.obs[celltype_col] == ct].copy()
 
@@ -175,44 +238,29 @@ def _make_pseudobulk(
             ad_ct = ad_ct[:, genes_to_test]
             print(f"  {len(genes_to_test)} genes pass filter (>{expr_cells_threshold*100:.0f}% expressing cells)")
 
-        # Use raw counts from layer
         X = ad_ct.layers[layer]
 
         df = pd.DataFrame.sparse.from_spmatrix(
             X,
             index=ad_ct.obs[sample_col],
-            columns=genes
+            columns=ad_ct.var_names,  # fix 1: use ad_ct.var_names, not outer `genes`
         )
 
-        # Sum counts per sample
         pb_df = df.groupby(level=0).sum()
+        pb_df.index = pb_df.index.astype(str)  # fix 2: force string index
 
-        # Create AnnData
         pb = sc.AnnData(pb_df)
 
-        # Add metadata
         treatment_map = (
             ad_ct.obs[[sample_col, treatment_col]]
             .drop_duplicates()
             .set_index(sample_col)
         )
-        # pb.obs = treatment_map.loc[pb_df.index, [treatment_col]]  # only treatment col, index = sample_id
+        treatment_map.index = treatment_map.index.astype(str)  # fix 2 continued
         pb.obs = treatment_map.loc[~treatment_map.index.duplicated(keep="first")].loc[pb_df.index, [treatment_col]]
 
-
         pseudobulk_dict[ct] = pb
-        # print(sample_col, treatment_col)
-        # print(pb_df)
-        # pb.obs[sample_col] = pb_df.index
 
-        # pb.obs[treatment_col] = (
-        #     ad_ct.obs[[sample_col, treatment_col]]
-        #     .drop_duplicates()
-        #     .set_index(sample_col)
-        #     .loc[pb_df.index, treatment_col]
-        # )
-
-        # pseudobulk_dict[ct] = pb
     return pseudobulk_dict
 
 

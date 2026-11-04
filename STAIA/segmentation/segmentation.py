@@ -49,6 +49,8 @@ import subprocess
 import textwrap
 import warnings
 from pathlib import Path
+import numpy as np
+import pandas as pd
 
 
 # ---------------------------------------------------------------------------
@@ -283,6 +285,8 @@ def baysor(
     script_path: str | Path | None = None,
     conda_env: str | None = None,
     baysor_path: str | Path | None = None,
+    n_tiles: tuple[int, int] = (1, 1),   # (n_tiles_x, n_tiles_y)
+    tile_overlap_um: float = 100.0,
 ) -> str | None:
     """
     Run Baysor cell segmentation on spatial transcriptomics data.
@@ -430,10 +434,74 @@ def baysor(
 
     if baysor_path is not None and not Path(baysor_path).exists():
         raise FileNotFoundError(f"baysor_path does not exist: '{baysor_path}'")
-
     output_path.mkdir(parents=True, exist_ok=True)
 
     executable = str(Path(baysor_path) / "baysor") if baysor_path else "baysor"
+
+    # ----------------------------------------------------------------
+    # Tiled mode: split transcripts → submit one Slurm job per tile
+    # ----------------------------------------------------------------
+    n_tiles_x, n_tiles_y = n_tiles
+    if n_tiles_x > 1 or n_tiles_y > 1:
+        tiles = _tile_transcripts(
+            transcripts_path=transcripts_path,
+            output_path=output_path,
+            n_tiles_x=n_tiles_x,
+            n_tiles_y=n_tiles_y,
+            overlap_um=tile_overlap_um,
+            x_column=x_column,
+            y_column=y_column,
+        )
+
+        job_ids = []
+        for tile_csv, bounds in tiles:
+            i, j = bounds["tile_i"], bounds["tile_j"]
+            tile_output = output_path / f"tile_{i}_{j}"
+
+            tile_command = _build_baysor_command(
+                executable=executable,
+                transcripts_path=tile_csv,
+                output_path=tile_output,
+                prior_type=prior_type,
+                config_path=config_path,
+                x_column=x_column,
+                y_column=y_column,
+                z_column=z_column,
+                gene_column=gene_column,
+                min_molecules_cell=min_molecules_cell,
+                scale_um=scale_um,
+                scale_std=scale_std,
+                prior_confidence=prior_confidence,
+                polygon_format=polygon_format,
+                count_matrix_format=count_matrix_format,
+                plot=plot,
+            )
+
+            tile_script = output_path / f"segment_baysor_tile_{i}_{j}.sh"
+            job_id = _run_slurm(
+                method="baysor",
+                command=tile_command,
+                output_path=tile_output,
+                submit=submit,
+                slurm_args=slurm_args or {},
+                script_path=tile_script,
+                conda_env=conda_env,
+                meta={
+                    "Input (transcripts)": str(tile_csv),
+                    "Output": str(tile_output),
+                    "Prior type": str(prior_type) if prior_type else "none",
+                    "Tile": f"({i},{j})",
+                    "Bounds (x)": f"{bounds['x0_ov']:.0f} – {bounds['x1_ov']:.0f}",
+                    "Bounds (y)": f"{bounds['y0_ov']:.0f} – {bounds['y1_ov']:.0f}",
+                },
+            )
+            job_ids.append(job_id)
+
+        return job_ids
+
+    # ----------------------------------------------------------------
+    # Single-job mode (default, n_tiles == (1, 1))
+    # ----------------------------------------------------------------
     command = _build_baysor_command(
         executable=executable,
         transcripts_path=transcripts_path,
@@ -471,6 +539,84 @@ def baysor(
     else:
         return _run_local(method="baysor", command=command)
 
+
+def _tile_transcripts(
+    transcripts_path: Path,
+    output_path: Path,
+    n_tiles_x: int = 3,
+    n_tiles_y: int = 3,
+    overlap_um: float = 100.0,
+    x_column: str = "x_location",
+    y_column: str = "y_location",
+) -> list[tuple[Path, dict]]:
+    """
+    Split a transcript CSV into spatially overlapping tiles.
+
+    Returns a list of (tile_csv_path, tile_bounds) tuples.
+    overlap_um adds a border around each tile so cells on tile
+    edges are not cut in half — 100 µm is a safe default for
+    Xenium data.
+    """
+    print(f"Loading transcripts from {transcripts_path} for tiling...")
+
+    if transcripts_path.suffix == ".parquet":
+        df = pd.read_parquet(transcripts_path)
+    else:
+        df = pd.read_csv(transcripts_path)
+
+    # Fix UNASSIGNED encoding while we have the data loaded
+    if "cell_id" in df.columns:
+        df["cell_id"] = df["cell_id"].replace("UNASSIGNED", 0)
+
+    x_min, x_max = df[x_column].min(), df[x_column].max()
+    y_min, y_max = df[y_column].min(), df[y_column].max()
+
+    x_edges = np.linspace(x_min, x_max, n_tiles_x + 1)
+    y_edges = np.linspace(y_min, y_max, n_tiles_y + 1)
+
+    tile_dir = output_path / "tiles"
+    tile_dir.mkdir(parents=True, exist_ok=True)
+
+    tiles = []
+    for i in range(n_tiles_x):
+        for j in range(n_tiles_y):
+            # Core tile bounds
+            x0, x1 = x_edges[i],   x_edges[i + 1]
+            y0, y1 = y_edges[j],   y_edges[j + 1]
+
+            # Expand by overlap so cell boundaries aren't cut
+            x0_ov = x0 - overlap_um
+            x1_ov = x1 + overlap_um
+            y0_ov = y0 - overlap_um
+            y1_ov = y1 + overlap_um
+
+            mask = (
+                df[x_column].between(x0_ov, x1_ov) &
+                df[y_column].between(y0_ov, y1_ov)
+            )
+            tile_df = df[mask]
+
+            n = len(tile_df)
+            print(f"  Tile ({i},{j}): {n:,} transcripts "
+                  f"[x {x0_ov:.0f}–{x1_ov:.0f}, y {y0_ov:.0f}–{y1_ov:.0f}]")
+
+            if n == 0:
+                print(f"  Skipping empty tile ({i},{j})")
+                continue
+
+            tile_csv = tile_dir / f"tile_{i}_{j}.csv"
+            tile_df.to_csv(tile_csv, index=False)
+
+            tiles.append((tile_csv, {
+                "tile_i": i, "tile_j": j,
+                "x0": x0, "x1": x1,   # core bounds (for stitching)
+                "y0": y0, "y1": y1,
+                "x0_ov": x0_ov, "x1_ov": x1_ov,  # overlap bounds (for Baysor)
+                "y0_ov": y0_ov, "y1_ov": y1_ov,
+            }))
+
+    print(f"Created {len(tiles)} tiles in {tile_dir}")
+    return tiles
 
 def xeniumranger(
     xenium_bundle: str | Path,
