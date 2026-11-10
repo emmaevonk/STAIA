@@ -312,7 +312,6 @@ def plot_qc_metrics(
     -------
     matplotlib.figure.Figure
     """
-    obs = adata.obs
     if 'n_genes_by_counts' not in adata.obs:
         print("The column 'n_genes_by_counts' is not present in the data. Computing this column...")
         sc.pp.calculate_qc_metrics(
@@ -322,6 +321,7 @@ def plot_qc_metrics(
             log1p=False
         )
         print("Column 'n_genes_by_counts' is computed. Generating visualizations...")
+    obs = adata.obs
 
     # QC plots - cell-level statistics
     fig, axs = plt.subplots(2, 3, figsize=(20, 10))
