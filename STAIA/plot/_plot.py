@@ -119,6 +119,10 @@ def plot_labels(
     # Extract coordinates and condition 
     coords = adata.obsm["spatial"]           
 
+    adata.obs[label] = adata.obs[label].astype(str) # new 
+    adata.obs[label] = adata.obs[label].where(
+        adata.obs[label] != "nan", other=np.nan
+    ) # new
     adata.obs[label] = adata.obs[label].astype("category")
     conditions = adata.obs[label]
     categories = conditions.cat.categories
@@ -126,7 +130,11 @@ def plot_labels(
     # Define colors
     palette = plt.cm.tab20.colors      
     color_map = {cat: palette[i] for i, cat in enumerate(categories)}
-    colors = [color_map[c] for c in conditions]
+    default_color = (0.7, 0.7, 0.7, 1.0) # light grey
+    colors = [
+        color_map[c] if pd.notna(c) else default_color
+        for c in conditions
+    ]
 
     #  Compute figure size to match the data's aspect ratio
     x_range = coords[:, 0].max() - coords[:, 0].min()

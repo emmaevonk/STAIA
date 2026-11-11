@@ -15,6 +15,10 @@ This module performs pseudobulk DE analysis per condition
 
 import numpy as np
 
+def _safe_filename(s: str) -> str:
+    """Replace characters that are invalid in filenames with underscores."""
+    return s.replace("/", "_").replace("\\", "_").replace(" ", "_")
+
 def plot_volcano(
     de_df: pd.DataFrame,
     celltype: str = "",
@@ -25,44 +29,20 @@ def plot_volcano(
     save: bool = False,
     output_path: str | None = None,
 ):
-    """
-    Generate a volcano plot from DESeq2 results.
-
-    Parameters
-    ----------
-    de_df : pd.DataFrame
-        Full results DataFrame from DeseqStats (must contain 'log2FoldChange' and 'padj').
-    celltype : str
-        Cell type label, used in the plot title.
-    contrast : str
-        Contrast string (e.g. "WT_vs_TEST"), used in the plot title.
-    lfc_thresh : float, default=0.25
-        Log2 fold change threshold for significance.
-    padj_thresh : float, default=0.05
-        Adjusted p-value threshold for significance.
-    top_n_labels : int, default=10
-        Number of top significant genes (by padj) to label on the plot.
-    save : bool, default=False
-        Whether to save the figure to disk.
-    output_path : str or None
-        Path for saving the figure. If None, saves to the current directory.
-    """
     df = de_df.dropna(subset=["log2FoldChange", "padj"]).copy()
     df["-log10padj"] = -np.log10(df["padj"].clip(lower=1e-300))
 
-    # Classify each gene
     conditions = [
         (df["padj"] < padj_thresh) & (df["log2FoldChange"] > lfc_thresh),
         (df["padj"] < padj_thresh) & (df["log2FoldChange"] < -lfc_thresh),
     ]
-    colors_map = ["#d62728", "#1f77b4"]  # red = up, blue = down
-    df["color"] = "#aaaaaa"  # default: not significant
+    colors_map = ["#d62728", "#1f77b4"]
+    df["color"] = "#aaaaaa"
     for cond, color in zip(conditions, colors_map):
         df.loc[cond, "color"] = color
 
     fig, ax = plt.subplots(figsize=(8, 6))
 
-    # Plot by group so we get a clean legend
     groups = {
         f"Up (LFC > {lfc_thresh}, padj < {padj_thresh})": "#d62728",
         f"Down (LFC < -{lfc_thresh}, padj < {padj_thresh})": "#1f77b4",
@@ -81,12 +61,10 @@ def plot_volcano(
             rasterized=True,
         )
 
-    # Threshold lines
     ax.axhline(-np.log10(padj_thresh), color="black", linestyle="--", linewidth=0.8, alpha=0.7)
     ax.axvline(lfc_thresh, color="black", linestyle="--", linewidth=0.8, alpha=0.7)
     ax.axvline(-lfc_thresh, color="black", linestyle="--", linewidth=0.8, alpha=0.7)
 
-    # Label top significant genes
     sig = df[df["color"] != "#aaaaaa"].nsmallest(top_n_labels, "padj")
     for gene, row in sig.iterrows():
         ax.text(
@@ -109,7 +87,7 @@ def plot_volcano(
 
     if save:
         if output_path is None:
-            fname = f"volcano_{celltype}_{contrast}.png".replace(" ", "_")
+            fname = f"volcano_{_safe_filename(celltype)}_{_safe_filename(contrast)}.png"
             output_path = os.path.join(os.getcwd(), fname)
         plt.savefig(output_path, dpi=150, bbox_inches="tight")
         print(f"Volcano plot saved to: {output_path}")
@@ -117,147 +95,40 @@ def plot_volcano(
     plt.show()
     return fig, ax
 
-# def _make_pseudobulk(
-#     adata,
-#     celltype_col,
-#     sample_col="sample_id",
-#     treatment_col="condition",
-#     layer="raw_counts",
-#     expr_cells_threshold: float | None = None 
-# ):
-#     """
-#     Create pseudobulk AnnData object for each cell type.
-
-#     For each cell type, raw counts are summed across cells belonging to the same
-#     biological sample, producing a sample-level count matrix suitable for bulk DE analysis.
-
-#     Parameters
-#     ----------
-#     adata : AnnData
-#         Annotated data matrix containing raw counts and metadata.
-#     sample_col : str, default="assigned_sample"
-#         Column in adata.obs identifying biological samples.
-#     celltype_col : str, default = "cell_type"
-#         column in adata.obs specifying cell type annotations.
-#     treatment_col : str, default = "assigned_treatment"
-#         Column in adata.obs specifying condition or treatment.
-#     layer : str, default = "raw_counts"
-#         Name of layer containing raw integer count data.
-#     expr_cells_threshold : float or None, default=None
-#         If set, genes are filtered per cell type before pseudobulk aggregation.
-#         Only genes expressed (raw count > 0) in more than this fraction of cells
-#         within the cell type are retained. For example, 0.10 keeps genes expressed
-#         in more than 10% of cells. If None, no filtering is applied.
-#     Returns
-#     -------
-#     dict
-#         Dictionary mapping each cell type to a pseudobulk AnnData object where:
-#             - rows = samples
-#             - columns = genes
-#             - .obs contains sample-level treatment metadata
-    
-#     Notes
-#     -----
-#     - Counts are summed per sample within each cell type
-#     - Assumes the specified layer contains raw (unnormalized) counts
-#     """
-#     pseudobulk_dict = {}
-#     genes = adata.var_names
-
-#     for ct in adata.obs[celltype_col].unique():
-#         print(f"Processing {ct}...")
-#         ad_ct = adata[adata.obs[celltype_col] == ct].copy()
-
-#         if expr_cells_threshold is not None:
-#             raw = ad_ct.layers[layer]
-#             pct_expressing = np.asarray((raw > 0).mean(axis=0)).flatten()
-#             genes_to_test = ad_ct.var_names[pct_expressing > expr_cells_threshold]
-#             ad_ct = ad_ct[:, genes_to_test]
-#             print(f"  {len(genes_to_test)} genes pass filter (>{expr_cells_threshold*100:.0f}% expressing cells)")
-
-#         # Use raw counts from layer
-#         X = ad_ct.layers[layer]
-
-#         df = pd.DataFrame.sparse.from_spmatrix(
-#             X,
-#             index=ad_ct.obs[sample_col],
-#             columns=genes
-#         )
-
-#         # Sum counts per sample
-#         pb_df = df.groupby(level=0).sum()
-
-#         pb_df.index = pb_df.index.astype(str) 
-
-#         # Create AnnData
-#         pb = sc.AnnData(pb_df)
-
-#         # Add metadata
-#         treatment_map = (
-#             ad_ct.obs[[sample_col, treatment_col]]
-#             .drop_duplicates()
-#             .set_index(sample_col)
-#         )
-#         # pb.obs = treatment_map.loc[pb_df.index, [treatment_col]]  # only treatment col, index = sample_id
-#         pb.obs = treatment_map.loc[~treatment_map.index.duplicated(keep="first")].loc[pb_df.index, [treatment_col]]
-
-
-#         pseudobulk_dict[ct] = pb
-#         # print(sample_col, treatment_col)
-#         # print(pb_df)
-#         # pb.obs[sample_col] = pb_df.index
-
-#         # pb.obs[treatment_col] = (
-#         #     ad_ct.obs[[sample_col, treatment_col]]
-#         #     .drop_duplicates()
-#         #     .set_index(sample_col)
-#         #     .loc[pb_df.index, treatment_col]
-#         # )
-
-#         # pseudobulk_dict[ct] = pb
-#     return pseudobulk_dict
 
 def _make_pseudobulk(
     adata,
     celltype_col,
     sample_col="sample_id",
-    treatment_col="condition",
+    condition_col="condition",
     layer="raw_counts",
-    expr_cells_threshold: float | None = None
 ):
     pseudobulk_dict = {}
 
-    for ct in adata.obs[celltype_col].dropna().unique():  # dropna() prevents "nan" cell type
+    for ct in adata.obs[celltype_col].dropna().unique():
         print(f"Processing {ct}...")
         ad_ct = adata[adata.obs[celltype_col] == ct].copy()
-
-        if expr_cells_threshold is not None:
-            raw = ad_ct.layers[layer]
-            pct_expressing = np.asarray((raw > 0).mean(axis=0)).flatten()
-            genes_to_test = ad_ct.var_names[pct_expressing > expr_cells_threshold]
-            ad_ct = ad_ct[:, genes_to_test]
-            print(f"  {len(genes_to_test)} genes pass filter (>{expr_cells_threshold*100:.0f}% expressing cells)")
 
         X = ad_ct.layers[layer]
 
         df = pd.DataFrame.sparse.from_spmatrix(
             X,
             index=ad_ct.obs[sample_col],
-            columns=ad_ct.var_names,  # fix 1: use ad_ct.var_names, not outer `genes`
+            columns=ad_ct.var_names,
         )
 
         pb_df = df.groupby(level=0).sum()
-        pb_df.index = pb_df.index.astype(str)  # fix 2: force string index
+        pb_df.index = pb_df.index.astype(str)
 
         pb = sc.AnnData(pb_df)
 
         treatment_map = (
-            ad_ct.obs[[sample_col, treatment_col]]
+            ad_ct.obs[[sample_col, condition_col]]
             .drop_duplicates()
             .set_index(sample_col)
         )
-        treatment_map.index = treatment_map.index.astype(str)  # fix 2 continued
-        pb.obs = treatment_map.loc[~treatment_map.index.duplicated(keep="first")].loc[pb_df.index, [treatment_col]]
+        treatment_map.index = treatment_map.index.astype(str)
+        pb.obs = treatment_map.loc[~treatment_map.index.duplicated(keep="first")].loc[pb_df.index, [condition_col]]
 
         pseudobulk_dict[ct] = pb
 
@@ -271,13 +142,13 @@ def pseudobulk(
     save: bool = True,
     output_path: str | None = None,
     sample_col: str = "sample_id",
-    treatment_col="condition",
+    condition_col="condition",
     pb_dict: dict | None = None,
     celltype_col: str = "cell_type",
     plot: bool = True,
     lfc_threshold: float = 0.25,
     padj_threshold: float = 0.05,
-    expr_cells_threshold: float | None = None,
+    layer: str = "raw_counts",
 ):
     """
     Perform pseudobulk diferential expression analysis for a specific cell type.
@@ -287,6 +158,8 @@ def pseudobulk(
     2. Selects a specified cell type
     3. Run DESeq2 using treatments as the design factor
     4. Identifies significantly differentially expressed genes
+
+    This module is built on top of PyDESeq2. PyDESeq2 performs its own filtering automatically (documentation can be found here: https://pydeseq2.readthedocs.io/en/stable/). 
 
     Parameters
     ----------
@@ -304,21 +177,20 @@ def pseudobulk(
         with an automatically generated filename.
     sample_col : str, default = "sample_id"
         Column in annotated data matrix referring to the sample IDs in the data
-    treatment_col : str, default = "condition"
+    condition_col : str, default = "condition"
         Column in annotated data matrix referring to assigned labels of the samples.
     pb_dict : dict, optional
-        Pre-built pseudobulk dict from outside.
+        Pre-built pseudobulk dict from outside. If provided, ``layer`` is ignored
+        since the pseudobulk aggregation has already been done.
     plot : bool, default = True
         A boolean deciding whether or not to plot the volcano plot.
     lfc_threshold : float, default = 0.25
         Minimum absolute log2 fold change for a gene to be considered significant
     padj_threshold : float, default = 0.05
         Maximum adjusted p-value for a gene to be considered significant
-    expr_cells_threshold : float or None, default=None
-        Minimum fraction of cells within the cell type that must express a gene
-        (raw count > 0) for it to be included in the DE analysis. Filters out
-        lowly/non-expressed genes before running DESeq2, which can improve
-        statistical power and reduce noise. If None, all genes are tested.
+    layer : str, default = "raw_counts"
+        Name of the layer in ``adata`` containing raw integer counts. Ignored if
+        ``pb_dict`` is provided.
 
     Returns
     -------
@@ -335,42 +207,40 @@ def pseudobulk(
     - If save = True, results are written to disk
     """
     if pb_dict is None:
+        adata_ct = adata[adata.obs[celltype_col] == celltype].copy()
         pb_dict = _make_pseudobulk(
-            adata,
+            adata_ct,
             sample_col=sample_col,
-            treatment_col=treatment_col,
+            condition_col=condition_col,
             celltype_col=celltype_col,
-            expr_cells_threshold=expr_cells_threshold,
+            layer=layer,
         )
-    # pb_dict = _make_pseudobulk(adata, sample_col=sample_col, treatment_col=treatment_col)
+
     try:
         pb = pb_dict[celltype].copy()
     except KeyError:
         print(f"`{celltype}` is not present in the data. Are you sure you used the correct name?")
         return None
 
-    # prepare data
     counts = pd.DataFrame(
         pb.X.toarray(),
         index=pb.obs_names,
         columns=pb.var_names
     )
-    metadata = pb.obs[[treatment_col]]
+    metadata = pb.obs[[condition_col]]
 
-    # Ensure counts are integers
-    counts = counts.astype(int) 
+    counts = counts.astype(int)
 
-    # Run DESeq2
     dds = DeseqDataSet(
         counts=counts,
         metadata=metadata,
-        design_factors=treatment_col,
+        design_factors=condition_col,
         refit_cooks=True
     )
 
     dds.deseq2()
 
-    contrast_list = [treatment_col, cond[1], cond[0]]
+    contrast_list = [condition_col, cond[1], cond[0]]
     stat_res = DeseqStats(dds, contrast=contrast_list)
     stat_res.summary()
 
@@ -382,38 +252,40 @@ def pseudobulk(
             celltype=celltype,
             contrast=f"{cond[0]}_vs_{cond[1]}",
             save=save,
-            output_path=output_path.replace(".csv", "_volcano.png") if output_path else None
+            output_path=output_path.replace(".csv", "_volcano.png") if output_path else None,
+            padj_thresh=padj_threshold,
+            lfc_thresh=lfc_threshold,
         )
 
-    # Get significant genes
     sig = de_df.query("padj < @padj_threshold & abs(log2FoldChange) > @lfc_threshold")
 
     if save:
         if output_path is None:
-            output_path = os.path.join(os.getcwd(), f"sig_genes_{celltype}_{contrast_list[1]}_{contrast_list[2]}.csv")
+            output_path = os.path.join(os.getcwd(), f"sig_genes_{_safe_filename(celltype)}_{contrast_list[1]}_{contrast_list[2]}.csv")
         sig.to_csv(output_path)
         print(f"The significant genes are written to a CSV file in the current running directory: {output_path}")
     return sig
 
+
 def pseudobulk_per_condition(
     adata: AnnData,
     all_conditions: list,
-    label_col: str = "label",
-    sample_id: str = "sample_id",
-    celltype_col: str = "leiden",
+    condition_col: str = "label",
+    sample_col: str = "sample_id",
+    celltype_col: str = "cell_type",
     save: bool = True,
     output_path: str | None = None,
     lfc_threshold: float = 0.25,
     padj_threshold: float = 0.05,
-    expr_cells_threshold: float | None = None,
+    layer: str = "raw_counts",
 ):
     """
     Perform pseudobulk differential expression analysis across all condition
     pairs.
 
-    Iterates over very pairwise combination of the provided conditions,
+    Iterates over every pairwise combination of the provided conditions,
     subsets the data to the relevant samples, and runs pseudobulk DE analysis
-    (via ``pseudobulk``) fpr every celltype present in each subset. Results are
+    (via ``pseudobulk``) for every celltype present in each subset. Results are
     collected and optionally saved to disk.
 
     Parameters
@@ -422,57 +294,51 @@ def pseudobulk_per_condition(
         Annotated data matrix containing raw counts and metadata.
     all_conditions : list of str
         List of condition labels to compare. All combinations are tested.
-    label_col : str, default = "label"
-        Column in ``adata.obs`` contiaining the condition/group labels
-        It must match values provided in ``all_conditions``
-    sample_id : str, deafult = "sample_id" 
+    condition_col : str, default = "label"
+        Column in ``adata.obs`` containing the condition/treatment group labels.
+        It must match values provided in ``all_conditions``.
+    sample_col : str, default = "sample_id"
         Column in ``adata.obs`` identifying biological samples.
-    celltype_col : str, default = "leiden"
-        Column in ``adata.obs`` speficying cell type annotations.
+    celltype_col : str, default = "cell_type"
+        Column in ``adata.obs`` specifying cell type annotations.
     save : bool, default = True
         Whether to save the significant genes to a CSV file.
     output_path : str or None, default = None
-        Path to save the CSV file.. If None, saves to the curent working directory
+        Path to save the CSV file. If None, saves to the current working directory
         with an automatically generated filename.
     lfc_threshold : float, default = 0.25
-        Minimum absolute log2 fold change for a gene to be considered significant
-        Passed to each ``pseudobulk`` call
+        Minimum absolute log2 fold change for a gene to be considered significant.
+        Passed to each ``pseudobulk`` call.
     padj_threshold : float, default = 0.05
-        Maximum adjusted p-value for a gene to be considered significant
-        Passed to each ``pseudobulk`` call
-    expr_cells_threshold : float or None, default=None
-        Passed to each ``pseudobulk`` call. See ``pseudobulk`` for details.
+        Maximum adjusted p-value for a gene to be considered significant.
+        Passed to each ``pseudobulk`` call.
+    layer : str, default = "raw_counts"
+        Name of the layer in ``adata`` containing raw integer counts.
+        Passed to each ``pseudobulk`` call.
 
     Returns
     -------
     dict
         Nested dictionary with keys of the form ``(cell_type, "condA_vs_condB")``
-        and values being DataFrames of significant DE genes (``padj`` 
+        and values being DataFrames of significant DE genes (``padj`` <
         ``padj_threshold``, ``|log2FoldChange|`` > ``lfc_threshold``) for that
         cell type and comparison. Comparisons or cell types that fail or are
         skipped are excluded.
-    
+
     Notes
     -----
-    - Comparisons are skipped if either condition has fewer than 2 samples, 
-    as DESeq2 required biological replication.
+    - Comparisons are skipped if either condition has fewer than 2 samples,
+      as DESeq2 requires biological replication.
     - Results CSVs are saved to ``pseudobulk_results/{celltype}_{condA}_vs_{condB}.csv``
     - Any cell type that raises an exception during DE analysis is skipped with a warning,
-    allowing the remaining comparisons to proceed.
-
-    Raises
-    ------
-    None
-        All per-cell-type exceptions are caugt internally and logged.
-
+      allowing the remaining comparisons to proceed.
     """
     condition_pairs = list(combinations(all_conditions, 2))
     results = {}
 
-    # check if conditions are present
-    if label_col not in adata.obs:
-        print(f"The provided label column ({label_col}) is not present in the data.\n Available columns: {adata.obs.columns}")
-        return  
+    if condition_col not in adata.obs:
+        print(f"The provided label column ({condition_col}) is not present in the data.\n Available columns: {adata.obs.columns}")
+        return
 
     if save:
         base_dir = output_path if output_path is not None else os.path.join(os.getcwd(), "pseudobulk_results")
@@ -480,30 +346,27 @@ def pseudobulk_per_condition(
 
     for cond_a, cond_b in condition_pairs:
         key = f"{cond_a}_vs_{cond_b}"
-        mask = adata.obs[label_col].isin([cond_a, cond_b])
-        # subset the data to get condition pairs
+        mask = adata.obs[condition_col].isin([cond_a, cond_b])
         adata_sub = adata[mask].copy()
 
-        # check if there are enough samples of the conditions in the data
-        samples_per_cond = adata.obs.groupby(label_col)[sample_id].nunique()
+        samples_per_cond = adata.obs.groupby(condition_col)[sample_col].nunique()
         if samples_per_cond.min() < 2:
             print(f"Skipped {key}: not enough samples.")
             continue
-    
-        # compute pseudobulk once per comparison
+
         pb_dict = _make_pseudobulk(
             adata_sub,
             celltype_col=celltype_col,
-            sample_col=sample_id,
-            treatment_col=label_col,
-            expr_cells_threshold=expr_cells_threshold
+            sample_col=sample_col,
+            condition_col=condition_col,
+            layer=layer,
         )
 
         for ct_focus in pb_dict.keys():
             print(f"Processing {ct_focus}...")
             try:
                 ct_output_path = (
-                    os.path.join(base_dir, f"{ct_focus}_{key}.csv") 
+                    os.path.join(base_dir, f"{ct_focus}_{key}.csv")
                     if save else None
                 )
 
@@ -511,14 +374,15 @@ def pseudobulk_per_condition(
                     adata_sub,
                     celltype=ct_focus,
                     celltype_col=celltype_col,
-                    sample_col=sample_id,
+                    sample_col=sample_col,
                     cond=[cond_a, cond_b],
-                    treatment_col=label_col,
+                    condition_col=condition_col,
                     pb_dict=pb_dict,
                     save=save,
                     output_path=ct_output_path,
                     lfc_threshold=lfc_threshold,
-                    padj_threshold=padj_threshold
+                    padj_threshold=padj_threshold,
+                    layer=layer,
                 )
 
                 results[(ct_focus, key)] = sig_genes
