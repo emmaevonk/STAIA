@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../../img/favicon.ico" />
-    <title>Adjusted Rand Index - STAIA</title>
+    <title>Leiden Resolution - STAIA</title>
     <link rel="stylesheet" href="../../css/theme.css" />
     <link rel="stylesheet" href="../../css/theme_extra.css" />
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
@@ -13,7 +13,7 @@
     
       <script>
         // Current page data
-        var mkdocs_page_name = "Adjusted Rand Index";
+        var mkdocs_page_name = "Leiden Resolution";
         var mkdocs_page_input_path = "documentation/ari.md";
         var mkdocs_page_url = null;
       </script>
@@ -75,7 +75,7 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../metrics/">Compute Metrics</a>
                   </li>
-                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Adjusted Rand Index</a>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Leiden Resolution</a>
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#STAIA.compute_leiden_resolution">compute_leiden_resolution</a>
     </li>
@@ -111,7 +111,7 @@
   <ul class="wy-breadcrumbs">
     <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
           <li class="breadcrumb-item">Documentation</li>
-      <li class="breadcrumb-item active">Adjusted Rand Index</li>
+      <li class="breadcrumb-item active">Leiden Resolution</li>
     <li class="wy-breadcrumbs-aside">
     </li>
   </ul>
@@ -121,6 +121,7 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="resolution">Resolution</h1>
+<p>If you already know the resolution you want to use, you can generate leiden clusters by running <code>sc.tl.leiden(adata, res=res)</code></p>
 
 
 <div class="doc doc-object doc-module">
@@ -163,8 +164,7 @@
 
         <p>Cluster cells with the Leiden algorithm, optionally auto-selecting the
 resolution parameter.</p>
-<p>This is the primary public interface for the module.  It orchestrates
-graph construction, optional resolution search, and final clustering,
+<p>It orchestrates graph construction, optional resolution search, and final clustering,
 then writes cluster labels into <code>adata.obs["leiden"]</code>.</p>
 
 
@@ -384,8 +384,7 @@ resolutions (columns: <code>resolution</code>, <code>n_clusters</code>, <code>st
 <span class="normal">288</span>
 <span class="normal">289</span>
 <span class="normal">290</span>
-<span class="normal">291</span>
-<span class="normal">292</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_leiden_resolution</span><span class="p">(</span>
+<span class="normal">291</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">compute_leiden_resolution</span><span class="p">(</span>
     <span class="n">adata</span><span class="p">,</span>
     <span class="n">resolution</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
     <span class="n">fast_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -397,8 +396,7 @@ resolutions (columns: <code>resolution</code>, <code>n_clusters</code>, <code>st
 <span class="sd">    Cluster cells with the Leiden algorithm, optionally auto-selecting the</span>
 <span class="sd">    resolution parameter.</span>
 
-<span class="sd">    This is the primary public interface for the module.  It orchestrates</span>
-<span class="sd">    graph construction, optional resolution search, and final clustering,</span>
+<span class="sd">    It orchestrates graph construction, optional resolution search, and final clustering,</span>
 <span class="sd">    then writes cluster labels into ``adata.obs[&quot;leiden&quot;]``.</span>
 
 <span class="sd">    Parameters</span>
