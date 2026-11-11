@@ -1704,7 +1704,6 @@ to check performance of filtering with this function.</p>
 <span class="sd">    -------</span>
 <span class="sd">    matplotlib.figure.Figure</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">obs</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span>
     <span class="k">if</span> <span class="s1">&#39;n_genes_by_counts&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The column &#39;n_genes_by_counts&#39; is not present in the data. Computing this column...&quot;</span><span class="p">)</span>
         <span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">calculate_qc_metrics</span><span class="p">(</span>
@@ -1714,6 +1713,7 @@ to check performance of filtering with this function.</p>
             <span class="n">log1p</span><span class="o">=</span><span class="kc">False</span>
         <span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Column &#39;n_genes_by_counts&#39; is computed. Generating visualizations...&quot;</span><span class="p">)</span>
+    <span class="n">obs</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span>
 
     <span class="c1"># QC plots - cell-level statistics</span>
     <span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>

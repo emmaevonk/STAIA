@@ -156,7 +156,7 @@
 
 
 <h2 id="STAIA.pseudobulk" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">pseudobulk</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">celltype</span><span class="o">=</span><span class="s1">&#39;Macrophages&#39;</span><span class="p">,</span> <span class="n">cond</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;HC&#39;</span><span class="p">,</span> <span class="s1">&#39;TEST&#39;</span><span class="p">],</span> <span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">output_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sample_col</span><span class="o">=</span><span class="s1">&#39;sample_id&#39;</span><span class="p">,</span> <span class="n">treatment_col</span><span class="o">=</span><span class="s1">&#39;condition&#39;</span><span class="p">,</span> <span class="n">pb_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">celltype_col</span><span class="o">=</span><span class="s1">&#39;cell_type&#39;</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">lfc_threshold</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">padj_threshold</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">expr_cells_threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">pseudobulk</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">celltype</span><span class="o">=</span><span class="s1">&#39;Macrophages&#39;</span><span class="p">,</span> <span class="n">cond</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;HC&#39;</span><span class="p">,</span> <span class="s1">&#39;TEST&#39;</span><span class="p">],</span> <span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">output_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sample_col</span><span class="o">=</span><span class="s1">&#39;sample_id&#39;</span><span class="p">,</span> <span class="n">treatment_col</span><span class="o">=</span><span class="s1">&#39;condition&#39;</span><span class="p">,</span> <span class="n">pb_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">celltype_col</span><span class="o">=</span><span class="s1">&#39;cell_type&#39;</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">lfc_threshold</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">padj_threshold</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span></code>
 
 </h2>
 
@@ -169,6 +169,7 @@
 2. Selects a specified cell type
 3. Run DESeq2 using treatments as the design factor
 4. Identifies significantly differentially expressed genes</p>
+<p>This module is built on top of PyDESeq2. PyDESeq2 performs its own filtering automatically (documentation can be found here: https://pydeseq2.readthedocs.io/en/stable/). </p>
 
 
 <table class="field-list">
@@ -291,19 +292,6 @@ with an automatically generated filename.</p>
                 <p>Maximum adjusted p-value for a gene to be considered significant</p>
               </div>
             </li>
-            <li>
-              <b><code>expr_cells_threshold</code></b>
-                  (<code><span title="float">float</span> or None</code>, default:
-                      <code>None</code>
-)
-              –
-              <div class="doc-md-description">
-                <p>Minimum fraction of cells within the cell type that must express a gene
-(raw count &gt; 0) for it to be included in the DE analysis. Filters out
-lowly/non-expressed genes before running DESeq2, which can improve
-statistical power and reduce noise. If None, all genes are tested.</p>
-              </div>
-            </li>
         </ul>
       </td>
     </tr>
@@ -347,7 +335,8 @@ statistical power and reduce noise. If None, all genes are tested.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>STAIA/_pseudobulk.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">267</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">266</span>
+<span class="normal">267</span>
 <span class="normal">268</span>
 <span class="normal">269</span>
 <span class="normal">270</span>
@@ -470,13 +459,7 @@ statistical power and reduce noise. If None, all genes are tested.</p>
 <span class="normal">387</span>
 <span class="normal">388</span>
 <span class="normal">389</span>
-<span class="normal">390</span>
-<span class="normal">391</span>
-<span class="normal">392</span>
-<span class="normal">393</span>
-<span class="normal">394</span>
-<span class="normal">395</span>
-<span class="normal">396</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">pseudobulk</span><span class="p">(</span>
+<span class="normal">390</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">pseudobulk</span><span class="p">(</span>
     <span class="n">adata</span><span class="p">:</span> <span class="n">AnnData</span><span class="p">,</span>
     <span class="n">celltype</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;Macrophages&quot;</span><span class="p">,</span>
     <span class="n">cond</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;HC&quot;</span><span class="p">,</span> <span class="s2">&quot;TEST&quot;</span><span class="p">],</span>
@@ -489,7 +472,6 @@ statistical power and reduce noise. If None, all genes are tested.</p>
     <span class="n">plot</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">lfc_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.25</span><span class="p">,</span>
     <span class="n">padj_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
-    <span class="n">expr_cells_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Perform pseudobulk diferential expression analysis for a specific cell type.</span>
@@ -499,6 +481,8 @@ statistical power and reduce noise. If None, all genes are tested.</p>
 <span class="sd">    2. Selects a specified cell type</span>
 <span class="sd">    3. Run DESeq2 using treatments as the design factor</span>
 <span class="sd">    4. Identifies significantly differentially expressed genes</span>
+
+<span class="sd">    This module is built on top of PyDESeq2. PyDESeq2 performs its own filtering automatically (documentation can be found here: https://pydeseq2.readthedocs.io/en/stable/). </span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -526,11 +510,6 @@ statistical power and reduce noise. If None, all genes are tested.</p>
 <span class="sd">        Minimum absolute log2 fold change for a gene to be considered significant</span>
 <span class="sd">    padj_threshold : float, default = 0.05</span>
 <span class="sd">        Maximum adjusted p-value for a gene to be considered significant</span>
-<span class="sd">    expr_cells_threshold : float or None, default=None</span>
-<span class="sd">        Minimum fraction of cells within the cell type that must express a gene</span>
-<span class="sd">        (raw count &gt; 0) for it to be included in the DE analysis. Filters out</span>
-<span class="sd">        lowly/non-expressed genes before running DESeq2, which can improve</span>
-<span class="sd">        statistical power and reduce noise. If None, all genes are tested.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -551,8 +530,7 @@ statistical power and reduce noise. If None, all genes are tested.</p>
             <span class="n">adata</span><span class="p">,</span>
             <span class="n">sample_col</span><span class="o">=</span><span class="n">sample_col</span><span class="p">,</span>
             <span class="n">treatment_col</span><span class="o">=</span><span class="n">treatment_col</span><span class="p">,</span>
-            <span class="n">celltype_col</span><span class="o">=</span><span class="n">celltype_col</span><span class="p">,</span>
-            <span class="n">expr_cells_threshold</span><span class="o">=</span><span class="n">expr_cells_threshold</span><span class="p">,</span>
+            <span class="n">celltype_col</span><span class="o">=</span><span class="n">celltype_col</span>
         <span class="p">)</span>
     <span class="c1"># pb_dict = _make_pseudobulk(adata, sample_col=sample_col, treatment_col=treatment_col)</span>
     <span class="k">try</span><span class="p">:</span>
@@ -616,7 +594,7 @@ statistical power and reduce noise. If None, all genes are tested.</p>
 
 
 <h2 id="STAIA.pseudobulk_per_condition" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">pseudobulk_per_condition</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">all_conditions</span><span class="p">,</span> <span class="n">label_col</span><span class="o">=</span><span class="s1">&#39;label&#39;</span><span class="p">,</span> <span class="n">sample_id</span><span class="o">=</span><span class="s1">&#39;sample_id&#39;</span><span class="p">,</span> <span class="n">celltype_col</span><span class="o">=</span><span class="s1">&#39;leiden&#39;</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">output_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lfc_threshold</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">padj_threshold</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">expr_cells_threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">pseudobulk_per_condition</span><span class="p">(</span><span class="n">adata</span><span class="p">,</span> <span class="n">all_conditions</span><span class="p">,</span> <span class="n">label_col</span><span class="o">=</span><span class="s1">&#39;label&#39;</span><span class="p">,</span> <span class="n">sample_id</span><span class="o">=</span><span class="s1">&#39;sample_id&#39;</span><span class="p">,</span> <span class="n">celltype_col</span><span class="o">=</span><span class="s1">&#39;leiden&#39;</span><span class="p">,</span> <span class="n">save</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">output_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lfc_threshold</span><span class="o">=</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">padj_threshold</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span></code>
 
 </h2>
 
@@ -731,16 +709,6 @@ Passed to each <code>pseudobulk</code> call</p>
 Passed to each <code>pseudobulk</code> call</p>
               </div>
             </li>
-            <li>
-              <b><code>expr_cells_threshold</code></b>
-                  (<code><span title="float">float</span> or None</code>, default:
-                      <code>None</code>
-)
-              –
-              <div class="doc-md-description">
-                <p>Passed to each <code>pseudobulk</code> call. See <code>pseudobulk</code> for details.</p>
-              </div>
-            </li>
         </ul>
       </td>
     </tr>
@@ -810,7 +778,13 @@ allowing the remaining comparisons to proceed.</li>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>STAIA/_pseudobulk.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">398</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
+<span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span>
 <span class="normal">399</span>
 <span class="normal">400</span>
 <span class="normal">401</span>
@@ -929,17 +903,7 @@ allowing the remaining comparisons to proceed.</li>
 <span class="normal">514</span>
 <span class="normal">515</span>
 <span class="normal">516</span>
-<span class="normal">517</span>
-<span class="normal">518</span>
-<span class="normal">519</span>
-<span class="normal">520</span>
-<span class="normal">521</span>
-<span class="normal">522</span>
-<span class="normal">523</span>
-<span class="normal">524</span>
-<span class="normal">525</span>
-<span class="normal">526</span>
-<span class="normal">527</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">pseudobulk_per_condition</span><span class="p">(</span>
+<span class="normal">517</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">pseudobulk_per_condition</span><span class="p">(</span>
     <span class="n">adata</span><span class="p">:</span> <span class="n">AnnData</span><span class="p">,</span>
     <span class="n">all_conditions</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
     <span class="n">label_col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;label&quot;</span><span class="p">,</span>
@@ -948,8 +912,7 @@ allowing the remaining comparisons to proceed.</li>
     <span class="n">save</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">output_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">lfc_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.25</span><span class="p">,</span>
-    <span class="n">padj_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">,</span>
-    <span class="n">expr_cells_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">padj_threshold</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Perform pseudobulk differential expression analysis across all condition</span>
@@ -984,8 +947,6 @@ allowing the remaining comparisons to proceed.</li>
 <span class="sd">    padj_threshold : float, default = 0.05</span>
 <span class="sd">        Maximum adjusted p-value for a gene to be considered significant</span>
 <span class="sd">        Passed to each ``pseudobulk`` call</span>
-<span class="sd">    expr_cells_threshold : float or None, default=None</span>
-<span class="sd">        Passed to each ``pseudobulk`` call. See ``pseudobulk`` for details.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -1040,7 +1001,6 @@ allowing the remaining comparisons to proceed.</li>
             <span class="n">celltype_col</span><span class="o">=</span><span class="n">celltype_col</span><span class="p">,</span>
             <span class="n">sample_col</span><span class="o">=</span><span class="n">sample_id</span><span class="p">,</span>
             <span class="n">treatment_col</span><span class="o">=</span><span class="n">label_col</span><span class="p">,</span>
-            <span class="n">expr_cells_threshold</span><span class="o">=</span><span class="n">expr_cells_threshold</span>
         <span class="p">)</span>
 
         <span class="k">for</span> <span class="n">ct_focus</span> <span class="ow">in</span> <span class="n">pb_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
