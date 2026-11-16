@@ -216,8 +216,7 @@ def compute_leiden_resolution(
     Cluster cells with the Leiden algorithm, optionally auto-selecting the
     resolution parameter.
 
-    This is the primary public interface for the module.  It orchestrates
-    graph construction, optional resolution search, and final clustering,
+    It orchestrates graph construction, resolution search, and final clustering,
     then writes cluster labels into ``adata.obs["leiden"]``.
 
     Parameters

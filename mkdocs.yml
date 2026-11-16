@@ -33,7 +33,7 @@ nav:
       - Annotation: documentation/annotation.md
       - Assigning Labels: documentation/assigning_labels.md
       - Compute Metrics: documentation/metrics.md
-      - Adjusted Rand Index: documentation/ari.md
+      - Leiden Resolution: documentation/ari.md
       - Segmentation: documentation/segmentation.md
       - Neighbor Analysis: documentation/neighbor_analysis.md
       - Spatial Clustering: documentation/spatial_clustering.md
