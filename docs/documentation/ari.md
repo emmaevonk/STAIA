@@ -1,4 +1,6 @@
 # Resolution
+If you already know the resolution you want to use, you can generate leiden clusters by running `sc.tl.leiden(adata, res=res)`
+
 ::: STAIA
     options:
       members:
