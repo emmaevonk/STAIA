@@ -2,6 +2,7 @@ import scanpy as sc
 from anndata import AnnData
 import matplotlib.pyplot as plt
 import pandas as pd
+import scipy.sparse as sp
 import os
 
 def cluster(
@@ -68,6 +69,11 @@ def cluster(
     """     
     if type(colors) != list:
         colors = list(colors)
+
+    # prevent scipy mismatch by converting data to correct format
+    if sp.issparse(adata.X) and isinstance(adata.X, sp.csr_array):
+        adata.X = sp.csr_matrix(adata.X)
+        
     # PCA
     if "pca" not in adata.uns:
         sc.tl.pca(adata, n_comps=n_comps, random_state=random_state)
