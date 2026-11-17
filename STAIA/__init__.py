@@ -37,7 +37,7 @@ with warnings.catch_warnings():
     )
     from .table import (
         add_nuclei,
-        get_adata_nuclei
+        get_adata_per_nucleus
     )
     from .assignment import (
         SplitSession,

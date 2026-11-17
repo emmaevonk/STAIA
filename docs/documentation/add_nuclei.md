@@ -3,7 +3,7 @@
     options:
       members:
         - add_nuclei
-        - get_adata_nuclei
+        - get_adata_per_nucleus
       show_root_heading: false
       show_root_toc_entry: false
       filters:
