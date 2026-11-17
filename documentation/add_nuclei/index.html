@@ -65,7 +65,7 @@
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#STAIA.table.add_nuclei">add_nuclei</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#STAIA.table.get_adata_nuclei">get_adata_nuclei</a>
+    <li class="toctree-l2"><a class="reference internal" href="#STAIA.table.get_adata_per_nucleus">get_adata_per_nucleus</a>
     </li>
     </ul>
                   </li>
@@ -260,8 +260,7 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>STAIA/table/_allocation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">18</span>
-<span class="normal">19</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">19</span>
 <span class="normal">20</span>
 <span class="normal">21</span>
 <span class="normal">22</span>
@@ -308,7 +307,21 @@
 <span class="normal">63</span>
 <span class="normal">64</span>
 <span class="normal">65</span>
-<span class="normal">66</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add_nuclei</span><span class="p">(</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span>
+<span class="normal">78</span>
+<span class="normal">79</span>
+<span class="normal">80</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add_nuclei</span><span class="p">(</span>
     <span class="n">sdata</span> <span class="p">:</span> <span class="n">SpatialData</span><span class="p">,</span>
     <span class="n">path_xenium</span> <span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">label_id</span> <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;label_id&quot;</span><span class="p">,</span>
@@ -337,26 +350,39 @@
 <span class="sd">    ``nucleus_boundaries_fixed``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">path_xenium</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">path_xenium</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;/&quot;</span><span class="p">:</span>
-            <span class="n">path_xenium</span> <span class="o">=</span> <span class="n">path_xenium</span> <span class="o">+</span> <span class="s2">&quot;nucleus_boundaries.parquet&quot;</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">path_xenium</span> <span class="o">=</span> <span class="n">path_xenium</span> <span class="o">+</span> <span class="s2">&quot;/nucleus_boundaries.parquet&quot;</span>
-    <span class="c1"># check if path to xenium output exists</span>
-    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">path_xenium</span><span class="p">):</span>
-        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">path_xenium</span><span class="p">)</span>
-        <span class="c1"># returns geodataframe containg unique label IDs with cell IDs and polygon shapes</span>
-        <span class="n">gdf</span> <span class="o">=</span> <span class="n">_assign_nuclei</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">label_id</span><span class="p">,</span> <span class="n">cell_id</span><span class="p">)</span>
+        <span class="n">sep</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span> <span class="k">if</span> <span class="n">path_xenium</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;/&quot;</span>
+        <span class="n">path_xenium</span> <span class="o">=</span> <span class="n">path_xenium</span> <span class="o">+</span> <span class="n">sep</span> <span class="o">+</span> <span class="s2">&quot;nucleus_boundaries.parquet&quot;</span>
 
-        <span class="n">parsed</span> <span class="o">=</span> <span class="n">ShapesModel</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">gdf</span><span class="p">)</span>
-        <span class="n">transform</span> <span class="o">=</span> <span class="n">get_transformation</span><span class="p">(</span><span class="n">sdata</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="s2">&quot;transcripts&quot;</span><span class="p">],</span> <span class="n">to_coordinate_system</span><span class="o">=</span><span class="s2">&quot;global&quot;</span><span class="p">)</span>
-        <span class="n">set_transformation</span><span class="p">(</span><span class="n">parsed</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="s2">&quot;global&quot;</span><span class="p">)</span>
-
-        <span class="n">sdata</span><span class="o">.</span><span class="n">shapes</span><span class="p">[</span><span class="n">shapes_layer</span><span class="p">]</span> <span class="o">=</span> <span class="n">parsed</span>
-        <span class="c1"># sdata_fixed = sdata.shapes[shapes_layer]</span>
-        <span class="k">return</span> <span class="n">sdata</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The path to the Xenium output (containing the `nucleus_boundaries.parquet` file) does not exist. The nuclei have not been added to sdata. Change the path to an existing path with Xenium output and try again.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">path_xenium</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="s2">&quot;The path to the Xenium output (containing `nucleus_boundaries.parquet`) &quot;</span>
+            <span class="s2">&quot;does not exist. Change the path and try again.&quot;</span>
+        <span class="p">)</span>
         <span class="k">return</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">path_xenium</span><span class="p">)</span>
+    <span class="n">gdf</span> <span class="o">=</span> <span class="n">_assign_nuclei</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">label_id</span><span class="p">,</span> <span class="n">cell_id</span><span class="p">)</span>
+    <span class="n">parsed</span> <span class="o">=</span> <span class="n">ShapesModel</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">gdf</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s2">&quot;nucleus_boundaries&quot;</span> <span class="ow">in</span> <span class="n">sdata</span><span class="o">.</span><span class="n">shapes</span><span class="p">:</span>
+        <span class="n">transform</span> <span class="o">=</span> <span class="n">get_transformation</span><span class="p">(</span>
+            <span class="n">sdata</span><span class="o">.</span><span class="n">shapes</span><span class="p">[</span><span class="s2">&quot;nucleus_boundaries&quot;</span><span class="p">],</span>
+            <span class="n">to_coordinate_system</span><span class="o">=</span><span class="s2">&quot;global&quot;</span>
+        <span class="p">)</span>
+        <span class="n">set_transformation</span><span class="p">(</span><span class="n">parsed</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="s2">&quot;global&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Copied transform from &#39;nucleus_boundaries&#39;:&quot;</span><span class="p">,</span> <span class="n">transform</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># fallback</span>
+        <span class="n">transform</span> <span class="o">=</span> <span class="n">get_transformation</span><span class="p">(</span>
+            <span class="n">sdata</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="s2">&quot;transcripts&quot;</span><span class="p">],</span>
+            <span class="n">to_coordinate_system</span><span class="o">=</span><span class="s2">&quot;global&quot;</span>
+        <span class="p">)</span>
+        <span class="n">set_transformation</span><span class="p">(</span><span class="n">parsed</span><span class="p">,</span> <span class="n">transform</span><span class="p">,</span> <span class="s2">&quot;global&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Warning: &#39;nucleus_boundaries&#39; not found, copied transform &quot;</span>
+              <span class="s2">&quot;from transcripts instead:&quot;</span><span class="p">,</span> <span class="n">transform</span><span class="p">)</span>
+
+    <span class="n">sdata</span><span class="o">.</span><span class="n">shapes</span><span class="p">[</span><span class="n">shapes_layer</span><span class="p">]</span> <span class="o">=</span> <span class="n">parsed</span>
+    <span class="k">return</span> <span class="n">sdata</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -366,16 +392,22 @@
 <div class="doc doc-object doc-function">
 
 
-<h2 id="STAIA.table.get_adata_nuclei" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">get_adata_nuclei</span><span class="p">(</span><span class="n">sdata</span><span class="p">)</span></code>
+<h2 id="STAIA.table.get_adata_per_nucleus" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">get_adata_per_nucleus</span><span class="p">(</span><span class="n">sdata</span><span class="p">,</span> <span class="n">table_layer</span><span class="o">=</span><span class="s1">&#39;table&#39;</span><span class="p">,</span> <span class="n">min_qv</span><span class="o">=</span><span class="mf">20.0</span><span class="p">)</span></code>
 
 </h2>
 
 
     <div class="doc doc-contents ">
 
-        <p>Split each cell's transcripts into nuclear and fiber (non-nuclear) compartments.</p>
-<p>Uses the nucleus shapes layer added by <code>STAIA.add_nuclei()</code> (or if that hasn't been run, falls back to the raw <code>nucleus_boundaries</code> layer with a warning) to build two separate AnnData objects: one containing only transcripts whose coordinates fall within a cell's nucleus, and one containing the remainder (transcripts within the cell boundary but outside the nucleus). Both objects are annotated with standard QC metrics (total counts, n_genes) and a per-cell <code>area</code> column via <code>_add_qc_col</code>.</p>
+        <p>Return per-nucleus transcript counts and a matching per-cell fiber AnnData.</p>
+<p>Uses the Xenium-provided <code>overlaps_nucleus</code> flag to identify nuclear
+transcripts (consistent with XeniumRanger), then uses a spatial join
+only to assign each nuclear transcript to a specific nucleus within its
+cell. Applies the same quality score filter (qv &gt;= 20 by default) that
+XeniumRanger uses internally, so counts are consistent with the official
+Xenium output. Fiber counts are obtained by subtracting the per-nucleus
+counts (summed to cell level) from the original per-cell counts.</p>
 
 
 <table class="field-list">
@@ -393,7 +425,33 @@
                   (<code><span title="spatialdata.SpatialData">SpatialData</span></code>)
               –
               <div class="doc-md-description">
-                <p>A SpatialData object containing a "table" element</p>
+                <p>SpatialData object. Must contain:
+- sdata.shapes["nucleus_boundaries_fixed"]  (run STAIA.add_nuclei() first)
+- sdata.shapes["cell_boundaries"]
+- sdata.points["transcripts"]  with <code>overlaps_nucleus</code> and <code>qv</code> columns
+- sdata.tables[table_layer]</p>
+              </div>
+            </li>
+            <li>
+              <b><code>table_layer</code></b>
+                  (<code><span title="str">str</span></code>, default:
+                      <code>&#34;table&#34;</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Key of the per-cell table in <code>sdata.tables</code>.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>min_qv</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>20.0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Minimum quality score threshold. Transcripts with qv below this
+value are excluded, consistent with XeniumRanger's default filter.
+Set to 0.0 to disable filtering.</p>
               </div>
             </li>
         </ul>
@@ -416,12 +474,19 @@
                   <code><span title="tuple">tuple</span>[<span title="anndata.AnnData">AnnData</span>, <span title="anndata.AnnData">AnnData</span>]</code>
               –
               <div class="doc-md-description">
-                <p><code>(adata_fibers, adata_nuclei)</code> — AnnData objects with the same
-<code>obs</code>/<code>var</code>/<code>obsm</code>/<code>uns</code> as the original table, but with <code>X</code> restricted to
-fiber or nuclear transcript counts respectively, and QC columns
-(<code>total_counts</code>, <code>n_genes_by_counts</code>, <code>area</code>) added to <code>.obs</code>.
-Both tables are also stored in <code>sdata.tables</code> as <code>"adata_fibers"</code>
-and <code>"adata_nuclei"</code>.</p>
+                <p><code>(adata_per_nucleus, adata_fibers)</code></p>
+<ul>
+<li><code>adata_per_nucleus</code>: one row per nucleus, with <code>cell_id</code>,
+  <code>label_id</code>, <code>area</code>, <code>nuclear_counts</code> and <code>nuc_area_fraction</code>
+  in <code>.obs</code>.</li>
+<li><code>adata_fibers</code>: one row per cell, counts outside all nuclei
+  (total counts minus nuclear counts), with <code>cell_area</code>,
+  <code>nucleus_area</code>, <code>fiber_area</code>, <code>cytoplasmic_counts</code>,
+  <code>total_counts</code>, <code>nuc_area_fraction</code>, and
+  <code>fiber_area_fraction</code> in <code>.obs</code>.</li>
+</ul>
+<p>Both are stored in <code>sdata.tables</code> as <code>"adata_per_nucleus"</code>
+and <code>"adata_fibers_per_nucleus"</code>.</p>
               </div>
             </li>
         </ul>
@@ -430,15 +495,133 @@ and <code>"adata_nuclei"</code>.</p>
   </tbody>
 </table>
 
-<details class="note" open>
-  <summary>Notes</summary>
-  <p>This can take a while on large samples, since it aggregates transcripts
-over polygon geometries for every cell.</p>
-</details>
-
             <details class="mkdocstrings-source">
               <summary>Source code in <code>STAIA/table/_allocation.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">207</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 83</span>
+<span class="normal"> 84</span>
+<span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
 <span class="normal">208</span>
 <span class="normal">209</span>
 <span class="normal">210</span>
@@ -535,104 +718,428 @@ over polygon geometries for every cell.</p>
 <span class="normal">301</span>
 <span class="normal">302</span>
 <span class="normal">303</span>
-<span class="normal">304</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_adata_nuclei</span><span class="p">(</span><span class="n">sdata</span><span class="p">:</span> <span class="n">SpatialData</span><span class="p">):</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span>
+<span class="normal">345</span>
+<span class="normal">346</span>
+<span class="normal">347</span>
+<span class="normal">348</span>
+<span class="normal">349</span>
+<span class="normal">350</span>
+<span class="normal">351</span>
+<span class="normal">352</span>
+<span class="normal">353</span>
+<span class="normal">354</span>
+<span class="normal">355</span>
+<span class="normal">356</span>
+<span class="normal">357</span>
+<span class="normal">358</span>
+<span class="normal">359</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span>
+<span class="normal">363</span>
+<span class="normal">364</span>
+<span class="normal">365</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span>
+<span class="normal">369</span>
+<span class="normal">370</span>
+<span class="normal">371</span>
+<span class="normal">372</span>
+<span class="normal">373</span>
+<span class="normal">374</span>
+<span class="normal">375</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span>
+<span class="normal">379</span>
+<span class="normal">380</span>
+<span class="normal">381</span>
+<span class="normal">382</span>
+<span class="normal">383</span>
+<span class="normal">384</span>
+<span class="normal">385</span>
+<span class="normal">386</span>
+<span class="normal">387</span>
+<span class="normal">388</span>
+<span class="normal">389</span>
+<span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
+<span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span>
+<span class="normal">401</span>
+<span class="normal">402</span>
+<span class="normal">403</span>
+<span class="normal">404</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_adata_per_nucleus</span><span class="p">(</span><span class="n">sdata</span><span class="p">:</span> <span class="n">SpatialData</span><span class="p">,</span> <span class="n">table_layer</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;table&quot;</span><span class="p">,</span> <span class="n">min_qv</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">20.0</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Split each cell&#39;s transcripts into nuclear and fiber (non-nuclear) compartments.</span>
+<span class="sd">    Return per-nucleus transcript counts and a matching per-cell fiber AnnData.</span>
 
-<span class="sd">    Uses the nucleus shapes layer added by `STAIA.add_nuclei()` (or if that hasn&#39;t been run, falls back to the raw `nucleus_boundaries` layer with a warning) to build two separate AnnData objects: one containing only transcripts whose coordinates fall within a cell&#39;s nucleus, and one containing the remainder (transcripts within the cell boundary but outside the nucleus). Both objects are annotated with standard QC metrics (total counts, n_genes) and a per-cell `area` column via `_add_qc_col`.</span>
+<span class="sd">    Uses the Xenium-provided ``overlaps_nucleus`` flag to identify nuclear</span>
+<span class="sd">    transcripts (consistent with XeniumRanger), then uses a spatial join</span>
+<span class="sd">    only to assign each nuclear transcript to a specific nucleus within its</span>
+<span class="sd">    cell. Applies the same quality score filter (qv &gt;= 20 by default) that</span>
+<span class="sd">    XeniumRanger uses internally, so counts are consistent with the official</span>
+<span class="sd">    Xenium output. Fiber counts are obtained by subtracting the per-nucleus</span>
+<span class="sd">    counts (summed to cell level) from the original per-cell counts.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    sdata : SpatialData</span>
-<span class="sd">        A SpatialData object containing a &quot;table&quot; element</span>
+<span class="sd">        SpatialData object. Must contain:</span>
+<span class="sd">        - sdata.shapes[&quot;nucleus_boundaries_fixed&quot;]  (run STAIA.add_nuclei() first)</span>
+<span class="sd">        - sdata.shapes[&quot;cell_boundaries&quot;]</span>
+<span class="sd">        - sdata.points[&quot;transcripts&quot;]  with ``overlaps_nucleus`` and ``qv`` columns</span>
+<span class="sd">        - sdata.tables[table_layer]</span>
+<span class="sd">    table_layer : str, default &quot;table&quot;</span>
+<span class="sd">        Key of the per-cell table in ``sdata.tables``.</span>
+<span class="sd">    min_qv : float, default 20.0</span>
+<span class="sd">        Minimum quality score threshold. Transcripts with qv below this</span>
+<span class="sd">        value are excluded, consistent with XeniumRanger&#39;s default filter.</span>
+<span class="sd">        Set to 0.0 to disable filtering.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    tuple[AnnData, AnnData]</span>
-<span class="sd">        `(adata_fibers, adata_nuclei)` — AnnData objects with the same</span>
-<span class="sd">        `obs`/`var`/`obsm`/`uns` as the original table, but with `X` restricted to</span>
-<span class="sd">        fiber or nuclear transcript counts respectively, and QC columns</span>
-<span class="sd">        (`total_counts`, `n_genes_by_counts`, `area`) added to `.obs`.</span>
-<span class="sd">        Both tables are also stored in `sdata.tables` as `&quot;adata_fibers&quot;`</span>
-<span class="sd">        and `&quot;adata_nuclei&quot;`.</span>
+<span class="sd">        ``(adata_per_nucleus, adata_fibers)``</span>
 
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    This can take a while on large samples, since it aggregates transcripts</span>
-<span class="sd">    over polygon geometries for every cell.</span>
+<span class="sd">        - ``adata_per_nucleus``: one row per nucleus, with ``cell_id``,</span>
+<span class="sd">          ``label_id``, ``area``, ``nuclear_counts`` and ``nuc_area_fraction``</span>
+<span class="sd">          in ``.obs``.</span>
+<span class="sd">        - ``adata_fibers``: one row per cell, counts outside all nuclei</span>
+<span class="sd">          (total counts minus nuclear counts), with ``cell_area``,</span>
+<span class="sd">          ``nucleus_area``, ``fiber_area``, ``cytoplasmic_counts``,</span>
+<span class="sd">          ``total_counts``, ``nuc_area_fraction``, and</span>
+<span class="sd">          ``fiber_area_fraction`` in ``.obs``.</span>
+
+<span class="sd">        Both are stored in ``sdata.tables`` as ``&quot;adata_per_nucleus&quot;``</span>
+<span class="sd">        and ``&quot;adata_fibers_per_nucleus&quot;``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+    <span class="k">if</span> <span class="s2">&quot;nucleus_boundaries_fixed&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sdata</span><span class="o">.</span><span class="n">shapes</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;Run STAIA.add_nuclei() first — &#39;nucleus_boundaries_fixed&#39; not found.&quot;</span>
+        <span class="p">)</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;It takes a while to retrieve both the nuclei AnnData object, and the fiber AnnData object. Please wait...&quot;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">sdata</span><span class="p">)</span> <span class="o">!=</span> <span class="n">SpatialData</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The input provided should be SpatialData, not </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">sdata</span><span class="p">)</span><span class="si">}</span><span class="s1">. Exiting code...&#39;</span><span class="p">)</span>
-        <span class="k">return</span>
-    <span class="c1"># check if `STAIA.add_nuclei()` has been run</span>
-    <span class="k">if</span> <span class="s1">&#39;nucleus_boundaries_fixed&#39;</span> <span class="ow">in</span> <span class="n">sdata</span><span class="o">.</span><span class="n">shapes</span><span class="p">:</span>
-        <span class="n">sdata</span><span class="p">,</span> <span class="n">nuc</span> <span class="o">=</span> <span class="n">_repair_nucleus</span><span class="p">(</span><span class="n">sdata</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span> <span class="c1"># use nucleus_boundaries and show a warning </span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;STAIA.add_nuclei() function is not used before. Will use the &#39;nucleus_boundaries&#39; column in sdata&quot;</span><span class="p">)</span>
-        <span class="n">sdata</span><span class="p">,</span> <span class="n">nuc</span> <span class="o">=</span> <span class="n">_repair_nucleus</span><span class="p">(</span><span class="n">sdata</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="s2">&quot;nucleus_boundaries&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Building per-nucleus AnnData using overlaps_nucleus flag...&quot;</span><span class="p">)</span>
+    <span class="n">adata</span> <span class="o">=</span> <span class="n">sdata</span><span class="o">.</span><span class="n">tables</span><span class="p">[</span><span class="n">table_layer</span><span class="p">]</span>
 
-    <span class="c1"># NOTE: this part of the code is too computationally intensive</span>
-    <span class="c1"># agg_result = sd.aggregate(</span>
-    <span class="c1">#     values=sdata.points[&quot;transcripts&quot;],</span>
-    <span class="c1">#     by=sdata.shapes[&quot;nucleus_boundaries_by_cell&quot;],</span>
-    <span class="c1">#     value_key=&quot;feature_name&quot;,</span>
-    <span class="c1">#     agg_func=&quot;count&quot;,</span>
-    <span class="c1"># )</span>
-    <span class="c1"># adata_nuclei_raw = agg_result.tables[&quot;table&quot;]</span>
+    <span class="c1"># PREPARE NUCLEUS SHAPES                                               </span>
+    <span class="n">nuc_shapes</span> <span class="o">=</span> <span class="n">sdata</span><span class="o">.</span><span class="n">shapes</span><span class="p">[</span><span class="s2">&quot;nucleus_boundaries_fixed&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">nuc_shapes</span><span class="p">[</span><span class="s2">&quot;geometry&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nuc_shapes</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">make_valid</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">_to_polygonal</span><span class="p">)</span>
+    <span class="n">nuc_shapes</span> <span class="o">=</span> <span class="n">nuc_shapes</span><span class="p">[</span><span class="n">nuc_shapes</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">notna</span><span class="p">()]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">nuc_shapes</span><span class="p">[</span><span class="s2">&quot;nucleus_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nuc_shapes</span><span class="o">.</span><span class="n">index</span>
+    <span class="n">nuc_shapes</span> <span class="o">=</span> <span class="n">nuc_shapes</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="c1"># raw_df = _to_df(adata_nuclei_raw)</span>
+    <span class="c1"># Compute area before anything else so it is available later</span>
+    <span class="n">nuc_shapes</span><span class="p">[</span><span class="s2">&quot;area&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">nuc_shapes</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">area</span>
+    <span class="n">nucleus_index</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">(</span><span class="n">nuc_shapes</span><span class="p">[</span><span class="s2">&quot;nucleus_id&quot;</span><span class="p">])</span>
+    <span class="n">gene_index</span>    <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span>
 
-    <span class="n">raw_df</span> <span class="o">=</span> <span class="n">_aggregate_in_chunks</span><span class="p">(</span><span class="n">sdata</span><span class="p">,</span> <span class="s2">&quot;nucleus_boundaries_by_cell&quot;</span><span class="p">,</span> <span class="n">chunk_size</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
-    <span class="n">raw_df</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">raw_df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+    <span class="c1"># 1. Load transcripts, filter unassigned and by quality score         #</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Loading transcripts...&quot;</span><span class="p">)</span>
+    <span class="n">tx</span> <span class="o">=</span> <span class="n">sdata</span><span class="o">.</span><span class="n">points</span><span class="p">[</span><span class="s2">&quot;transcripts&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+    <span class="n">tx</span> <span class="o">=</span> <span class="n">tx</span><span class="p">[</span><span class="n">tx</span><span class="p">[</span><span class="s2">&quot;cell_id&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;UNASSIGNED&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">before</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tx</span><span class="p">)</span>
+    <span class="n">tx</span> <span class="o">=</span> <span class="n">tx</span><span class="p">[</span><span class="n">tx</span><span class="p">[</span><span class="s2">&quot;qv&quot;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">min_qv</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Transcripts after qv &gt;= </span><span class="si">{</span><span class="n">min_qv</span><span class="si">}</span><span class="s2"> filter: &quot;</span>
+          <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">tx</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> (removed </span><span class="si">{</span><span class="n">before</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">tx</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
 
-    <span class="n">adata</span> <span class="o">=</span> <span class="n">sdata</span><span class="o">.</span><span class="n">tables</span><span class="p">[</span><span class="s2">&quot;table&quot;</span><span class="p">]</span>  
+    <span class="n">original_total</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tx</span><span class="p">)</span> <span class="o">-</span> <span class="n">original_total</span><span class="p">)</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">original_total</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.05</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;  WARNING: filtered transcript count (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">tx</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">) differs &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;from original table total counts (</span><span class="si">{</span><span class="n">original_total</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">) by more &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;than 5%. The original table may have been built with a different &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;qv threshold. Consider adjusting min_qv.&quot;</span>
+        <span class="p">)</span>
 
-    <span class="n">nuc_counts</span> <span class="o">=</span> <span class="n">raw_df</span><span class="o">.</span><span class="n">reindex</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">adata</span><span class="o">.</span><span class="n">obs_names</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">adata</span><span class="o">.</span><span class="n">var_names</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-    <span class="c1"># temporary check - can be removed later</span>
-    <span class="k">if</span> <span class="n">nuc_counts</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WARNING: nuc_counts is all zeros — obs_names mismatch between &quot;</span>
-            <span class="s2">&quot;adata_nuclei_raw and adata. Check: </span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;  adata_nuclei_raw.obs_names[:5]: </span><span class="si">{</span><span class="n">adata_nuclei_raw</span><span class="o">.</span><span class="n">obs_names</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;  adata.obs_names[:5]:            </span><span class="si">{</span><span class="n">adata</span><span class="o">.</span><span class="n">obs_names</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">tx_nuc</span> <span class="o">=</span> <span class="n">tx</span><span class="p">[</span><span class="n">tx</span><span class="p">[</span><span class="s2">&quot;overlaps_nucleus&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">del</span> <span class="n">tx</span>
+    <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Nuclear transcripts: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">tx_nuc</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="n">whole_counts</span> <span class="o">=</span> <span class="n">_to_df</span><span class="p">(</span><span class="n">adata</span><span class="p">)</span>
-    <span class="n">fiber_counts</span> <span class="o">=</span> <span class="p">(</span><span class="n">whole_counts</span> <span class="o">-</span> <span class="n">nuc_counts</span><span class="p">)</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="c1"># 2. Spatial join: assign each nuclear transcript to a nucleus</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Spatial join: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">tx_nuc</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> nuclear transcripts x &quot;</span>
+          <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">nuc_shapes</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> nuclei...&quot;</span><span class="p">)</span>
 
-    <span class="c1"># Copy obsm so centroid coordinates are preserved in both tables</span>
+    <span class="n">tx_nuc_gdf</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span>
+        <span class="n">tx_nuc</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">geometry</span><span class="o">=</span><span class="n">gpd</span><span class="o">.</span><span class="n">points_from_xy</span><span class="p">(</span><span class="n">tx_nuc</span><span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">tx_nuc</span><span class="p">[</span><span class="s2">&quot;y&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
+        <span class="n">crs</span><span class="o">=</span><span class="n">nuc_shapes</span><span class="o">.</span><span class="n">crs</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">del</span> <span class="n">tx_nuc</span>
+    <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+
+    <span class="n">joined</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">sjoin</span><span class="p">(</span>
+        <span class="n">tx_nuc_gdf</span><span class="p">,</span>
+        <span class="n">nuc_shapes</span><span class="p">[[</span><span class="s2">&quot;nucleus_id&quot;</span><span class="p">,</span> <span class="s2">&quot;cell_id&quot;</span><span class="p">,</span> <span class="s2">&quot;label_id&quot;</span><span class="p">,</span> <span class="s2">&quot;geometry&quot;</span><span class="p">]],</span>
+        <span class="n">how</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span>
+        <span class="n">predicate</span><span class="o">=</span><span class="s2">&quot;within&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">del</span> <span class="n">tx_nuc_gdf</span>
+    <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+
+    <span class="n">unmatched</span> <span class="o">=</span> <span class="n">joined</span><span class="p">[</span><span class="s2">&quot;index_right&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">unmatched</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  WARNING: </span><span class="si">{</span><span class="n">unmatched</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> nuclear transcripts could not be &quot;</span>
+              <span class="sa">f</span><span class="s2">&quot;assigned to a specific nucleus (edge/boundary cases) — excluded.&quot;</span><span class="p">)</span>
+
+    <span class="n">joined</span> <span class="o">=</span> <span class="n">joined</span><span class="p">[</span><span class="n">joined</span><span class="p">[</span><span class="s2">&quot;index_right&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">notna</span><span class="p">()]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="c1"># Map integer index_right to nucleus_id string</span>
+    <span class="n">joined</span><span class="p">[</span><span class="s2">&quot;nucleus_id&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">joined</span><span class="p">[</span><span class="s2">&quot;index_right&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+        <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">nuc_shapes</span><span class="p">[</span><span class="s2">&quot;nucleus_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nuc_shapes</span><span class="p">)))</span>
+    <span class="p">)</span>
+
+    <span class="c1"># 3. Build sparse count matrix using Categorical codes</span>
+    <span class="n">nuc_cat</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span>
+        <span class="n">joined</span><span class="p">[</span><span class="s2">&quot;nucleus_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">),</span>
+        <span class="n">categories</span><span class="o">=</span><span class="n">nucleus_index</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">gene_cat</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span>
+        <span class="n">joined</span><span class="p">[</span><span class="s2">&quot;feature_name&quot;</span><span class="p">],</span>
+        <span class="n">categories</span><span class="o">=</span><span class="n">gene_index</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">valid</span> <span class="o">=</span> <span class="p">(</span><span class="n">nuc_cat</span><span class="o">.</span><span class="n">codes</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">gene_cat</span><span class="o">.</span><span class="n">codes</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Valid transcript-to-nucleus assignments: </span><span class="si">{</span><span class="n">valid</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> &quot;</span>
+          <span class="sa">f</span><span class="s2">&quot;out of </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">joined</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">valid</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ERROR: No valid assignments after Categorical mapping.&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  nucleus_id sample:&quot;</span><span class="p">,</span> <span class="n">joined</span><span class="p">[</span><span class="s2">&quot;nucleus_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  nucleus_index sample:&quot;</span><span class="p">,</span> <span class="n">nucleus_index</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  feature_name sample:&quot;</span><span class="p">,</span> <span class="n">joined</span><span class="p">[</span><span class="s2">&quot;feature_name&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  gene_index sample:&quot;</span><span class="p">,</span> <span class="n">gene_index</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;No transcripts could be assigned to nuclei. &quot;</span>
+            <span class="s2">&quot;Check the debug output above for index mismatches.&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">nuc_pos</span>  <span class="o">=</span> <span class="n">nuc_cat</span><span class="o">.</span><span class="n">codes</span><span class="p">[</span><span class="n">valid</span><span class="p">]</span>
+    <span class="n">gene_pos</span> <span class="o">=</span> <span class="n">gene_cat</span><span class="o">.</span><span class="n">codes</span><span class="p">[</span><span class="n">valid</span><span class="p">]</span>
+
+    <span class="n">nuc_X</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nuc_pos</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span> <span class="p">(</span><span class="n">nuc_pos</span><span class="p">,</span> <span class="n">gene_pos</span><span class="p">)),</span>
+        <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">nucleus_index</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">gene_index</span><span class="p">)),</span>
+    <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  nuc_X total counts: </span><span class="si">{</span><span class="n">nuc_X</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">del</span> <span class="n">joined</span><span class="p">,</span> <span class="n">nuc_cat</span><span class="p">,</span> <span class="n">gene_cat</span><span class="p">,</span> <span class="n">nuc_pos</span><span class="p">,</span> <span class="n">gene_pos</span>
+    <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+
+    <span class="c1"># 4. Build per-nucleus AnnData</span>
+    <span class="n">nuc_obs</span>       <span class="o">=</span> <span class="n">nuc_shapes</span><span class="p">[[</span><span class="s2">&quot;nucleus_id&quot;</span><span class="p">,</span> <span class="s2">&quot;cell_id&quot;</span><span class="p">,</span> <span class="s2">&quot;label_id&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">nuc_obs</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">nucleus_index</span>
+
+    <span class="n">adata_per_nucleus</span> <span class="o">=</span> <span class="n">AnnData</span><span class="p">(</span>
+        <span class="n">X</span><span class="o">=</span><span class="n">nuc_X</span><span class="p">,</span>
+        <span class="n">obs</span><span class="o">=</span><span class="n">nuc_obs</span><span class="p">,</span>
+        <span class="n">var</span><span class="o">=</span><span class="n">adata</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+    <span class="p">)</span>
+    <span class="k">del</span> <span class="n">nuc_X</span>
+    <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+
+    <span class="c1"># 5. Build fiber AnnData by subtracting nuclear counts from original  </span>
+
+    <span class="c1"># per-cell counts — fiber = cytoplasmic only</span>
+    <span class="c1"># Map cell_id -&gt; row position in adata via adata.obs[&quot;cell_id&quot;]</span>
+
+    <span class="n">cell_id_to_pos</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span>
+        <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">)),</span>
+        <span class="n">index</span><span class="o">=</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;cell_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="n">cell_id_series</span>  <span class="o">=</span> <span class="n">adata_per_nucleus</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;cell_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+    <span class="n">nucleus_to_cell</span> <span class="o">=</span> <span class="n">cell_id_series</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">cell_id_to_pos</span><span class="p">)</span>
+    <span class="n">n_unmapped</span> <span class="o">=</span> <span class="n">nucleus_to_cell</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">n_unmapped</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  WARNING: </span><span class="si">{</span><span class="n">n_unmapped</span><span class="si">}</span><span class="s2"> nuclei could not be mapped to a cell &quot;</span>
+              <span class="sa">f</span><span class="s2">&quot;— excluded from fiber subtraction (expected for nuclei &quot;</span>
+              <span class="sa">f</span><span class="s2">&quot;outside cell boundaries).&quot;</span><span class="p">)</span>
+
+    <span class="n">valid_mask</span> <span class="o">=</span> <span class="n">nucleus_to_cell</span><span class="o">.</span><span class="n">notna</span><span class="p">()</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">valid_positions</span> <span class="o">=</span> <span class="n">nucleus_to_cell</span><span class="p">[</span><span class="n">valid_mask</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">n_cells</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">)</span>
+    <span class="n">n_valid</span> <span class="o">=</span> <span class="n">valid_mask</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Nuclei mapped to cells: </span><span class="si">{</span><span class="n">n_valid</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2"> / </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">adata_per_nucleus</span><span class="p">)</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">summation_matrix</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">(</span>
+        <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_valid</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">valid_positions</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_valid</span><span class="p">)),</span>
+        <span class="p">),</span>
+        <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">n_cells</span><span class="p">,</span> <span class="n">n_valid</span><span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="n">nuc_X_valid</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">(</span><span class="n">adata_per_nucleus</span><span class="o">.</span><span class="n">X</span><span class="p">[</span><span class="n">valid_mask</span><span class="p">])</span>
+    <span class="n">nuc_counts_per_cell</span> <span class="o">=</span> <span class="n">summation_matrix</span> <span class="o">@</span> <span class="n">nuc_X_valid</span>
+    <span class="k">del</span> <span class="n">summation_matrix</span><span class="p">,</span> <span class="n">nuc_X_valid</span>
+    <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  nuc_counts_per_cell shape: </span><span class="si">{</span><span class="n">nuc_counts_per_cell</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  nuc_counts_per_cell total: </span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">nuc_counts_per_cell</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span><span class="si">:</span><span class="s2">,</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Reindex columns to match adata.var_names exactly before subtraction</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">(</span><span class="n">adata_per_nucleus</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">var_names</span><span class="p">)):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  WARNING: var_names differ — reindexing nuc_counts_per_cell columns...&quot;</span><span class="p">)</span>
+        <span class="n">col_pos</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">(</span><span class="n">adata_per_nucleus</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span><span class="o">.</span><span class="n">get_indexer</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">var_names</span><span class="p">)</span>
+        <span class="n">present</span> <span class="o">=</span> <span class="n">col_pos</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+        <span class="n">reindexed</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">lil_matrix</span><span class="p">((</span><span class="n">n_cells</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">var_names</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">reindexed</span><span class="p">[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">present</span><span class="p">)[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">=</span> <span class="n">nuc_counts_per_cell</span><span class="p">[:,</span> <span class="n">col_pos</span><span class="p">[</span><span class="n">present</span><span class="p">]]</span>
+        <span class="n">nuc_counts_per_cell</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">(</span><span class="n">reindexed</span><span class="p">)</span>
+        <span class="k">del</span> <span class="n">reindexed</span>
+        <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+
+    <span class="n">whole_X</span>  <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">X</span><span class="p">)</span>
+    <span class="n">fiber_X</span>  <span class="o">=</span> <span class="n">whole_X</span> <span class="o">-</span> <span class="n">nuc_counts_per_cell</span>
+    <span class="k">del</span> <span class="n">whole_X</span><span class="p">,</span> <span class="n">nuc_counts_per_cell</span>
+    <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+
+    <span class="n">fiber_X</span>      <span class="o">=</span> <span class="n">fiber_X</span><span class="o">.</span><span class="n">tocsr</span><span class="p">()</span>
+    <span class="n">fiber_X</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">fiber_X</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">a_min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">a_max</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="n">fiber_X</span><span class="o">.</span><span class="n">eliminate_zeros</span><span class="p">()</span>
+
+    <span class="c1"># print(f&quot;  whole_X total: {int(sp.csr_matrix(adata.X).sum()):,}&quot;)</span>
+    <span class="c1"># print(f&quot;  fiber_X total: {int(fiber_X.sum()):,}&quot;)</span>
+    <span class="c1"># print(f&quot;  nuc_X total:   {int(adata_per_nucleus.X.sum()):,}&quot;)</span>
+    <span class="c1"># print(f&quot;  fiber + nuc should equal whole: &quot;</span>
+    <span class="c1">#       f&quot;{int(fiber_X.sum()) + int(adata_per_nucleus.X.sum()):,}&quot;)</span>
+
     <span class="n">obsm</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;spatial&quot;</span><span class="p">:</span> <span class="n">adata</span><span class="o">.</span><span class="n">obsm</span><span class="p">[</span><span class="s2">&quot;spatial&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()}</span> <span class="k">if</span> <span class="s2">&quot;spatial&quot;</span> <span class="ow">in</span> <span class="n">adata</span><span class="o">.</span><span class="n">obsm</span> <span class="k">else</span> <span class="p">{}</span>
+    <span class="n">obs</span>  <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;region&quot;</span><span class="p">],</span> <span class="n">errors</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
-    <span class="c1"># Build nuclei AnnData with corrected region pointer</span>
-    <span class="n">nuc_attrs</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;spatialdata_attrs&quot;</span><span class="p">,</span> <span class="p">{}))</span>
-    <span class="n">nuc_attrs</span><span class="p">[</span><span class="s2">&quot;region&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;nucleus_boundaries_fixed&quot;</span>
-    <span class="n">adata_nuclei</span> <span class="o">=</span> <span class="n">AnnData</span><span class="p">(</span>
-        <span class="n">X</span><span class="o">=</span><span class="n">sp</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">(</span><span class="n">nuc_counts</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-        <span class="n">obs</span><span class="o">=</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
-        <span class="n">var</span><span class="o">=</span><span class="n">adata</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
-        <span class="n">obsm</span><span class="o">=</span><span class="n">obsm</span><span class="p">,</span>
-        <span class="n">uns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;spatialdata_attrs&quot;</span><span class="p">:</span> <span class="n">nuc_attrs</span><span class="p">},</span>
-    <span class="p">)</span>
-
-    <span class="c1"># Build fibers AnnData with corrected region pointer</span>
-    <span class="n">fib_attrs</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;spatialdata_attrs&quot;</span><span class="p">,</span> <span class="p">{}))</span>
-    <span class="n">fib_attrs</span><span class="p">[</span><span class="s2">&quot;region&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;cell_boundaries&quot;</span>
     <span class="n">adata_fibers</span> <span class="o">=</span> <span class="n">AnnData</span><span class="p">(</span>
-        <span class="n">X</span><span class="o">=</span><span class="n">sp</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">(</span><span class="n">fiber_counts</span><span class="o">.</span><span class="n">values</span><span class="p">),</span>
-        <span class="n">obs</span><span class="o">=</span><span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
+        <span class="n">X</span><span class="o">=</span><span class="n">fiber_X</span><span class="p">,</span>
+        <span class="n">obs</span><span class="o">=</span><span class="n">obs</span><span class="p">,</span>
         <span class="n">var</span><span class="o">=</span><span class="n">adata</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span>
         <span class="n">obsm</span><span class="o">=</span><span class="n">obsm</span><span class="p">,</span>
-        <span class="n">uns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;spatialdata_attrs&quot;</span><span class="p">:</span> <span class="n">fib_attrs</span><span class="p">},</span>
+    <span class="p">)</span>
+    <span class="k">del</span> <span class="n">fiber_X</span>
+    <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+
+    <span class="c1"># 6. QC metrics, areas, fractions and count columns</span>
+    <span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">calculate_qc_metrics</span><span class="p">(</span>
+        <span class="n">adata_per_nucleus</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">percent_top</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">log1p</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">)</span>
+    <span class="n">sc</span><span class="o">.</span><span class="n">pp</span><span class="o">.</span><span class="n">calculate_qc_metrics</span><span class="p">(</span>
+        <span class="n">adata_fibers</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">percent_top</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">log1p</span><span class="o">=</span><span class="kc">False</span>
     <span class="p">)</span>
 
-    <span class="n">adata_fibers</span><span class="p">,</span> <span class="n">adata_nuclei</span> <span class="o">=</span> <span class="n">_add_qc_col</span><span class="p">(</span><span class="n">adata_nuclei</span><span class="p">,</span> <span class="n">adata_fibers</span><span class="p">,</span> <span class="n">nuc</span><span class="p">,</span> <span class="n">sdata</span><span class="p">)</span>
+    <span class="c1"># Explicit count columns</span>
+    <span class="n">adata_per_nucleus</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;nuclear_counts&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span>
+        <span class="n">adata_per_nucleus</span><span class="o">.</span><span class="n">X</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+    <span class="n">adata_fibers</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;cytoplasmic_counts&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata_fibers</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;total_counts&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">adata_fibers</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;total_counts&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;total_counts&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
 
-    <span class="c1"># Store back into sdata so results are not lost if return values are not captured</span>
-    <span class="n">sdata</span><span class="o">.</span><span class="n">tables</span><span class="p">[</span><span class="s2">&quot;adata_nuclei&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata_nuclei</span>
-    <span class="n">sdata</span><span class="o">.</span><span class="n">tables</span><span class="p">[</span><span class="s2">&quot;adata_fibers&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adata_fibers</span>
+    <span class="c1"># Per-nucleus area from nuc_shapes</span>
+    <span class="n">adata_per_nucleus</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;area&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">adata_per_nucleus</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;nucleus_id&quot;</span><span class="p">]</span>
+        <span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">nuc_shapes</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;nucleus_id&quot;</span><span class="p">)[</span><span class="s2">&quot;area&quot;</span><span class="p">])</span>
+    <span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">adata_fibers</span><span class="p">,</span> <span class="n">adata_nuclei</span>
+    <span class="c1"># Sum nucleus areas per cell from adata_per_nucleus</span>
+    <span class="n">nucleus_area_per_cell</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">adata_per_nucleus</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s2">&quot;cell_id&quot;</span><span class="p">)[</span><span class="s2">&quot;area&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="p">)</span>
+    <span class="n">nucleus_area_per_cell</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">nucleus_area_per_cell</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+
+    <span class="c1"># Cell area from adata.obs — already in µm² from XeniumRanger</span>
+    <span class="n">cell_area</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">&quot;cell_id&quot;</span><span class="p">)[</span><span class="s2">&quot;cell_area&quot;</span><span class="p">]</span>
+    <span class="n">cell_area</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">cell_area</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+
+    <span class="n">adata_fibers</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;cell_area&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">adata_fibers</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;cell_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">cell_area</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">adata_fibers</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;nucleus_area&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">adata_fibers</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;cell_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">nucleus_area_per_cell</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">adata_fibers</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;cytoplasm_area&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">adata_fibers</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;cell_area&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">adata_fibers</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;nucleus_area&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">adata_fibers</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;nuc_area_fraction&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">adata_fibers</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;nucleus_area&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">adata_fibers</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;cell_area&quot;</span><span class="p">]</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">upper</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+    <span class="n">adata_fibers</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;cytoplasm_area_fraction&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="mi">1</span> <span class="o">-</span> <span class="n">adata_fibers</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="s2">&quot;nuc_area_fraction&quot;</span><span class="p">]</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">lower</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># 7. Store into sdata via TableModel.parse</span>
+    <span class="n">region_key</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">uns</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;spatialdata_attrs&quot;</span><span class="p">,</span> <span class="p">{})</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;region_key&quot;</span><span class="p">,</span> <span class="s2">&quot;region&quot;</span><span class="p">)</span>
+
+    <span class="n">adata_per_nucleus</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">region_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span>
+        <span class="p">[</span><span class="s2">&quot;nucleus_boundaries_fixed&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">adata_per_nucleus</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">sdata</span><span class="o">.</span><span class="n">tables</span><span class="p">[</span><span class="s2">&quot;adata_per_nucleus&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">TableModel</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span>
+        <span class="n">adata_per_nucleus</span><span class="p">,</span>
+        <span class="n">region</span><span class="o">=</span><span class="s2">&quot;nucleus_boundaries_fixed&quot;</span><span class="p">,</span>
+        <span class="n">region_key</span><span class="o">=</span><span class="n">region_key</span><span class="p">,</span>
+        <span class="n">instance_key</span><span class="o">=</span><span class="s2">&quot;label_id&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">adata_fibers</span><span class="o">.</span><span class="n">obs</span><span class="p">[</span><span class="n">region_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span>
+        <span class="p">[</span><span class="s2">&quot;cell_boundaries&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">adata_fibers</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">sdata</span><span class="o">.</span><span class="n">tables</span><span class="p">[</span><span class="s2">&quot;adata_fibers_per_nucleus&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">TableModel</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span>
+        <span class="n">adata_fibers</span><span class="p">,</span>
+        <span class="n">region</span><span class="o">=</span><span class="s2">&quot;cell_boundaries&quot;</span><span class="p">,</span>
+        <span class="n">region_key</span><span class="o">=</span><span class="n">region_key</span><span class="p">,</span>
+        <span class="n">instance_key</span><span class="o">=</span><span class="s2">&quot;cell_id&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># print(f&quot;Done. adata_per_nucleus: {adata_per_nucleus.shape}, &quot;</span>
+    <span class="c1">#       f&quot;adata_fibers: {adata_fibers.shape}&quot;)</span>
+    <span class="n">adata_fibers</span><span class="o">.</span><span class="n">obs</span> <span class="o">=</span> <span class="n">adata_fibers</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;total_counts&quot;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">adata_per_nucleus</span><span class="p">,</span> <span class="n">adata_fibers</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>
