@@ -52,11 +52,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-
-# ---------------------------------------------------------------------------
-# XeniumRanger / XeniumAnalyzer compatibility helpers
-# ---------------------------------------------------------------------------
-
 def _get_xenium_analyzer_version(xenium_bundle: Path) -> tuple[int, int, int] | None:
     """
     Read the XeniumAnalyzer version from ``experiment.xenium`` inside the bundle.
@@ -150,25 +145,13 @@ def _check_xenium_version_compatibility(
         )
         return False
 
-    # analyzer_major, analyzer_minor, analyzer_patch = analyzer_ver
     ranger_major,   ranger_minor,   ranger_patch   = ranger_ver
-
-    # if analyzer_major != ranger_major:
-    #     warnings.warn(
-    #         f"Major version mismatch: XeniumAnalyzer {analyzer_str} vs "
-    #         f"XeniumRanger {ranger_str}. Proceeding, but results may be "
-    #         "unreliable.",
-    #         RuntimeWarning,
-    #         stacklevel=3,
-    #     )
-    #     return False
 
     if analyzer_ver == (4, 0, 2) and (ranger_major,   ranger_minor) == (4, 0):
         needs_patch = True
     else: 
         needs_patch = False
 
-    # needs_patch = (analyzer_minor, analyzer_patch) > (ranger_minor, ranger_patch) #TODO: this is wrong! Need another method to check for version incompatibility
     if needs_patch:
         print(
             f"Version mismatch detected (XeniumAnalyzer {analyzer_str} > "
@@ -257,11 +240,7 @@ def _patch_experiment_xenium(xenium_bundle: Path, output_path: Path) -> Path:
     print(f"Patch applied successfully → {src}")
     return patched_bundle
 
-
-
-# ---------------------------------------------------------------------------
 # Public API
-# ---------------------------------------------------------------------------
 
 def baysor(
     transcripts_path: str | Path,
@@ -285,7 +264,7 @@ def baysor(
     script_path: str | Path | None = None,
     conda_env: str | None = None,
     baysor_path: str | Path | None = None,
-    n_tiles: tuple[int, int] = (1, 1),   # (n_tiles_x, n_tiles_y)
+    n_tiles: tuple[int, int] = (1, 1),
     tile_overlap_um: float = 100.0,
 ) -> str | None:
     """
@@ -438,9 +417,7 @@ def baysor(
 
     executable = str(Path(baysor_path) / "baysor") if baysor_path else "baysor"
 
-    # ----------------------------------------------------------------
-    # Tiled mode: split transcripts → submit one Slurm job per tile
-    # ----------------------------------------------------------------
+    # check if tiling is wanted by user
     n_tiles_x, n_tiles_y = n_tiles
     if n_tiles_x > 1 or n_tiles_y > 1:
         tiles = _tile_transcripts(
@@ -499,9 +476,7 @@ def baysor(
 
         return job_ids
 
-    # ----------------------------------------------------------------
-    # Single-job mode (default, n_tiles == (1, 1))
-    # ----------------------------------------------------------------
+    # run Baysor without tiling
     command = _build_baysor_command(
         executable=executable,
         transcripts_path=transcripts_path,
@@ -857,10 +832,7 @@ def xeniumranger(
         return _run_local(method="xeniumranger", command=command)
 
 
-# ---------------------------------------------------------------------------
 # Command builders
-# ---------------------------------------------------------------------------
-
 def _build_baysor_command(
     executable: str,
     transcripts_path: Path,

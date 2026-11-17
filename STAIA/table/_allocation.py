@@ -1,19 +1,20 @@
-from spatialdata.transformations import get_transformation
-from shapely.validation import make_valid
 from spatialdata.transformations import get_transformation, set_transformation
-from spatialdata.models import ShapesModel
-from scipy.sparse import csr_matrix
+from spatialdata.models import ShapesModel, TableModel
+from shapely.validation import make_valid
 from shapely.geometry import Polygon
 from spatialdata import SpatialData
-from spatialdata import read_zarr
 from anndata import AnnData
 import scipy.sparse as sp
-import spatialdata as sd
 import geopandas as gpd
+import spatialdata as sd
 import pandas as pd
 import scanpy as sc
+import numpy as np
 import shapely
+import copy
+import gc
 import os
+
 
 def add_nuclei(
     sdata : SpatialData,
@@ -44,41 +45,397 @@ def add_nuclei(
     ``nucleus_boundaries_fixed``.
     """
     if os.path.isdir(path_xenium):
-        if path_xenium[-1] == "/":
-            path_xenium = path_xenium + "nucleus_boundaries.parquet"
-        else:
-            path_xenium = path_xenium + "/nucleus_boundaries.parquet"
-    # check if path to xenium output exists
-    if os.path.isfile(path_xenium):
-        df = pd.read_parquet(path_xenium)
-        # returns geodataframe containg unique label IDs with cell IDs and polygon shapes
-        gdf = _assign_nuclei(df, label_id, cell_id)
+        sep = "" if path_xenium.endswith("/") else "/"
+        path_xenium = path_xenium + sep + "nucleus_boundaries.parquet"
 
-        parsed = ShapesModel.parse(gdf)
-        transform = get_transformation(sdata.points["transcripts"], to_coordinate_system="global")
-        set_transformation(parsed, transform, "global")
-
-        sdata.shapes[shapes_layer] = parsed
-        # sdata_fixed = sdata.shapes[shapes_layer]
-        return sdata
-    else:
-        print(f"The path to the Xenium output (containing the `nucleus_boundaries.parquet` file) does not exist. The nuclei have not been added to sdata. Change the path to an existing path with Xenium output and try again.")
+    if not os.path.isfile(path_xenium):
+        print(
+            "The path to the Xenium output (containing `nucleus_boundaries.parquet`) "
+            "does not exist. Change the path and try again."
+        )
         return
+
+    df = pd.read_parquet(path_xenium)
+    gdf = _assign_nuclei(df, label_id, cell_id)
+    parsed = ShapesModel.parse(gdf)
+
+    if "nucleus_boundaries" in sdata.shapes:
+        transform = get_transformation(
+            sdata.shapes["nucleus_boundaries"],
+            to_coordinate_system="global"
+        )
+        set_transformation(parsed, transform, "global")
+        print("Copied transform from 'nucleus_boundaries':", transform)
+    else:
+        # fallback
+        transform = get_transformation(
+            sdata.points["transcripts"],
+            to_coordinate_system="global"
+        )
+        set_transformation(parsed, transform, "global")
+        print("Warning: 'nucleus_boundaries' not found, copied transform "
+              "from transcripts instead:", transform)
+
+    sdata.shapes[shapes_layer] = parsed
+    return sdata
     
+
+def get_adata_per_nucleus(sdata: SpatialData, table_layer: str = "table", min_qv: float = 20.0):
+    """
+    Return per-nucleus transcript counts and a matching per-cell fiber AnnData.
+
+    Uses the Xenium-provided ``overlaps_nucleus`` flag to identify nuclear
+    transcripts (consistent with XeniumRanger), then uses a spatial join
+    only to assign each nuclear transcript to a specific nucleus within its
+    cell. Applies the same quality score filter (qv >= 20 by default) that
+    XeniumRanger uses internally, so counts are consistent with the official
+    Xenium output. Fiber counts are obtained by subtracting the per-nucleus
+    counts (summed to cell level) from the original per-cell counts.
+
+    Parameters
+    ----------
+    sdata : SpatialData
+        SpatialData object. Must contain:
+        - sdata.shapes["nucleus_boundaries_fixed"]  (run STAIA.add_nuclei() first)
+        - sdata.shapes["cell_boundaries"]
+        - sdata.points["transcripts"]  with ``overlaps_nucleus`` and ``qv`` columns
+        - sdata.tables[table_layer]
+    table_layer : str, default "table"
+        Key of the per-cell table in ``sdata.tables``.
+    min_qv : float, default 20.0
+        Minimum quality score threshold. Transcripts with qv below this
+        value are excluded, consistent with XeniumRanger's default filter.
+        Set to 0.0 to disable filtering.
+
+    Returns
+    -------
+    tuple[AnnData, AnnData]
+        ``(adata_per_nucleus, adata_fibers)``
+
+        - ``adata_per_nucleus``: one row per nucleus, with ``cell_id``,
+          ``label_id``, ``area``, ``nuclear_counts`` and ``nuc_area_fraction``
+          in ``.obs``.
+        - ``adata_fibers``: one row per cell, counts outside all nuclei
+          (total counts minus nuclear counts), with ``cell_area``,
+          ``nucleus_area``, ``fiber_area``, ``cytoplasmic_counts``,
+          ``total_counts``, ``nuc_area_fraction``, and
+          ``fiber_area_fraction`` in ``.obs``.
+
+        Both are stored in ``sdata.tables`` as ``"adata_per_nucleus"``
+        and ``"adata_fibers_per_nucleus"``.
+    """
+    if "nucleus_boundaries_fixed" not in sdata.shapes:
+        raise ValueError(
+            "Run STAIA.add_nuclei() first — 'nucleus_boundaries_fixed' not found."
+        )
+
+    print("Building per-nucleus AnnData using overlaps_nucleus flag...")
+    adata = sdata.tables[table_layer]
+
+    # PREPARE NUCLEUS SHAPES                                               
+    nuc_shapes = sdata.shapes["nucleus_boundaries_fixed"].copy()
+    nuc_shapes["geometry"] = nuc_shapes.geometry.apply(make_valid).apply(_to_polygonal)
+    nuc_shapes = nuc_shapes[nuc_shapes.geometry.notna()].copy()
+    nuc_shapes["nucleus_id"] = nuc_shapes.index
+    nuc_shapes = nuc_shapes.reset_index(drop=True)
+
+    # Compute area before anything else so it is available later
+    nuc_shapes["area"] = nuc_shapes.geometry.area
+    nucleus_index = pd.Index(nuc_shapes["nucleus_id"])
+    gene_index    = pd.Index(adata.var_names)
+
+    # 1. Load transcripts, filter unassigned and by quality score         #
+    print("Loading transcripts...")
+    tx = sdata.points["transcripts"].compute()
+    tx = tx[tx["cell_id"] != "UNASSIGNED"].copy()
+    before = len(tx)
+    tx = tx[tx["qv"] >= min_qv].copy()
+    print(f"  Transcripts after qv >= {min_qv} filter: "
+          f"{len(tx):,} (removed {before - len(tx):,})")
+
+    original_total = int(adata.X.sum())
+    if abs(len(tx) - original_total) / max(original_total, 1) > 0.05:
+        print(
+            f"  WARNING: filtered transcript count ({len(tx):,}) differs "
+            f"from original table total counts ({original_total:,}) by more "
+            f"than 5%. The original table may have been built with a different "
+            f"qv threshold. Consider adjusting min_qv."
+        )
+
+    tx_nuc = tx[tx["overlaps_nucleus"] == 1].copy()
+    del tx
+    gc.collect()
+    print(f"  Nuclear transcripts: {len(tx_nuc):,}")
+
+    # 2. Spatial join: assign each nuclear transcript to a nucleus
+    print(f"Spatial join: {len(tx_nuc):,} nuclear transcripts x "
+          f"{len(nuc_shapes):,} nuclei...")
+
+    tx_nuc_gdf = gpd.GeoDataFrame(
+        tx_nuc.reset_index(drop=True),
+        geometry=gpd.points_from_xy(tx_nuc["x"].values, tx_nuc["y"].values),
+        crs=nuc_shapes.crs,
+    )
+    del tx_nuc
+    gc.collect()
+
+    joined = gpd.sjoin(
+        tx_nuc_gdf,
+        nuc_shapes[["nucleus_id", "cell_id", "label_id", "geometry"]],
+        how="left",
+        predicate="within",
+    )
+    del tx_nuc_gdf
+    gc.collect()
+
+    unmatched = joined["index_right"].isna().sum()
+    if unmatched > 0:
+        print(f"  WARNING: {unmatched:,} nuclear transcripts could not be "
+              f"assigned to a specific nucleus (edge/boundary cases) — excluded.")
+
+    joined = joined[joined["index_right"].notna()].copy()
+
+    # Map integer index_right to nucleus_id string
+    joined["nucleus_id"] = joined["index_right"].map(
+        pd.Series(nuc_shapes["nucleus_id"].values, index=range(len(nuc_shapes)))
+    )
+
+    # 3. Build sparse count matrix using Categorical codes
+    nuc_cat = pd.Categorical(
+        joined["nucleus_id"].astype(str),
+        categories=nucleus_index.astype(str),
+    )
+    gene_cat = pd.Categorical(
+        joined["feature_name"],
+        categories=gene_index,
+    )
+
+    valid = (nuc_cat.codes >= 0) & (gene_cat.codes >= 0)
+    print(f"  Valid transcript-to-nucleus assignments: {valid.sum():,} "
+          f"out of {len(joined):,}")
+
+    if valid.sum() == 0:
+        print("ERROR: No valid assignments after Categorical mapping.")
+        print("  nucleus_id sample:", joined["nucleus_id"].head(5).tolist())
+        print("  nucleus_index sample:", nucleus_index[:5].tolist())
+        print("  feature_name sample:", joined["feature_name"].head(5).tolist())
+        print("  gene_index sample:", gene_index[:5].tolist())
+        raise ValueError(
+            "No transcripts could be assigned to nuclei. "
+            "Check the debug output above for index mismatches."
+        )
+
+    nuc_pos  = nuc_cat.codes[valid]
+    gene_pos = gene_cat.codes[valid]
+
+    nuc_X = sp.csr_matrix(
+        (np.ones(len(nuc_pos), dtype=np.int32), (nuc_pos, gene_pos)),
+        shape=(len(nucleus_index), len(gene_index)),
+    )
+    print(f"  nuc_X total counts: {nuc_X.sum():,}")
+
+    del joined, nuc_cat, gene_cat, nuc_pos, gene_pos
+    gc.collect()
+
+    # 4. Build per-nucleus AnnData
+    nuc_obs       = nuc_shapes[["nucleus_id", "cell_id", "label_id"]].copy()
+    nuc_obs.index = nucleus_index
+
+    adata_per_nucleus = AnnData(
+        X=nuc_X,
+        obs=nuc_obs,
+        var=adata.var.copy(),
+    )
+    del nuc_X
+    gc.collect()
+
+    # 5. Build fiber AnnData by subtracting nuclear counts from original  
+
+    # per-cell counts — fiber = cytoplasmic only
+    # Map cell_id -> row position in adata via adata.obs["cell_id"]
+
+    cell_id_to_pos = pd.Series(
+        range(len(adata.obs)),
+        index=adata.obs["cell_id"].astype(str),
+    )
+
+    cell_id_series  = adata_per_nucleus.obs["cell_id"].astype(str)
+    nucleus_to_cell = cell_id_series.map(cell_id_to_pos)
+    n_unmapped = nucleus_to_cell.isna().sum()
+    if n_unmapped > 0:
+        print(f"  WARNING: {n_unmapped} nuclei could not be mapped to a cell "
+              f"— excluded from fiber subtraction (expected for nuclei "
+              f"outside cell boundaries).")
+
+    valid_mask = nucleus_to_cell.notna().values
+    valid_positions = nucleus_to_cell[valid_mask].astype(int).values
+    n_cells = len(adata.obs)
+    n_valid = valid_mask.sum()
+
+    print(f"  Nuclei mapped to cells: {n_valid:,} / {len(adata_per_nucleus):,}")
+
+    summation_matrix = sp.csr_matrix(
+        (
+            np.ones(n_valid, dtype=np.float32),
+            (valid_positions, np.arange(n_valid)),
+        ),
+        shape=(n_cells, n_valid),
+    )
+
+    nuc_X_valid = sp.csr_matrix(adata_per_nucleus.X[valid_mask])
+    nuc_counts_per_cell = summation_matrix @ nuc_X_valid
+    del summation_matrix, nuc_X_valid
+    gc.collect()
+
+    print(f"  nuc_counts_per_cell shape: {nuc_counts_per_cell.shape}")
+    print(f"  nuc_counts_per_cell total: {int(nuc_counts_per_cell.sum()):,}")
+
+    # Reindex columns to match adata.var_names exactly before subtraction
+    if not pd.Index(adata_per_nucleus.var_names).equals(pd.Index(adata.var_names)):
+        print("  WARNING: var_names differ — reindexing nuc_counts_per_cell columns...")
+        col_pos = pd.Index(adata_per_nucleus.var_names).get_indexer(adata.var_names)
+        present = col_pos >= 0
+        reindexed = sp.lil_matrix((n_cells, len(adata.var_names)), dtype=np.float32)
+        reindexed[:, np.where(present)[0]] = nuc_counts_per_cell[:, col_pos[present]]
+        nuc_counts_per_cell = sp.csr_matrix(reindexed)
+        del reindexed
+        gc.collect()
+
+    whole_X  = sp.csr_matrix(adata.X)
+    fiber_X  = whole_X - nuc_counts_per_cell
+    del whole_X, nuc_counts_per_cell
+    gc.collect()
+
+    fiber_X      = fiber_X.tocsr()
+    fiber_X.data = np.clip(fiber_X.data, a_min=0, a_max=None)
+    fiber_X.eliminate_zeros()
+
+    # print(f"  whole_X total: {int(sp.csr_matrix(adata.X).sum()):,}")
+    # print(f"  fiber_X total: {int(fiber_X.sum()):,}")
+    # print(f"  nuc_X total:   {int(adata_per_nucleus.X.sum()):,}")
+    # print(f"  fiber + nuc should equal whole: "
+    #       f"{int(fiber_X.sum()) + int(adata_per_nucleus.X.sum()):,}")
+
+    obsm = {"spatial": adata.obsm["spatial"].copy()} if "spatial" in adata.obsm else {}
+    obs  = adata.obs.drop(columns=["region"], errors="ignore").copy()
+
+    adata_fibers = AnnData(
+        X=fiber_X,
+        obs=obs,
+        var=adata.var.copy(),
+        obsm=obsm,
+    )
+    del fiber_X
+    gc.collect()
+
+    # 6. QC metrics, areas, fractions and count columns
+    sc.pp.calculate_qc_metrics(
+        adata_per_nucleus, inplace=True, percent_top=None, log1p=False
+    )
+    sc.pp.calculate_qc_metrics(
+        adata_fibers, inplace=True, percent_top=None, log1p=False
+    )
+
+    # Explicit count columns
+    adata_per_nucleus.obs["nuclear_counts"] = np.asarray(
+        adata_per_nucleus.X.sum(axis=1)
+    ).ravel()
+    adata_fibers.obs["cytoplasmic_counts"] = adata_fibers.obs["total_counts"].copy()
+    adata_fibers.obs["total_counts"] = adata.obs["total_counts"].values
+
+    # Per-nucleus area from nuc_shapes
+    adata_per_nucleus.obs["area"] = (
+        adata_per_nucleus.obs["nucleus_id"]
+        .map(nuc_shapes.set_index("nucleus_id")["area"])
+    )
+
+    # Sum nucleus areas per cell from adata_per_nucleus
+    nucleus_area_per_cell = (
+        adata_per_nucleus.obs.groupby("cell_id")["area"].sum()
+    )
+    nucleus_area_per_cell.index = nucleus_area_per_cell.index.astype(str)
+
+    # Cell area from adata.obs — already in µm² from XeniumRanger
+    cell_area = adata.obs.set_index("cell_id")["cell_area"]
+    cell_area.index = cell_area.index.astype(str)
+
+    adata_fibers.obs["cell_area"] = (
+        adata_fibers.obs["cell_id"].astype(str).map(cell_area)
+    )
+    adata_fibers.obs["nucleus_area"] = (
+        adata_fibers.obs["cell_id"].astype(str).map(nucleus_area_per_cell)
+    )
+    adata_fibers.obs["cytoplasm_area"] = (
+        adata_fibers.obs["cell_area"] - adata_fibers.obs["nucleus_area"].fillna(0)
+    ).clip(lower=0)
+    adata_fibers.obs["nuc_area_fraction"] = (
+        adata_fibers.obs["nucleus_area"] / adata_fibers.obs["cell_area"]
+    ).clip(upper=1.0)
+    adata_fibers.obs["cytoplasm_area_fraction"] = (
+        1 - adata_fibers.obs["nuc_area_fraction"]
+    ).clip(lower=0)
+
+    # 7. Store into sdata via TableModel.parse
+    region_key = adata.uns.get("spatialdata_attrs", {}).get("region_key", "region")
+
+    adata_per_nucleus.obs[region_key] = pd.Categorical(
+        ["nucleus_boundaries_fixed"] * len(adata_per_nucleus)
+    )
+    sdata.tables["adata_per_nucleus"] = TableModel.parse(
+        adata_per_nucleus,
+        region="nucleus_boundaries_fixed",
+        region_key=region_key,
+        instance_key="label_id",
+    )
+
+    adata_fibers.obs[region_key] = pd.Categorical(
+        ["cell_boundaries"] * len(adata_fibers)
+    )
+    sdata.tables["adata_fibers_per_nucleus"] = TableModel.parse(
+        adata_fibers,
+        region="cell_boundaries",
+        region_key=region_key,
+        instance_key="cell_id",
+    )
+
+    # print(f"Done. adata_per_nucleus: {adata_per_nucleus.shape}, "
+    #       f"adata_fibers: {adata_fibers.shape}")
+    adata_fibers.obs = adata_fibers.obs.drop(columns=["total_counts"])
+    return adata_per_nucleus, adata_fibers
+
+# ---------------------------------------------------------------------------
+# Private helpers
+# ---------------------------------------------------------------------------
+
 def _assign_nuclei(
         df : pd.DataFrame,
         label : str,
         cell_id : str
 ):
+    """
+    Build a GeoDataFrame of nucleus polygons from a Xenium vertex table.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Xenium ``nucleus_boundaries.parquet`` loaded as a DataFrame.
+    label : str
+        Column name for the per-nucleus label ID.
+    cell_id : str
+        Column name for the parent cell ID.
+
+    Returns
+    -------
+    geopandas.GeoDataFrame
+        One row per nucleus with columns ``label_id``, ``cell_id``, and
+        ``geometry``.
+    """
     polygons, cell_ids, label_ids = [], [], []
 
     for label_id, group in df.groupby(label):
         coords = list(zip(group["vertex_x"], group["vertex_y"]))
-
-        # check if the polygon is valid
         if len(coords) > 3:
-            poly = Polygon(coords)
-            polygons.append(poly)
+            polygons.append(Polygon(coords))
             label_ids.append(label_id)
             cell_ids.append(group[cell_id].iloc[0])
 
@@ -92,317 +449,6 @@ def _assign_nuclei(
     # fix indexing
     gdf.index = [f"nucleus_{i}" for i in range(len(gdf))]
     return gdf
-
-
-#NOTE: original
-# def get_adata_nuclei(sdata: SpatialData):
-#     """
-#     Split each cell's transcripts into nuclear and fiber (non-nuclear) compartments.
-
-#     Uses the nucleus shapes layer added by `STAIA.add_nuclei()` (or if that hasn't been run, falls back to the raw `nucleus_boundaries` layer with a warning) to build two separate AnnData objects: one containing only transcripts whose coordinates fall within a cell's nucleus, and one containing the remainder (transcripts within th ecell boundary but outside the nucleus). Both objects are annotated with standard QC metrics (total counts, n_genes) and a per-cell `area` column via `_add_wc_col`.
-
-#     Parameters
-#     ----------
-#     sdata : SpatialData
-#         A SpatialData object containing a "table" element
-    
-#     Returns
-#     -------
-#     tuple[AnnData, AnnData]
-#         `(adata_fibers, adata_nuclei)` — AnnData objects with the same
-#         `obs`/`var` as the original table, but with `X` restricted to
-#         nuclear or fiber transcript counts respectively, and QC columns
-#         (`total_counts`, `n_genes_by_counts`, `area`) added to `.obs`.
-
-#     Notes
-#     -----
-#     This can take a while on large samples, since it aggregates transcripts
-#     over polygon geometries for every cell.
-#     """
-
-#     print("It takes a while to retrieve both the nuclei AnnData object, and the fiber AnnData object. Please wait...")
-#     if type(sdata) != SpatialData:
-#         print(f'The input provided should be SpatialData, not {type(sdata)}. Exiting code...')
-#         return
-#     # check if `STAIA.add_nuclei()` has been run
-#     if 'nucleus_boundaries_fixed' in sdata.shapes:
-#         sdata, nuc = _repair_nucleus(sdata)
-#     else: # use nucleus_boundaries and show a warning 
-#         print(f"STAIA.add_nuclei() function is not used before. Will use the 'nucleus_boundaries' column in sdata")
-#         sdata, nuc = _repair_nucleus(sdata, shape="nucleus_boundaries")
-
-#     agg_result = sd.aggregate(
-#         values=sdata.points["transcripts"],
-#         by=sdata.shapes["nucleus_boundaries_by_cell"],
-#         value_key="feature_name",
-#         agg_func="count",
-#     )
-#     adata_nuclei_raw = agg_result.tables["table"]
-    
-#     # raw_df = _to_df(adata_nuclei_raw)
-#     # raw_df.index = raw_df.index.astype(str)
-
-#     adata = sdata.tables["table"]  
-
-#     # nuc_counts = raw_df.reindex(index=adata.obs_names, columns=adata.var_names, fill_value=0)
-#     #NOTE: no counts come out of this function. Walk through all of this.
-#     nuc_counts = _to_df(adata_nuclei_raw).reindex(index=adata.obs_names, columns=adata.var_names, fill_value=0) # NOTE: what does `fill_value` do? Is this causing the problem
-#     # temporary check - can be removed later
-#     if nuc_counts.values.sum() == 0:
-#         print("WARNING: nuc_counts is all zeros — obs_names mismatch between "
-#             "adata_nuclei_raw and adata. Check: \n"
-#             f"  adata_nuclei_raw.obs_names[:5]: {adata_nuclei_raw.obs_names[:5].tolist()}\n"
-#             f"  adata.obs_names[:5]:            {adata.obs_names[:5].tolist()}")
-            
-#     whole_counts = _to_df(adata)
-#     fiber_counts = (whole_counts - nuc_counts).clip(lower=0)
-
-#     adata_nuclei = AnnData(X=sp.csr_matrix(nuc_counts.values), obs=adata.obs.copy(), var=adata.var.copy())
-#     adata_fibers = AnnData(X=sp.csr_matrix(fiber_counts.values), obs=adata.obs.copy(), var=adata.var.copy())
-#     adata_fiber, adata_nuclei= _add_qc_col(adata_nuclei, adata_fibers, nuc, sdata)
-#     return adata_fiber, adata_nuclei
-
-def _aggregate_in_chunks(sdata, shapes_layer, chunk_size=2000):
-    """Private function that aggregates transcripts per shape in chunks to avoid memory exhaustion."""
-    shapes = sdata.shapes[shapes_layer]
-    n = len(shapes)
-    
-    chunk_matrices = []
-    all_obs_names = []
-    var_names = None
-
-    for start in range(0, n, chunk_size):
-        end = min(start + chunk_size, n)
-        print(f"Processing nuclei {start}-{end} of {n}...")
-
-        chunk_gdf = shapes.iloc[start:end].copy()
-        tmp = "_agg_chunk_temp"
-        parsed_chunk = ShapesModel.parse(chunk_gdf[["geometry"]].copy())
-        transformations = get_transformation(sdata.shapes[shapes_layer], get_all=True)
-        set_transformation(parsed_chunk, transformations, set_all=True)
-        sdata.shapes[tmp] = parsed_chunk
-
-        agg = sd.aggregate(
-            values=sdata.points["transcripts"],
-            by=sdata.shapes[tmp],
-            value_key="feature_name",
-            agg_func="count",
-        )
-        del sdata.shapes[tmp]
-
-        chunk_adata = agg.tables["table"]
-        X = chunk_adata.X if sp.issparse(chunk_adata.X) else sp.csr_matrix(chunk_adata.X)
-        chunk_matrices.append(X)
-        all_obs_names.extend(chunk_adata.obs_names.tolist())
-    
-        if var_names is None:
-            var_names = chunk_adata.var_names.tolist()
-        
-        del agg, chunk_adata
-    
-    combined_x = sp.vstack(chunk_matrices, format="csr")
-    return pd.concat(chunks, axis=0)
-
-
-def get_adata_nuclei(sdata: SpatialData):
-    """
-    Split each cell's transcripts into nuclear and fiber (non-nuclear) compartments.
-
-    Uses the nucleus shapes layer added by `STAIA.add_nuclei()` (or if that hasn't been run, falls back to the raw `nucleus_boundaries` layer with a warning) to build two separate AnnData objects: one containing only transcripts whose coordinates fall within a cell's nucleus, and one containing the remainder (transcripts within the cell boundary but outside the nucleus). Both objects are annotated with standard QC metrics (total counts, n_genes) and a per-cell `area` column via `_add_qc_col`.
-
-    Parameters
-    ----------
-    sdata : SpatialData
-        A SpatialData object containing a "table" element
-    
-    Returns
-    -------
-    tuple[AnnData, AnnData]
-        `(adata_fibers, adata_nuclei)` — AnnData objects with the same
-        `obs`/`var`/`obsm`/`uns` as the original table, but with `X` restricted to
-        fiber or nuclear transcript counts respectively, and QC columns
-        (`total_counts`, `n_genes_by_counts`, `area`) added to `.obs`.
-        Both tables are also stored in `sdata.tables` as `"adata_fibers"`
-        and `"adata_nuclei"`.
-
-    Notes
-    -----
-    This can take a while on large samples, since it aggregates transcripts
-    over polygon geometries for every cell.
-    """
-    import copy
-
-    print("It takes a while to retrieve both the nuclei AnnData object, and the fiber AnnData object. Please wait...")
-    if type(sdata) != SpatialData:
-        print(f'The input provided should be SpatialData, not {type(sdata)}. Exiting code...')
-        return
-    # check if `STAIA.add_nuclei()` has been run
-    if 'nucleus_boundaries_fixed' in sdata.shapes:
-        sdata, nuc = _repair_nucleus(sdata)
-    else: # use nucleus_boundaries and show a warning 
-        print(f"STAIA.add_nuclei() function is not used before. Will use the 'nucleus_boundaries' column in sdata")
-        sdata, nuc = _repair_nucleus(sdata, shape="nucleus_boundaries")
-
-    # NOTE: this part of the code is too computationally intensive
-    # agg_result = sd.aggregate(
-    #     values=sdata.points["transcripts"],
-    #     by=sdata.shapes["nucleus_boundaries_by_cell"],
-    #     value_key="feature_name",
-    #     agg_func="count",
-    # )
-    # adata_nuclei_raw = agg_result.tables["table"]
-    
-    # raw_df = _to_df(adata_nuclei_raw)
-
-    raw_df = _aggregate_in_chunks(sdata, "nucleus_boundaries_by_cell", chunk_size=2000)
-    raw_df.index = raw_df.index.astype(str)
-
-    adata = sdata.tables["table"]  
-
-    nuc_counts = raw_df.reindex(index=adata.obs_names, columns=adata.var_names, fill_value=0)
-    # temporary check - can be removed later
-    if nuc_counts.values.sum() == 0:
-        print("WARNING: nuc_counts is all zeros — obs_names mismatch between "
-            "adata_nuclei_raw and adata. Check: \n"
-            f"  adata_nuclei_raw.obs_names[:5]: {adata_nuclei_raw.obs_names[:5].tolist()}\n"
-            f"  adata.obs_names[:5]:            {adata.obs_names[:5].tolist()}")
-            
-    whole_counts = _to_df(adata)
-    fiber_counts = (whole_counts - nuc_counts).clip(lower=0)
-
-    # Copy obsm so centroid coordinates are preserved in both tables
-    obsm = {"spatial": adata.obsm["spatial"].copy()} if "spatial" in adata.obsm else {}
-
-    # Build nuclei AnnData with corrected region pointer
-    nuc_attrs = copy.deepcopy(adata.uns.get("spatialdata_attrs", {}))
-    nuc_attrs["region"] = "nucleus_boundaries_fixed"
-    adata_nuclei = AnnData(
-        X=sp.csr_matrix(nuc_counts.values),
-        obs=adata.obs.copy(),
-        var=adata.var.copy(),
-        obsm=obsm,
-        uns={"spatialdata_attrs": nuc_attrs},
-    )
-
-    # Build fibers AnnData with corrected region pointer
-    fib_attrs = copy.deepcopy(adata.uns.get("spatialdata_attrs", {}))
-    fib_attrs["region"] = "cell_boundaries"
-    adata_fibers = AnnData(
-        X=sp.csr_matrix(fiber_counts.values),
-        obs=adata.obs.copy(),
-        var=adata.var.copy(),
-        obsm=obsm,
-        uns={"spatialdata_attrs": fib_attrs},
-    )
-
-    adata_fibers, adata_nuclei = _add_qc_col(adata_nuclei, adata_fibers, nuc, sdata)
-
-    # Store back into sdata so results are not lost if return values are not captured
-    sdata.tables["adata_nuclei"] = adata_nuclei
-    sdata.tables["adata_fibers"] = adata_fibers
-
-    return adata_fibers, adata_nuclei
-
-
-def _add_qc_col(adata_nuclei, adata_fibers, nuc, sdata):
-    """
-    Compute standard QC metrics and per-cell area for nuclear and fiber AnnData objects.
-
-    Runs `scanpy.pp.calculate_qc_metrics` on both objects in place, then
-    computes per-cell nucleus area (summed, in case a cell has more than
-    one nucleus) and fiber area (cell area minus nucleus area, clipped at
-    zero), and adds these as an `"area"` column to each object's `.obs`.
-
-    Parameters
-    ----------
-    adata_nuclei : AnnData
-        AnnData object containing nucleus-only transcript counts, as
-        produced by `get_adata_nuclei`.
-    adata_fibers : AnnData
-        AnnData object containing fiber-only (non-nuclear) transcript
-        counts, as produced by `get_adata_nuclei`.
-    nuc : geopandas.GeoDataFrame
-        Repaired, per-nucleus GeoDataFrame (with a `cell_id` column) as
-        returned by `_repair_nucleus`, used to compute nucleus area.
-    sdata : SpatialData
-        The SpatialData object containing the `"cell_boundaries"` shapes
-        layer, used to compute whole-cell area.
-
-    Returns
-    -------
-    tuple[AnnData, AnnData]
-        `(adata_fibers, adata_nuclei)`, each with `.obs["total_counts"]`,
-        `.obs["n_genes_by_counts"]`, and `.obs["area"]` populated.
-    """
-    sc.pp.calculate_qc_metrics(adata_nuclei, inplace=True, percent_top=None, log1p=False)
-    sc.pp.calculate_qc_metrics(adata_fibers, inplace=True, percent_top=None, log1p=False)
-
-    nuc["area"] = nuc.geometry.area
-    nucleus_area = nuc.groupby("cell_id")["area"].sum()
-    gdf_cell = sdata.shapes["cell_boundaries"]
-    cell_area = gdf_cell.geometry.area
-    cell_area.index = gdf_cell["cell_id"] if "cell_id" in gdf_cell.columns else gdf_cell.index
-    fiber_area = (cell_area - nucleus_area.reindex(cell_area.index).fillna(0)).clip(lower=0)
-
-    adata_nuclei.obs["area"] = adata_nuclei.obs_names.map(nucleus_area)
-    adata_fibers.obs["area"] = adata_fibers.obs_names.map(fiber_area)
-    return adata_fibers, adata_nuclei
-
-
-def _to_df(ad):
-    """
-    Convert an AnnData object's count matrix to a dense pandas DataFrame.
-
-    Parameters
-    ----------
-    ad : AnnData
-        AnnData object whose `.X` may be a sparse or dense matrix.
-
-    Returns
-    -------
-    pandas.DataFrame
-        Dense DataFrame of counts, indexed by `ad.obs_names` with columns
-        `ad.var_names`.
-    """
-    X = ad.X.toarray() if sp.issparse(ad.X) else ad.X
-    return pd.DataFrame(X, index=ad.obs_names, columns=ad.var_names)
-
-
-def _repair_nucleus(sdata, shape="nucleus_boundaries_fixed"):
-    """
-    Repair invalid nucleus geometries and dissolve them into one polygon per cell.
-
-    Fixes self-intersecting/invalid polygons (which otherwise raise a
-    `GEOSException` on operations like `.dissolve()`), discards non-polygonal
-    remnants, merges multiple nuclei per cell into a single (multi)polygon
-    per `cell_id`, and registers the result as a new, valid SpatialData
-    shapes element (`"nucleus_boundaries_by_cell"`), reusing the coordinate
-    transformation from the source layer.
-
-    Parameters
-    ----------
-    sdata : SpatialData
-        SpatialData object containing the nucleus shapes layer to repair.
-    shape : str, default "nucleus_boundaries_fixed"
-        Name of the shapes layer in `sdata.shapes` to repair. Use
-        `"nucleus_boundaries"` as a fallback if `STAIA.add_nuclei()` has
-        not been run.
-
-    Returns
-    -------
-    tuple[SpatialData, geopandas.GeoDataFrame]
-        The updated `sdata` (now containing a `"nucleus_boundaries_by_cell"`
-        shapes layer), and `nuc`, the repaired (but not yet dissolved)
-        per-nucleus GeoDataFrame with a `cell_id` column.
-    """
-    nuc = sdata.shapes[shape].copy()
-    nuc["geometry"] = nuc.geometry.apply(make_valid)
-    nuc["geometry"] = nuc.geometry.apply(_to_polygonal)
-    nuc = nuc[nuc.geometry.notna()].copy()
-    nuc_by_cell = nuc.dissolve(by="cell_id")
-    transformations = get_transformation(sdata.shapes[shape], get_all=True)
-    sdata.shapes["nucleus_boundaries_by_cell"] = ShapesModel.parse(nuc_by_cell, transformations=transformations)
-    return sdata, nuc
 
 
 def _to_polygonal(geom):
