@@ -4,7 +4,7 @@ matplotlib==3.10.9
 cell2location
 tacco
 liana
-numpy
+numpy==2.4.6
 pandas==2.3.3
 scipy==1.17.1
 scikit-image==0.26.0
