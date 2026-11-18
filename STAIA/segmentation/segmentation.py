@@ -40,8 +40,6 @@ Run Baysor locally (no SLURM):
 ... )
 """
 
-# NOTE: not added to __init__.py yet — implementation/testing phase.
-
 import json
 import os
 import shutil
@@ -52,196 +50,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-def _get_xenium_analyzer_version(xenium_bundle: Path) -> tuple[int, int, int] | None:
-    """
-    Read the XeniumAnalyzer version from ``experiment.xenium`` inside the bundle.
-
-    The analyzer version is stored in the ``"analysis_sw_version"`` field as a
-    string, e.g. ``"xenium-4.0.2.2"`` or ``"4.0.2.2"``. Only the first three
-    components (major, minor, patch) are returned; any fourth component is
-    ignored.
-
-    Returns a ``(major, minor, patch)`` tuple, or ``None`` if the file is
-    missing or the version string cannot be parsed.
-    """
-    import re
-
-    experiment_file = xenium_bundle / "experiment.xenium"
-    if not experiment_file.exists():
-        return None
-
-    with open(experiment_file) as f:
-        data = json.load(f)
-
-    sw_version = data.get("analysis_sw_version")
-    if not sw_version:
-        return None
-
-    # Strip any leading non-numeric prefix (e.g. "xenium-")
-    match = re.search(r"(\d+)\.(\d+)\.(\d+)", str(sw_version))
-    if not match:
-        return None
-
-    return (int(match.group(1)), int(match.group(2)), int(match.group(3)))
-
-
-def _get_xeniumranger_version(xeniumranger_executable: str) -> tuple[int, int, int] | None:
-    """
-    Run ``xeniumranger --version`` and parse the output.
-
-    Returns a ``(major, minor, patch)`` tuple, or ``None`` if the version
-    cannot be determined.
-    """
-    import re
-
-    try:
-        result = subprocess.run(
-            [xeniumranger_executable, "--version"],
-            capture_output=True,
-            text=True,
-            timeout=30,
-        )
-        # Output is typically "xeniumranger xenium4.0.1" or "xeniumranger 4.0.1"
-        match = re.search(r"(\d+)\.(\d+)\.?(\d*)", result.stdout + result.stderr)
-        if match:
-            major = int(match.group(1))
-            minor = int(match.group(2))
-            patch = int(match.group(3)) if match.group(3) else 0
-            return (major, minor, patch)
-    except (FileNotFoundError, subprocess.TimeoutExpired, ValueError):
-        pass
-
-    return None
-
-
-def _check_xenium_version_compatibility(
-    xenium_bundle: Path,
-    xeniumranger_executable: str,
-) -> bool:
-    """
-    Compare XeniumAnalyzer (bundle) and XeniumRanger versions.
-
-    Prints a summary of the versions found. Returns ``True`` when the patch
-    is required (XeniumAnalyzer minor version > XeniumRanger minor version
-    within the same major version), ``False`` otherwise.
-    """
-    analyzer_ver = _get_xenium_analyzer_version(xenium_bundle)
-    ranger_ver   = _get_xeniumranger_version(xeniumranger_executable)
-
-    analyzer_str = ".".join(map(str, analyzer_ver)) if analyzer_ver else "unknown"
-    ranger_str   = ".".join(map(str, ranger_ver))   if ranger_ver   else "unknown"
-
-    # NOTE: Changed the code here for the version check if xeniumranger and xeniumanalyzer
-
-    print(f"XeniumAnalyzer version (bundle) : {analyzer_str}")
-    print(f"XeniumRanger version            : {ranger_str}")
-
-    if analyzer_ver is None or ranger_ver is None:
-        warnings.warn(
-            "Could not determine one or both versions. "
-            "Skipping compatibility check — proceeding without patch.",
-            RuntimeWarning,
-            stacklevel=3,
-        )
-        return False
-
-    ranger_major,   ranger_minor,   ranger_patch   = ranger_ver
-
-    if analyzer_ver == (4, 0, 2) and (ranger_major,   ranger_minor) == (4, 0):
-        needs_patch = True
-    else: 
-        needs_patch = False
-
-    if needs_patch:
-        print(
-            f"Version mismatch detected (XeniumAnalyzer {analyzer_str} > "
-            f"XeniumRanger {ranger_str}). "
-            "The experiment.xenium compatibility patch will be applied."
-        )
-    else:
-        print("Versions are compatible — no patch needed.")
-
-    return needs_patch
-
-
-def _patch_experiment_xenium(xenium_bundle: Path, output_path: Path) -> Path:
-    """
-    Copy the Xenium bundle to ``<output_path>/xenium_bundle_patched/`` and
-    patch ``experiment.xenium`` in the copy so that XeniumRanger 4.0.x can
-    process a bundle produced by XeniumAnalyzer 4.0.2+.
-
-    The original bundle is never modified.
-
-    Two changes are made to the copy:
-    - The ``"segmented_cell_boundary_large_frac"`` key is removed (new field
-      unknown to older XeniumRanger builds).
-    - All ``minor_version`` fields are reset to ``0`` so that XeniumRanger
-      does not reject the bundle on a minor-version check.
-
-    If the patched copy already exists, the copy step is skipped and the
-    existing copy is returned directly.
-
-    Parameters
-    ----------
-    xenium_bundle : Path
-        Path to the original Xenium bundle directory.
-    output_path : Path
-        Directory under which the patched copy is written.
-
-    Returns
-    -------
-    Path
-        Path to the patched bundle copy (safe to pass to XeniumRanger).
-    """
-    patched_bundle = output_path / "xenium_bundle_patched"
-
-    if patched_bundle.exists():
-        print(f"Patched bundle already exists at {patched_bundle} — reusing it.")
-        return patched_bundle
-
-    print(f"Copying bundle to {patched_bundle} (original will not be modified) …")
-    shutil.copytree(xenium_bundle, patched_bundle)
-    print("Copy complete.")
-
-    src = patched_bundle / "experiment.xenium"
-
-    with open(src) as f:
-        data = json.load(f)
-
-    def find_and_remove(obj, target_key, path=""):
-        if isinstance(obj, dict):
-            if target_key in obj:
-                print(f"Found and removing '{target_key}' at {path or '/'}")
-                del obj[target_key]
-            for k, v in obj.items():
-                find_and_remove(v, target_key, f"{path}/{k}")
-        elif isinstance(obj, list):
-            for i, item in enumerate(obj):
-                find_and_remove(item, target_key, f"{path}[{i}]")
-
-    def fix_minor_version(obj, path=""):
-        if isinstance(obj, dict):
-            if "major_version" in obj and "minor_version" in obj and "patch_version" in obj:
-                old = obj["minor_version"]
-                obj["minor_version"] = 0
-                print(f"Set minor version at {path or '/'} from {old} to 0.")
-            for k, v in obj.items():
-                fix_minor_version(v, f"{path}/{k}")
-        elif isinstance(obj, list):
-            for i, item in enumerate(obj):
-                fix_minor_version(item, f"{path}[{i}]")
-
-    find_and_remove(data, "segmented_cell_boundary_large_frac")
-    fix_minor_version(data)
-
-    with open(src, "w") as f:
-        json.dump(data, f, indent=2)
-
-    print(f"Patch applied successfully → {src}")
-    return patched_bundle
 
 # Public API
-
 def baysor(
     transcripts_path: str | Path,
     output_path: str | Path,
@@ -938,6 +748,195 @@ _SLURM_DEFAULTS = {
         "partition": "gpu-long",
     },
 }
+
+
+def _get_xenium_analyzer_version(xenium_bundle: Path) -> tuple[int, int, int] | None:
+    """
+    Read the XeniumAnalyzer version from ``experiment.xenium`` inside the bundle.
+
+    The analyzer version is stored in the ``"analysis_sw_version"`` field as a
+    string, e.g. ``"xenium-4.0.2.2"`` or ``"4.0.2.2"``. Only the first three
+    components (major, minor, patch) are returned; any fourth component is
+    ignored.
+
+    Returns a ``(major, minor, patch)`` tuple, or ``None`` if the file is
+    missing or the version string cannot be parsed.
+    """
+    import re
+
+    experiment_file = xenium_bundle / "experiment.xenium"
+    if not experiment_file.exists():
+        return None
+
+    with open(experiment_file) as f:
+        data = json.load(f)
+
+    sw_version = data.get("analysis_sw_version")
+    if not sw_version:
+        return None
+
+    # Strip any leading non-numeric prefix (e.g. "xenium-")
+    match = re.search(r"(\d+)\.(\d+)\.(\d+)", str(sw_version))
+    if not match:
+        return None
+
+    return (int(match.group(1)), int(match.group(2)), int(match.group(3)))
+
+
+def _get_xeniumranger_version(xeniumranger_executable: str) -> tuple[int, int, int] | None:
+    """
+    Run ``xeniumranger --version`` and parse the output.
+
+    Returns a ``(major, minor, patch)`` tuple, or ``None`` if the version
+    cannot be determined.
+    """
+    import re
+
+    try:
+        result = subprocess.run(
+            [xeniumranger_executable, "--version"],
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        # Output is typically "xeniumranger xenium4.0.1" or "xeniumranger 4.0.1"
+        match = re.search(r"(\d+)\.(\d+)\.?(\d*)", result.stdout + result.stderr)
+        if match:
+            major = int(match.group(1))
+            minor = int(match.group(2))
+            patch = int(match.group(3)) if match.group(3) else 0
+            return (major, minor, patch)
+    except (FileNotFoundError, subprocess.TimeoutExpired, ValueError):
+        pass
+
+    return None
+
+
+def _check_xenium_version_compatibility(
+    xenium_bundle: Path,
+    xeniumranger_executable: str,
+) -> bool:
+    """
+    Compare XeniumAnalyzer (bundle) and XeniumRanger versions.
+
+    Prints a summary of the versions found. Returns ``True`` when the patch
+    is required (XeniumAnalyzer minor version > XeniumRanger minor version
+    within the same major version), ``False`` otherwise.
+    """
+    analyzer_ver = _get_xenium_analyzer_version(xenium_bundle)
+    ranger_ver   = _get_xeniumranger_version(xeniumranger_executable)
+
+    analyzer_str = ".".join(map(str, analyzer_ver)) if analyzer_ver else "unknown"
+    ranger_str   = ".".join(map(str, ranger_ver))   if ranger_ver   else "unknown"
+
+    # NOTE: Changed the code here for the version check if xeniumranger and xeniumanalyzer
+
+    print(f"XeniumAnalyzer version (bundle) : {analyzer_str}")
+    print(f"XeniumRanger version            : {ranger_str}")
+
+    if analyzer_ver is None or ranger_ver is None:
+        warnings.warn(
+            "Could not determine one or both versions. "
+            "Skipping compatibility check — proceeding without patch.",
+            RuntimeWarning,
+            stacklevel=3,
+        )
+        return False
+
+    ranger_major,   ranger_minor,   ranger_patch   = ranger_ver
+
+    if analyzer_ver == (4, 0, 2) and (ranger_major,   ranger_minor) == (4, 0):
+        needs_patch = True
+    else: 
+        needs_patch = False
+
+    if needs_patch:
+        print(
+            f"Version mismatch detected (XeniumAnalyzer {analyzer_str} > "
+            f"XeniumRanger {ranger_str}). "
+            "The experiment.xenium compatibility patch will be applied."
+        )
+    else:
+        print("Versions are compatible — no patch needed.")
+
+    return needs_patch
+
+
+def _patch_experiment_xenium(xenium_bundle: Path, output_path: Path) -> Path:
+    """
+    Copy the Xenium bundle to ``<output_path>/xenium_bundle_patched/`` and
+    patch ``experiment.xenium`` in the copy so that XeniumRanger 4.0.x can
+    process a bundle produced by XeniumAnalyzer 4.0.2+.
+
+    The original bundle is never modified.
+
+    Two changes are made to the copy:
+    - The ``"segmented_cell_boundary_large_frac"`` key is removed (new field
+      unknown to older XeniumRanger builds).
+    - All ``minor_version`` fields are reset to ``0`` so that XeniumRanger
+      does not reject the bundle on a minor-version check.
+
+    If the patched copy already exists, the copy step is skipped and the
+    existing copy is returned directly.
+
+    Parameters
+    ----------
+    xenium_bundle : Path
+        Path to the original Xenium bundle directory.
+    output_path : Path
+        Directory under which the patched copy is written.
+
+    Returns
+    -------
+    Path
+        Path to the patched bundle copy (safe to pass to XeniumRanger).
+    """
+    patched_bundle = output_path / "xenium_bundle_patched"
+
+    if patched_bundle.exists():
+        print(f"Patched bundle already exists at {patched_bundle} — reusing it.")
+        return patched_bundle
+
+    print(f"Copying bundle to {patched_bundle} (original will not be modified) …")
+    shutil.copytree(xenium_bundle, patched_bundle)
+    print("Copy complete.")
+
+    src = patched_bundle / "experiment.xenium"
+
+    with open(src) as f:
+        data = json.load(f)
+
+    def find_and_remove(obj, target_key, path=""):
+        if isinstance(obj, dict):
+            if target_key in obj:
+                print(f"Found and removing '{target_key}' at {path or '/'}")
+                del obj[target_key]
+            for k, v in obj.items():
+                find_and_remove(v, target_key, f"{path}/{k}")
+        elif isinstance(obj, list):
+            for i, item in enumerate(obj):
+                find_and_remove(item, target_key, f"{path}[{i}]")
+
+    def fix_minor_version(obj, path=""):
+        if isinstance(obj, dict):
+            if "major_version" in obj and "minor_version" in obj and "patch_version" in obj:
+                old = obj["minor_version"]
+                obj["minor_version"] = 0
+                print(f"Set minor version at {path or '/'} from {old} to 0.")
+            for k, v in obj.items():
+                fix_minor_version(v, f"{path}/{k}")
+        elif isinstance(obj, list):
+            for i, item in enumerate(obj):
+                fix_minor_version(item, f"{path}[{i}]")
+
+    find_and_remove(data, "segmented_cell_boundary_large_frac")
+    fix_minor_version(data)
+
+    with open(src, "w") as f:
+        json.dump(data, f, indent=2)
+
+    print(f"Patch applied successfully → {src}")
+    return patched_bundle
 
 
 def _build_slurm_header(method: str, log_dir: Path, slurm_args: dict) -> str:

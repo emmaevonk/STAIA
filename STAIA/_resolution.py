@@ -10,6 +10,95 @@ import pandas as pd
 from sklearn.metrics import adjusted_rand_score
 
 
+def compute_leiden_resolution(
+    adata,
+    resolution="auto",
+    fast_mode=False,
+    n_neighbors=15,
+    n_pcs=30,
+    n_runs=3,
+):
+    """
+    Cluster cells with the Leiden algorithm, optionally auto-selecting the
+    resolution parameter.
+
+    It orchestrates graph construction, resolution search, and final clustering,
+    then writes cluster labels into ``adata.obs["leiden"]``.
+
+    Parameters
+    ----------
+    adata : anndata.AnnData
+        Annotated data matrix containing cells × genes (or cells × features).
+        A PCA embedding (``obsm["X_pca"]``) is computed automatically if
+        absent.
+    resolution : float or "auto", optional
+        * ``"auto"`` (default): Run the grid search described in
+          :func:`_leiden_auto_resolution` to select the best resolution
+          automatically.
+        * A positive float: Use this resolution directly, skipping the search.
+    fast_mode : bool, optional
+        Passed to :func:`_leiden_auto_resolution` when ``resolution="auto"``.
+        Reduces computation time at the cost of skipping stability estimation.
+        Has no effect when a fixed resolution is supplied.
+        Default is ``False``.
+    n_neighbors : int, optional
+        Number of nearest neighbours for kNN graph construction.
+        Default is ``15``.
+    n_pcs : int, optional
+        Number of principal components used during neighbour search.
+        Default is ``30``.
+    n_runs : int, optional
+        Number of Leiden runs per resolution candidate when estimating
+        stability (used only when ``resolution="auto"`` and
+        ``fast_mode=False``).
+        Default is ``3``.
+
+    Returns
+    -------
+    adata : anndata.AnnData
+        Input object with an additional column ``adata.obs["leiden"]``
+        containing integer cluster labels from the final Leiden partition.
+    best_resolution : float
+        The resolution that was used for the final clustering (equals the
+        input *resolution* when a fixed value is provided).
+    table : pandas.DataFrame or None
+        When ``resolution="auto"``, a DataFrame summarising all evaluated
+        resolutions (columns: ``resolution``, ``n_clusters``, ``stability``,
+        ``modularity``, ``score``).  ``None`` when a fixed resolution is used.
+    """
+    adata_copy = adata.copy()
+    graph, adata_copy = _build_graph_from_h5ad(
+        adata_copy,
+        n_neighbors=n_neighbors,
+        n_pcs=n_pcs,
+    )
+    if resolution == "auto":
+        best_res, table = _leiden_auto_resolution(
+            graph,
+            n_cells=adata_copy.n_obs,
+            n_runs=n_runs,
+            fast_mode=fast_mode,
+        )
+        partition = leidenalg.find_partition(
+            graph,
+            leidenalg.RBConfigurationVertexPartition,
+            resolution_parameter=best_res,
+            weights="weight",
+        )
+        adata_copy.obs["leiden"] = partition.membership
+        return adata_copy, best_res, table
+    else:
+        partition = leidenalg.find_partition(
+            graph,
+            leidenalg.RBConfigurationVertexPartition,
+            resolution_parameter=resolution,
+            weights="weight",
+        )
+        adata_copy.obs["leiden"] = partition.membership
+        return adata_copy, resolution, None
+
+
+# PRIVATE FUNCTIONS
 def _build_graph_from_h5ad(
     adata,
     n_neighbors=15,
@@ -202,90 +291,3 @@ def _leiden_auto_resolution(
     df["score"] = 0.7 * df["stability"] + 0.3 * df["modularity"]
     best_row = df.sort_values("score", ascending=False).iloc[0]
     return best_row["resolution"], df
-
-
-def compute_leiden_resolution(
-    adata,
-    resolution="auto",
-    fast_mode=False,
-    n_neighbors=15,
-    n_pcs=30,
-    n_runs=3,
-):
-    """
-    Cluster cells with the Leiden algorithm, optionally auto-selecting the
-    resolution parameter.
-
-    It orchestrates graph construction, resolution search, and final clustering,
-    then writes cluster labels into ``adata.obs["leiden"]``.
-
-    Parameters
-    ----------
-    adata : anndata.AnnData
-        Annotated data matrix containing cells × genes (or cells × features).
-        A PCA embedding (``obsm["X_pca"]``) is computed automatically if
-        absent.
-    resolution : float or "auto", optional
-        * ``"auto"`` (default): Run the grid search described in
-          :func:`_leiden_auto_resolution` to select the best resolution
-          automatically.
-        * A positive float: Use this resolution directly, skipping the search.
-    fast_mode : bool, optional
-        Passed to :func:`_leiden_auto_resolution` when ``resolution="auto"``.
-        Reduces computation time at the cost of skipping stability estimation.
-        Has no effect when a fixed resolution is supplied.
-        Default is ``False``.
-    n_neighbors : int, optional
-        Number of nearest neighbours for kNN graph construction.
-        Default is ``15``.
-    n_pcs : int, optional
-        Number of principal components used during neighbour search.
-        Default is ``30``.
-    n_runs : int, optional
-        Number of Leiden runs per resolution candidate when estimating
-        stability (used only when ``resolution="auto"`` and
-        ``fast_mode=False``).
-        Default is ``3``.
-
-    Returns
-    -------
-    adata : anndata.AnnData
-        Input object with an additional column ``adata.obs["leiden"]``
-        containing integer cluster labels from the final Leiden partition.
-    best_resolution : float
-        The resolution that was used for the final clustering (equals the
-        input *resolution* when a fixed value is provided).
-    table : pandas.DataFrame or None
-        When ``resolution="auto"``, a DataFrame summarising all evaluated
-        resolutions (columns: ``resolution``, ``n_clusters``, ``stability``,
-        ``modularity``, ``score``).  ``None`` when a fixed resolution is used.
-    """
-    graph, adata = _build_graph_from_h5ad(
-        adata,
-        n_neighbors=n_neighbors,
-        n_pcs=n_pcs,
-    )
-    if resolution == "auto":
-        best_res, table = _leiden_auto_resolution(
-            graph,
-            n_cells=adata.n_obs,
-            n_runs=n_runs,
-            fast_mode=fast_mode,
-        )
-        partition = leidenalg.find_partition(
-            graph,
-            leidenalg.RBConfigurationVertexPartition,
-            resolution_parameter=best_res,
-            weights="weight",
-        )
-        adata.obs["leiden"] = partition.membership
-        return adata, best_res, table
-    else:
-        partition = leidenalg.find_partition(
-            graph,
-            leidenalg.RBConfigurationVertexPartition,
-            resolution_parameter=resolution,
-            weights="weight",
-        )
-        adata.obs["leiden"] = partition.membership
-        return adata, resolution, None

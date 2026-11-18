@@ -202,6 +202,8 @@ def annotate_consensus(
     auto_detect: bool = True,
 ) -> ad.AnnData:
     """
+    Please note this function is still in development. 
+
     Build a consensus cell type annotation from multiple method outputs.
 
     Reads per-spot cell type information already stored in ``adata.obsm``

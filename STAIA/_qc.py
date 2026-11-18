@@ -359,7 +359,6 @@ def plot_qc_metrics(
     xlabel_genes = "log10(n_genes + 1)"
     xlabel_counts = "log10(total_counts + 1)"
 
-
     # counts per cell
     sns.histplot(total_counts_plot, kde=False, ax=axs[1, 0], bins=bins)
     # axes[0, 1].hist(total_counts_plot, bins=bins)
@@ -377,7 +376,6 @@ def plot_qc_metrics(
     axs[1, 2].set_xlabel(xlabel_counts)
     axs[1, 2].set_ylabel(xlabel_genes)
     axs[1, 2].set_title("Counts vs Genes")
-
     plt.show()
 
     if save:
@@ -390,56 +388,6 @@ def plot_qc_metrics(
         print(f"The distribution plots are saved in the current running directory: {output_path}")
     return fig
     
-
-# def recommend_threshold(
-#         adata: AnnData
-# ) -> dict:
-#     """
-#     Suggest QC filtering thresholds based on percentile ranges.
-
-#     Parameters
-#     ----------
-#     adata : AnnData
-#         Must contain:
-#         - total_counts
-#         - n_genes_by_counts
-    
-#     Returns
-#     -------
-#     dict
-#         Recommended thresholds:
-#         {
-#             "min_genes"
-#             "max_genes"
-#             "min_counts"
-#             "max_counts"
-#         }
-
-#     Notes
-#     -----
-#     Thresholds are based on the 1st and 99th percentiles.
-#     """
-#     obs = adata.obs
-#     if "n_genes_by_count" not in adata.obs:
-#         sc.pp.calculate_qc_metrics(
-#             adata,
-#             inplace=True,
-#             percent_top=None,
-#             log1p=False
-#         )
-#     genes = obs["n_genes_by_counts"].values
-#     counts = obs["total_counts"].values
-
-#     thresholds = {
-#         "min_genes": int(np.percentile(genes, 1)),
-#         "max_genes": int(np.percentile(genes, 99)),
-#         "min_counts": int(np.percentile(counts, 1)),
-#         "max_counts": int(np.percentile(counts, 99))
-#     }
-#     return thresholds
-
-import numpy as np
-import scanpy as sc
 
 def recommend_threshold(
     adata: AnnData, 

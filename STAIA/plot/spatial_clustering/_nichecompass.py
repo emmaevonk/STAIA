@@ -78,10 +78,426 @@ from nichecompass.utils import (
 warnings.filterwarnings("ignore")
 
 
-# =============================================================================
-# SHARED HELPERS
-# =============================================================================
+def niche_analysis_train(
+    adata,
+    gp_dict_path,
+    sample_key = "sample",
+    output_dir="./artifacts",
+    dataset_name="xenium_muscle",
+    spatial_key="spatial",
+    # spatial graph
+    n_neighbors=4,
+    radius_around=None,
+    min_cells_around=0,
+    # model architecture
+    conv_layer_encoder="gatv2conv",
+    active_gp_thresh_ratio=0.01,
+    cat_covariates_embeds_nums=3,
+    # training
+    n_epochs=400,
+    n_epochs_all_gps=25,
+    lr=0.001,
+    lambda_edge_recon=500000.0,
+    lambda_gene_expr_recon=300.0,
+    lambda_l1_masked=0.0,
+    lambda_l1_addon=30.0,
+    edge_batch_size=4096,
+    n_sampled_neighbors=4,
+    use_cuda_if_available=False,
+    cell_type_key=None,
+    leiden_resolutions=None,
+    spot_size=100,
+    log_bayes_factor_thresh=2.3,
+):
+    """
+    Full NicheCompass pipeline for multiple Xenium samples.
 
+    Builds per-sample spatial graphs (as disconnected components), loads a
+    pre-saved GP dictionary, trains the model with sample-level batch
+    correction, clusters niches at multiple resolutions, and saves everything.
+
+    Parameters
+    ----------
+    adata : AnnData
+        Combined AnnData with all samples. Raw counts in .X (not
+        log-normalized). Spatial coordinates in obsm[spatial_key] as (x, y).
+        Must have a sample identifier column in obs[sample_key].
+    gp_dict_path : str
+        Path to the pre-saved combined GP dictionary JSON file.
+        Build this once with the GP building utilities and save with json.dump.
+        See module docstring for how to create this file.
+   sample_key : str
+        Column in adata.obs that identifies each sample. The function splits
+        on this column and uses it for batch correction. Default: "sample".
+    output_dir : str
+        Root folder for all outputs (model, figures, CSVs).
+    dataset_name : str
+        Used to name subfolders inside output_dir.
+    spatial_key : str
+        Key in obsm containing (x, y) spatial coordinates.
+    n_neighbors : int
+        Number of spatial neighbors per cell. Authors recommend 4.
+    radius_around : int or None
+        If set, cells with fewer than min_cells_around neighbors within this
+        radius are removed before graph construction. Set None to skip.
+    min_cells_around : int
+        Minimum neighbors within radius_around to keep a cell.
+    conv_layer_encoder : str
+        'gatv2conv' (recommended, better quality) or 'gcnconv' (faster).
+    cat_covariates_embeds_nums : int
+        Embedding dimension for the sample/batch covariate. Default 3.
+    n_epochs : int
+        Training epochs. 400 is the paper default.
+    edge_batch_size : int
+        Edges per training batch. Reduce if running out of GPU memory.
+    cell_type_key : str, optional
+        adata.obs column with cell type labels for composition plots.
+    leiden_resolutions : list of float, optional
+        Leiden resolutions to run. Defaults to [0.1, 0.2, ..., 1.0].
+    log_bayes_factor_thresh : float
+        Threshold for differential GP testing. 2.3 = 'strong evidence'.
+
+    Returns
+    -------
+    model_folder_path : str
+        Path to the saved model. Pass this to niche_analysis_load().
+    adata : AnnData
+        Combined AnnData with latent embedding and niche cluster labels
+        for all samples.
+    """
+
+    if leiden_resolutions is None:
+        leiden_resolutions = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+
+    # Fixed AnnData keys
+    adj_key = "spatial_connectivities"
+    latent_key = "nichecompass_latent"
+    differential_gp_test_results_key = "nichecompass_differential_gp_test_results"
+
+    # Setup
+    model_folder_path, figure_folder_path = _setup_output_dirs(output_dir, dataset_name)
+    print(f"\n{'='*60}")
+    print("NicheCompass — TRAINING")
+    print(f"Model will be saved to: {model_folder_path}")
+    print(f"{'='*60}\n")
+
+    # Per-sample spatial graphs
+    adatas_by_sample = _build_per_sample_spatial_graphs(
+        adata=adata,
+        sample_key=sample_key,
+        n_neighbors=n_neighbors,
+        radius_around=radius_around,
+        min_cells_around=min_cells_around,
+        adj_key=adj_key,
+        spatial_key=spatial_key,
+    )
+
+    if len(adatas_by_sample) == 0:
+        raise ValueError(
+            "No samples remaining after filtering. Check your sample_key "
+            "and radius_around / min_cells_around settings."
+        )
+
+    # Stitch into one disconnected graph
+    adata_combined = _stitch_spatial_graphs(adatas_by_sample, adj_key)
+
+    # Load GP dict from JSON and add masks
+    adata_combined = _load_and_add_gps(adata_combined, gp_dict_path)
+
+    # Initialize model with batch correction
+    print("Initializing NicheCompass model...")
+    model = NicheCompass(
+        adata_combined,
+        counts_key=None,
+        adj_key=adj_key,
+        cat_covariates_keys=[sample_key],
+        cat_covariates_embeds_injection=["gene_expr_decoder"],
+        cat_covariates_embeds_nums=[cat_covariates_embeds_nums],
+        cat_covariates_no_edges=[True],
+        gp_names_key="nichecompass_gp_names",
+        active_gp_names_key="nichecompass_active_gp_names",
+        gp_targets_mask_key="nichecompass_gp_targets",
+        gp_targets_categories_mask_key="nichecompass_gp_targets_categories",
+        gp_sources_mask_key="nichecompass_gp_sources",
+        gp_sources_categories_mask_key="nichecompass_gp_sources_categories",
+        latent_key=latent_key,
+        conv_layer_encoder=conv_layer_encoder,
+        active_gp_thresh_ratio=active_gp_thresh_ratio,
+    )
+
+    # Train
+    model.train(
+        n_epochs=n_epochs,
+        n_epochs_all_gps=n_epochs_all_gps,
+        lr=lr,
+        lambda_edge_recon=lambda_edge_recon,
+        lambda_gene_expr_recon=lambda_gene_expr_recon,
+        lambda_l1_masked=lambda_l1_masked,
+        lambda_l1_addon=lambda_l1_addon,
+        edge_batch_size=edge_batch_size,
+        n_sampled_neighbors=n_sampled_neighbors,
+        use_cuda_if_available=use_cuda_if_available,
+        verbose=True,
+    )
+
+    # Save model + adata (adata has all GP masks and latent embedding baked in)
+    model.save(
+        dir_path=model_folder_path,
+        overwrite=True,
+        save_adata=True,
+        adata_file_name="nichecompass_adata.h5ad",
+    )
+    print(f"Model saved to: {model_folder_path}")
+
+    # Cluster + visualize + differential GPs
+    adata = _cluster_and_visualize(
+        model=model,
+        latent_key=latent_key,
+        leiden_resolutions=leiden_resolutions,
+        cell_type_key=cell_type_key,
+        sample_key=sample_key,
+        differential_gp_test_results_key=differential_gp_test_results_key,
+        spot_size=spot_size,
+        log_bayes_factor_thresh=log_bayes_factor_thresh,
+        figure_folder_path=figure_folder_path,
+    )
+
+    print(f"\nDone. Figures saved to: {figure_folder_path}")
+    return model_folder_path, adata
+
+
+def niche_analysis_load(
+    model_folder_path,
+    output_dir="./artifacts",
+    dataset_name="xenium_tissue",
+    sample_key="sample",
+    # analysis — can differ freely from the training run
+    cell_type_key=None,
+    leiden_resolutions=None,
+    spot_size=100,
+    log_bayes_factor_thresh=2.3,
+):
+    """
+    Load a previously trained NicheCompass model and its saved adata from
+    disk, then re-run clustering and visualization. No retraining needed.
+
+    The adata saved during training already contains all GP masks, the spatial
+    graph, and the latent embedding, so the model architecture always matches
+    the saved weights exactly. No new input data is required.
+
+    You can freely change leiden_resolutions, cell_type_key, and
+    log_bayes_factor_thresh between load runs without retraining.
+
+    Parameters
+    ----------
+    model_folder_path : str
+        Path to the saved model directory returned by niche_analysis_train().
+        Must contain both the model weights and nichecompass_adata.h5ad.
+    output_dir : str
+        Root folder for figures and CSVs from this run.
+    dataset_name : str
+        Used to name figure subfolders inside output_dir.
+   sample_key : str
+        Column in adata.obs that identifies each sample. Must match what
+        was used during training. Default: "sample".
+    cell_type_key : str, optional
+        adata.obs column with cell type labels. Can be added after training —
+        just add the column to the saved adata before calling this function.
+    leiden_resolutions : list of float, optional
+        Leiden resolutions to run. Can differ from the training run.
+        Defaults to [0.1, 0.2, ..., 1.0].
+    spot_size : int
+        Spot size for sc.pl.spatial().
+    log_bayes_factor_thresh : float
+        Threshold for differential GP testing.
+
+    Returns
+    -------
+    adata : AnnData
+        AnnData with latent embedding and niche cluster labels.
+
+    Notes
+    -----
+    To add cell type labels to the saved adata after training:
+        adata = sc.read_h5ad("<model_folder>/nichecompass_adata.h5ad")
+        adata.obs["cell_type"] = <your labels>
+        adata.write_h5ad("<model_folder>/nichecompass_adata.h5ad")
+        # Then call niche_analysis_load(..., cell_type_key="cell_type")
+    """
+
+    if leiden_resolutions is None:
+        leiden_resolutions = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+
+    # Fixed keys — must match training
+    latent_key                       = "nichecompass_latent"
+    differential_gp_test_results_key = "nichecompass_differential_gp_test_results"
+
+    # Setup
+    figure_folder_path = _make_figure_dir(output_dir, dataset_name)
+
+    print(f"\n{'='*60}")
+    print("NicheCompass — LOAD FROM DISK (no retraining)")
+    print(f"Loading model from: {model_folder_path}")
+    print(f"{'='*60}\n")
+
+    # Load saved adata (GP masks already baked in)
+    adata_path = os.path.join(model_folder_path, "nichecompass_adata.h5ad")
+    print(f"Loading saved adata from: {adata_path}")
+    adata = sc.read_h5ad(adata_path)
+    print(f"  Cells: {adata.n_obs} | Genes: {adata.n_vars}")
+    if sample_key in adata.obs.columns:
+        print(f"  Samples: {sorted(adata.obs[sample_key].unique().tolist())}")
+
+    # Load model weights
+    print("Loading trained model weights...")
+    model = NicheCompass.load(
+        dir_path=model_folder_path,
+        adata=adata,
+    )
+
+    # Recompute latent embedding from loaded weights
+    print("Computing latent embedding...")
+    latent = model.get_latent_representation()
+    model.adata.obsm[latent_key] = latent
+
+    # Cluster + visualize + differential GPs
+    adata = _cluster_and_visualize(
+        model=model,
+        latent_key=latent_key,
+        leiden_resolutions=leiden_resolutions,
+        cell_type_key=cell_type_key,
+        sample_key=sample_key,
+        differential_gp_test_results_key=differential_gp_test_results_key,
+        spot_size=spot_size,
+        log_bayes_factor_thresh=log_bayes_factor_thresh,
+        figure_folder_path=figure_folder_path,
+    )
+
+    print(f"\nDone. Figures saved to: {figure_folder_path}")
+    return adata
+
+
+def save_gp_dict(
+    species="human",
+    save_path="gp_dict",
+    include_mebocost=True,
+    gene_orthologs_mapping_file_path=None,
+    overwrite=False,
+):
+    """
+    Build the combined gene-program (GP) dictionary NicheCompass needs for training, from OmniPath (ligand-receptor), NicheNet (ligand-receptor target), and, optionally, MEBOCOST (metabolite-enzyme-sensor) interactions, and cache it to disk.
+
+    This is meant to be run once per species (it downloads and parses several fairly large reference databases), after which the resulting ``combined_gp_dict.json`` can just be loaded from disk every subsequent training run.
+
+    Parameters
+    ----------
+    species : str, default "human"
+        Species to build gene programs for. Passed through to all three
+        extraction functions. NicheCompass / MEBOCOST support "human" and
+        "mouse".
+    save_path : str, default "gp_dict"
+        Directory in which all intermediate reference files (OmniPath /
+        NicheNet networks, MEBOCOST tables) and the final
+        ``combined_gp_dict.json`` are stored. Created if it doesn't exist.
+    include_mebocost : bool, default True
+        Whether to additionally retrieve MEBOCOST metabolite-sensor gene
+        programs. MEBOCOST doesn't ship its interaction tables with the
+        `nichecompass` package, so this function downloads the four TSVs
+        NicheCompass's own tutorials rely on directly from the
+        NicheCompass GitHub repo (this is the manual `curl` step you'd
+        otherwise have to run yourself, see ``_download_mebocost_files``
+        below). If the download fails (e.g. no internet access in this
+        environment) a warning is printed and MEBOCOST is skipped rather
+        than raising, so OmniPath + NicheNet GPs are still produced.
+    gene_orthologs_mapping_file_path : str or None, default None
+        Forwarded to ``extract_gp_dict_from_omnipath_lr_interactions``.
+        Only needed if you want to map OmniPath interactions (human by
+        default) onto a different species without native OmniPath
+        coverage; leave as None for human/mouse.
+    overwrite : bool, default False
+        If a ``combined_gp_dict.json`` already exists at ``save_path``,
+        skip all extraction and just load and return it, unless
+        ``overwrite=True``.
+ 
+    Returns
+    -------
+    dict
+        The combined gene-program dictionary (also written to
+        ``{save_path}/combined_gp_dict.json``).
+ 
+    Notes
+    -----
+    Requires the `nichecompass` package to be installed and importable.
+    """
+    os.makedirs(save_path, exist_ok=True)
+    combined_gp_dict_path = os.path.join(save_path, "combined_gp_dict.json")
+
+    if os.path.isfile(combined_gp_dict_path) and not overwrite:
+        print(
+            f"Found existing combined GP dict at `{combined_gp_dict_path}`, "
+            f"loading it instead of recomputing (pass overwrite=True to "
+            f"force recomputation)"
+        )
+        with open(combined_gp_dict_path, "r") as f:
+            return json.load(f)
+
+    print("Etracting OmniPath ligand-receptor programs...")
+    omnipath_gp_dict = extract_gp_dict_from_omnipath_lr_interactions(
+        species=species,
+        load_from_disk=False,
+        save_to_disk=True,
+        lr_network_file_path=f"{save_path}/omnipath_lr_network.csv",
+        gene_orthologs_mapping_file_path=gene_orthologs_mapping_file_path,
+        plot_gp_gene_count_distributions=True,
+    )
+
+    print("Extracting NicheNet ligand-receptor-target gene programs...")
+    nichenet_gp_dict = extract_gp_dict_from_nichenet_lrt_interactions(
+        species=species,
+        version="v2",
+        keep_target_genes_ratio=1.,
+        max_n_target_genes_per_gp=250,
+        load_from_disk=False,
+        save_to_disk=True,
+        lr_network_file_path=f"{save_path}/nichenet_lr_network_v2_{species}.csv",
+        ligand_target_matrix_file_path=f"{save_path}/nichenet_ligand_target_matrix_v2_{species}.csv",
+        plot_gp_gene_count_distributions=True,
+    )
+
+    gp_dicts = [omnipath_gp_dict, nichenet_gp_dict]
+
+    if include_mebocost:
+        try:
+            mebocost_dir = _download_mebocost_files(save_path, species)
+            print("Extracting MEBOCOST metabolite-sensor gene programs...")
+            mebocost_gp_dict = extract_gp_dict_from_mebocost_ms_interactions(
+                dir_path=f"{save_path}/data/gene_programs/metabolite_enzyme_sensor_gps",
+                species=species,
+                plot_gp_gene_count_distributions=True,
+            )
+            gp_dicts.append(mebocost_gp_dict)
+        except (urllib.error.URLError, OSError) as e:
+            print(f"Warning: could not retrieve MEBOCOST gene programs ({e!r}). Contuining with OmniPath + NicheNet GPs only.")
+
+    print("Filtering and combining gene programs...")
+    combined_gp_dict = filter_and_combine_gp_dict_gps_v2(gp_dicts, verbose=True)
+
+    print("Combining GP programs is finished.")
+
+    import json
+    print(json.__file__)
+    print(json.dump)
+
+    with open(combined_gp_dict_path, "w") as f:
+        # json.dump(combined_gp_dict, f)
+        f.write(json.dumps(combined_gp_dict))
+
+    print(
+        f"Saved combined gene program dictionary with {len(combined_gp_dict)} gene programs to '{combined_gp_dict_path}'."
+    )
+ 
+
+# private functions
 def _setup_output_dirs(output_dir, dataset_name):
     """Create timestamped output folders. Returns (model_dir, figure_dir)."""
     current_timestamp = datetime.now().strftime("%d%m%Y_%H%M%S")
@@ -414,436 +830,6 @@ def _cluster_and_visualize(model, latent_key, leiden_resolutions,
     return adata
 
 
-# =============================================================================
-# PUBLIC FUNCTION 1: TRAIN
-# =============================================================================
-
-def niche_analysis_train(
-    adata,
-    gp_dict_path,
-    sample_key = "sample",
-    output_dir="./artifacts",
-    dataset_name="xenium_muscle",
-    spatial_key="spatial",
-    # spatial graph
-    n_neighbors=4,
-    radius_around=None,
-    min_cells_around=0,
-    # model architecture
-    conv_layer_encoder="gatv2conv",
-    active_gp_thresh_ratio=0.01,
-    cat_covariates_embeds_nums=3,
-    # training
-    n_epochs=400,
-    n_epochs_all_gps=25,
-    lr=0.001,
-    lambda_edge_recon=500000.0,
-    lambda_gene_expr_recon=300.0,
-    lambda_l1_masked=0.0,
-    lambda_l1_addon=30.0,
-    edge_batch_size=4096,
-    n_sampled_neighbors=4,
-    use_cuda_if_available=False,
-    cell_type_key=None,
-    leiden_resolutions=None,
-    spot_size=100,
-    log_bayes_factor_thresh=2.3,
-):
-    """
-    Full NicheCompass pipeline for multiple Xenium samples.
-
-    Builds per-sample spatial graphs (as disconnected components), loads a
-    pre-saved GP dictionary, trains the model with sample-level batch
-    correction, clusters niches at multiple resolutions, and saves everything.
-
-    Parameters
-    ----------
-    adata : AnnData
-        Combined AnnData with all samples. Raw counts in .X (not
-        log-normalized). Spatial coordinates in obsm[spatial_key] as (x, y).
-        Must have a sample identifier column in obs[sample_key].
-    gp_dict_path : str
-        Path to the pre-saved combined GP dictionary JSON file.
-        Build this once with the GP building utilities and save with json.dump.
-        See module docstring for how to create this file.
-   sample_key : str
-        Column in adata.obs that identifies each sample. The function splits
-        on this column and uses it for batch correction. Default: "sample".
-    output_dir : str
-        Root folder for all outputs (model, figures, CSVs).
-    dataset_name : str
-        Used to name subfolders inside output_dir.
-    spatial_key : str
-        Key in obsm containing (x, y) spatial coordinates.
-    n_neighbors : int
-        Number of spatial neighbors per cell. Authors recommend 4.
-    radius_around : int or None
-        If set, cells with fewer than min_cells_around neighbors within this
-        radius are removed before graph construction. Set None to skip.
-    min_cells_around : int
-        Minimum neighbors within radius_around to keep a cell.
-    conv_layer_encoder : str
-        'gatv2conv' (recommended, better quality) or 'gcnconv' (faster).
-    cat_covariates_embeds_nums : int
-        Embedding dimension for the sample/batch covariate. Default 3.
-    n_epochs : int
-        Training epochs. 400 is the paper default.
-    edge_batch_size : int
-        Edges per training batch. Reduce if running out of GPU memory.
-    cell_type_key : str, optional
-        adata.obs column with cell type labels for composition plots.
-    leiden_resolutions : list of float, optional
-        Leiden resolutions to run. Defaults to [0.1, 0.2, ..., 1.0].
-    log_bayes_factor_thresh : float
-        Threshold for differential GP testing. 2.3 = 'strong evidence'.
-
-    Returns
-    -------
-    model_folder_path : str
-        Path to the saved model. Pass this to niche_analysis_load().
-    adata : AnnData
-        Combined AnnData with latent embedding and niche cluster labels
-        for all samples.
-    """
-
-    if leiden_resolutions is None:
-        leiden_resolutions = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-
-    # Fixed AnnData keys
-    adj_key = "spatial_connectivities"
-    latent_key = "nichecompass_latent"
-    differential_gp_test_results_key = "nichecompass_differential_gp_test_results"
-
-    # Setup
-    model_folder_path, figure_folder_path = _setup_output_dirs(output_dir, dataset_name)
-    print(f"\n{'='*60}")
-    print("NicheCompass — TRAINING")
-    print(f"Model will be saved to: {model_folder_path}")
-    print(f"{'='*60}\n")
-
-    # Per-sample spatial graphs
-    adatas_by_sample = _build_per_sample_spatial_graphs(
-        adata=adata,
-        sample_key=sample_key,
-        n_neighbors=n_neighbors,
-        radius_around=radius_around,
-        min_cells_around=min_cells_around,
-        adj_key=adj_key,
-        spatial_key=spatial_key,
-    )
-
-    if len(adatas_by_sample) == 0:
-        raise ValueError(
-            "No samples remaining after filtering. Check your sample_key "
-            "and radius_around / min_cells_around settings."
-        )
-
-    # Stitch into one disconnected graph
-    adata_combined = _stitch_spatial_graphs(adatas_by_sample, adj_key)
-
-    # Load GP dict from JSON and add masks
-    adata_combined = _load_and_add_gps(adata_combined, gp_dict_path)
-
-    # Initialize model with batch correction
-    print("Initializing NicheCompass model...")
-    model = NicheCompass(
-        adata_combined,
-        counts_key=None,
-        adj_key=adj_key,
-        cat_covariates_keys=[sample_key],
-        cat_covariates_embeds_injection=["gene_expr_decoder"],
-        cat_covariates_embeds_nums=[cat_covariates_embeds_nums],
-        cat_covariates_no_edges=[True],
-        gp_names_key="nichecompass_gp_names",
-        active_gp_names_key="nichecompass_active_gp_names",
-        gp_targets_mask_key="nichecompass_gp_targets",
-        gp_targets_categories_mask_key="nichecompass_gp_targets_categories",
-        gp_sources_mask_key="nichecompass_gp_sources",
-        gp_sources_categories_mask_key="nichecompass_gp_sources_categories",
-        latent_key=latent_key,
-        conv_layer_encoder=conv_layer_encoder,
-        active_gp_thresh_ratio=active_gp_thresh_ratio,
-    )
-
-    # Train
-    model.train(
-        n_epochs=n_epochs,
-        n_epochs_all_gps=n_epochs_all_gps,
-        lr=lr,
-        lambda_edge_recon=lambda_edge_recon,
-        lambda_gene_expr_recon=lambda_gene_expr_recon,
-        lambda_l1_masked=lambda_l1_masked,
-        lambda_l1_addon=lambda_l1_addon,
-        edge_batch_size=edge_batch_size,
-        n_sampled_neighbors=n_sampled_neighbors,
-        use_cuda_if_available=use_cuda_if_available,
-        verbose=True,
-    )
-
-    # Save model + adata (adata has all GP masks and latent embedding baked in)
-    model.save(
-        dir_path=model_folder_path,
-        overwrite=True,
-        save_adata=True,
-        adata_file_name="nichecompass_adata.h5ad",
-    )
-    print(f"Model saved to: {model_folder_path}")
-
-    # Cluster + visualize + differential GPs
-    adata = _cluster_and_visualize(
-        model=model,
-        latent_key=latent_key,
-        leiden_resolutions=leiden_resolutions,
-        cell_type_key=cell_type_key,
-        sample_key=sample_key,
-        differential_gp_test_results_key=differential_gp_test_results_key,
-        spot_size=spot_size,
-        log_bayes_factor_thresh=log_bayes_factor_thresh,
-        figure_folder_path=figure_folder_path,
-    )
-
-    print(f"\nDone. Figures saved to: {figure_folder_path}")
-    return model_folder_path, adata
-
-
-# =============================================================================
-# PUBLIC FUNCTION 2: LOAD FROM DISK (no retraining)
-# =============================================================================
-
-def niche_analysis_load(
-    model_folder_path,
-    output_dir="./artifacts",
-    dataset_name="xenium_tissue",
-    sample_key="sample",
-    # analysis — can differ freely from the training run
-    cell_type_key=None,
-    leiden_resolutions=None,
-    spot_size=100,
-    log_bayes_factor_thresh=2.3,
-):
-    """
-    Load a previously trained NicheCompass model and its saved adata from
-    disk, then re-run clustering and visualization. No retraining needed.
-
-    The adata saved during training already contains all GP masks, the spatial
-    graph, and the latent embedding, so the model architecture always matches
-    the saved weights exactly. No new input data is required.
-
-    You can freely change leiden_resolutions, cell_type_key, and
-    log_bayes_factor_thresh between load runs without retraining.
-
-    Parameters
-    ----------
-    model_folder_path : str
-        Path to the saved model directory returned by niche_analysis_train().
-        Must contain both the model weights and nichecompass_adata.h5ad.
-    output_dir : str
-        Root folder for figures and CSVs from this run.
-    dataset_name : str
-        Used to name figure subfolders inside output_dir.
-   sample_key : str
-        Column in adata.obs that identifies each sample. Must match what
-        was used during training. Default: "sample".
-    cell_type_key : str, optional
-        adata.obs column with cell type labels. Can be added after training —
-        just add the column to the saved adata before calling this function.
-    leiden_resolutions : list of float, optional
-        Leiden resolutions to run. Can differ from the training run.
-        Defaults to [0.1, 0.2, ..., 1.0].
-    spot_size : int
-        Spot size for sc.pl.spatial().
-    log_bayes_factor_thresh : float
-        Threshold for differential GP testing.
-
-    Returns
-    -------
-    adata : AnnData
-        AnnData with latent embedding and niche cluster labels.
-
-    Notes
-    -----
-    To add cell type labels to the saved adata after training:
-        adata = sc.read_h5ad("<model_folder>/nichecompass_adata.h5ad")
-        adata.obs["cell_type"] = <your labels>
-        adata.write_h5ad("<model_folder>/nichecompass_adata.h5ad")
-        # Then call niche_analysis_load(..., cell_type_key="cell_type")
-    """
-
-    if leiden_resolutions is None:
-        leiden_resolutions = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
-
-    # Fixed keys — must match training
-    latent_key                       = "nichecompass_latent"
-    differential_gp_test_results_key = "nichecompass_differential_gp_test_results"
-
-    # Setup
-    figure_folder_path = _make_figure_dir(output_dir, dataset_name)
-
-    print(f"\n{'='*60}")
-    print("NicheCompass — LOAD FROM DISK (no retraining)")
-    print(f"Loading model from: {model_folder_path}")
-    print(f"{'='*60}\n")
-
-    # Load saved adata (GP masks already baked in)
-    adata_path = os.path.join(model_folder_path, "nichecompass_adata.h5ad")
-    print(f"Loading saved adata from: {adata_path}")
-    adata = sc.read_h5ad(adata_path)
-    print(f"  Cells: {adata.n_obs} | Genes: {adata.n_vars}")
-    if sample_key in adata.obs.columns:
-        print(f"  Samples: {sorted(adata.obs[sample_key].unique().tolist())}")
-
-    # Load model weights
-    print("Loading trained model weights...")
-    model = NicheCompass.load(
-        dir_path=model_folder_path,
-        adata=adata,
-    )
-
-    # Recompute latent embedding from loaded weights
-    print("Computing latent embedding...")
-    latent = model.get_latent_representation()
-    model.adata.obsm[latent_key] = latent
-
-    # Cluster + visualize + differential GPs
-    adata = _cluster_and_visualize(
-        model=model,
-        latent_key=latent_key,
-        leiden_resolutions=leiden_resolutions,
-        cell_type_key=cell_type_key,
-        sample_key=sample_key,
-        differential_gp_test_results_key=differential_gp_test_results_key,
-        spot_size=spot_size,
-        log_bayes_factor_thresh=log_bayes_factor_thresh,
-        figure_folder_path=figure_folder_path,
-    )
-
-    print(f"\nDone. Figures saved to: {figure_folder_path}")
-    return adata
-
-
-# =============================================================================
-# PUBLIC FUNCTION 3: GENERATE COMBINED GP DICT
-# =============================================================================
-
-def save_gp_dict(
-    species="human",
-    save_path="gp_dict",
-    include_mebocost=True,
-    gene_orthologs_mapping_file_path=None,
-    overwrite=False,
-):
-    """
-    Build the combined gene-program (GP) dictionary NicheCompass needs for training, from OmniPath (ligand-receptor), NicheNet (ligand-receptor target), and, optionally, MEBOCOST (metabolite-enzyme-sensor) interactions, and cache it to disk.
-
-    This is meant to be run once per species (it downloads and parses several fairly large reference databases), after which the resulting ``combined_gp_dict.json`` can just be loaded from disk every subsequent training run.
-
-    Parameters
-    ----------
-    species : str, default "human"
-        Species to build gene programs for. Passed through to all three
-        extraction functions. NicheCompass / MEBOCOST support "human" and
-        "mouse".
-    save_path : str, default "gp_dict"
-        Directory in which all intermediate reference files (OmniPath /
-        NicheNet networks, MEBOCOST tables) and the final
-        ``combined_gp_dict.json`` are stored. Created if it doesn't exist.
-    include_mebocost : bool, default True
-        Whether to additionally retrieve MEBOCOST metabolite-sensor gene
-        programs. MEBOCOST doesn't ship its interaction tables with the
-        `nichecompass` package, so this function downloads the four TSVs
-        NicheCompass's own tutorials rely on directly from the
-        NicheCompass GitHub repo (this is the manual `curl` step you'd
-        otherwise have to run yourself, see ``_download_mebocost_files``
-        below). If the download fails (e.g. no internet access in this
-        environment) a warning is printed and MEBOCOST is skipped rather
-        than raising, so OmniPath + NicheNet GPs are still produced.
-    gene_orthologs_mapping_file_path : str or None, default None
-        Forwarded to ``extract_gp_dict_from_omnipath_lr_interactions``.
-        Only needed if you want to map OmniPath interactions (human by
-        default) onto a different species without native OmniPath
-        coverage; leave as None for human/mouse.
-    overwrite : bool, default False
-        If a ``combined_gp_dict.json`` already exists at ``save_path``,
-        skip all extraction and just load and return it, unless
-        ``overwrite=True``.
- 
-    Returns
-    -------
-    dict
-        The combined gene-program dictionary (also written to
-        ``{save_path}/combined_gp_dict.json``).
- 
-    Notes
-    -----
-    Requires the `nichecompass` package to be installed and importable.
-    """
-    os.makedirs(save_path, exist_ok=True)
-    combined_gp_dict_path = os.path.join(save_path, "combined_gp_dict.json")
-
-    if os.path.isfile(combined_gp_dict_path) and not overwrite:
-        print(
-            f"Found existing combined GP dict at `{combined_gp_dict_path}`, "
-            f"loading it instead of recomputing (pass overwrite=True to "
-            f"force recomputation)"
-        )
-        with open(combined_gp_dict_path, "r") as f:
-            return json.load(f)
-
-    print("Etracting OmniPath ligand-receptor programs...")
-    omnipath_gp_dict = extract_gp_dict_from_omnipath_lr_interactions(
-        species=species,
-        load_from_disk=False,
-        save_to_disk=True,
-        lr_network_file_path=f"{save_path}/omnipath_lr_network.csv",
-        gene_orthologs_mapping_file_path=gene_orthologs_mapping_file_path,
-        plot_gp_gene_count_distributions=True,
-    )
-
-    print("Extracting NicheNet ligand-receptor-target gene programs...")
-    nichenet_gp_dict = extract_gp_dict_from_nichenet_lrt_interactions(
-        species=species,
-        version="v2",
-        keep_target_genes_ratio=1.,
-        max_n_target_genes_per_gp=250,
-        load_from_disk=False,
-        save_to_disk=True,
-        lr_network_file_path=f"{save_path}/nichenet_lr_network_v2_{species}.csv",
-        ligand_target_matrix_file_path=f"{save_path}/nichenet_ligand_target_matrix_v2_{species}.csv",
-        plot_gp_gene_count_distributions=True,
-    )
-
-    gp_dicts = [omnipath_gp_dict, nichenet_gp_dict]
-
-    if include_mebocost:
-        try:
-            mebocost_dir = _download_mebocost_files(save_path, species)
-            print("Extracting MEBOCOST metabolite-sensor gene programs...")
-            mebocost_gp_dict = extract_gp_dict_from_mebocost_ms_interactions(
-                dir_path=f"{save_path}/data/gene_programs/metabolite_enzyme_sensor_gps",
-                species=species,
-                plot_gp_gene_count_distributions=True,
-            )
-            gp_dicts.append(mebocost_gp_dict)
-        except (urllib.error.URLError, OSError) as e:
-            print(f"Warning: could not retrieve MEBOCOST gene programs ({e!r}). Contuining with OmniPath + NicheNet GPs only.")
-
-    print("Filtering and combining gene programs...")
-    combined_gp_dict = filter_and_combine_gp_dict_gps_v2(gp_dicts, verbose=True)
-
-    print("Combining GP programs is finished.")
-
-    import json
-    print(json.__file__)
-    print(json.dump)
-
-    with open(combined_gp_dict_path, "w") as f:
-        # json.dump(combined_gp_dict, f)
-        f.write(json.dumps(combined_gp_dict))
-
-    print(
-        f"Saved combined gene program dictionary with {len(combined_gp_dict)} gene programs to '{combined_gp_dict_path}'."
-    )
- 
 
 def _download_mebocost_files(save_path, species):
     """

@@ -9,46 +9,7 @@ import squidpy as sq
 import matplotlib.pyplot as plt
 import seaborn as sns
 import scipy.sparse as sp
-
 import liana as li
-
-# PRIVATE FUNCTIONS
-
-def _filter_small_types(
-    adata: ad.AnnData,
-    cell_type_key: str,
-    min_cells: int,
-    verbose: bool
-) -> ad.AnnData:
-    """Drop cell types with fewer than ``min_cells`` observations. ``cell_type_key`` can be anything the data can be grouped by, e.g. cell types or Leiden clusters."""
-    counts = adata.obs[cell_type_key].value_counts()
-    keep = counts[counts >= min_cells].index
-    dropped = list(counts[counts < min_cells].index)
-    if dropped and verbose:
-        print(f"[STAIA] Dropping cell types with < {min_cells} cells: {dropped}")
-    return adata[adata.obs[cell_type_key].isin(keep)].copy()
-
-def _ensure_spatial_neighbors(
-    adata: ad.AnnData,
-    spatial_key: str = "spatial",
-    n_rings: int = 1,
-    n_neighs: int = 6,
-    coord_type: str = "grid",
-    verbose: bool = False,
-) -> ad.AnnData:
-    """Build a squipdy spatial neighbour graph if one does not already exist."""
-    if "spatial_connectivities" not in adata.obsp:
-        if verbose:
-            print("[STAIA] Computing spatial neighbors...")
-        sq.gr.spatial_neighbors(
-            adata,
-            spatial_key=spatial_key,
-            coord_type=coord_type,
-            n_rings=n_rings,
-            n_neighs=n_neighs,
-            key_added="spatial",
-        )
-    return adata
 
 # PUBLIC FUNCTIONS
 def run_liana(
@@ -270,6 +231,7 @@ def run_liana(
  
     return liana_global, liana_local
 
+
 # PLOTTING HELPERS
 def plot_liana_dotplot(
     liana_global: pd.DataFrame,
@@ -332,6 +294,7 @@ def plot_liana_dotplot(
         plt.savefig(save, dpi=150, bbox_inches="tight")
         print(f"[STAIA] Figure saved to {save}")
     plt.show()
+
 
 def plot_spatial_lr_scores(
     adata: ad.AnnData,
@@ -396,6 +359,7 @@ def plot_spatial_lr_scores(
     if save:
         plt.savefig(save, dpi=150, bbox_inches="tight")
         print(f"[STAIA] Figure saved to {save}")
+
 
 def plot_liana_circle(
     liana_global: pd.DataFrame,
@@ -465,3 +429,40 @@ def plot_liana_circle(
         print(f"[STAIA] Figure saved to {save}")
     plt.show()
     
+
+# PRIVATE FUNCTIONS
+def _filter_small_types(
+    adata: ad.AnnData,
+    cell_type_key: str,
+    min_cells: int,
+    verbose: bool
+) -> ad.AnnData:
+    """Drop cell types with fewer than ``min_cells`` observations. ``cell_type_key`` can be anything the data can be grouped by, e.g. cell types or Leiden clusters."""
+    counts = adata.obs[cell_type_key].value_counts()
+    keep = counts[counts >= min_cells].index
+    dropped = list(counts[counts < min_cells].index)
+    if dropped and verbose:
+        print(f"[STAIA] Dropping cell types with < {min_cells} cells: {dropped}")
+    return adata[adata.obs[cell_type_key].isin(keep)].copy()
+
+def _ensure_spatial_neighbors(
+    adata: ad.AnnData,
+    spatial_key: str = "spatial",
+    n_rings: int = 1,
+    n_neighs: int = 6,
+    coord_type: str = "grid",
+    verbose: bool = False,
+) -> ad.AnnData:
+    """Build a squipdy spatial neighbour graph if one does not already exist."""
+    if "spatial_connectivities" not in adata.obsp:
+        if verbose:
+            print("[STAIA] Computing spatial neighbors...")
+        sq.gr.spatial_neighbors(
+            adata,
+            spatial_key=spatial_key,
+            coord_type=coord_type,
+            n_rings=n_rings,
+            n_neighs=n_neighs,
+            key_added="spatial",
+        )
+    return adata

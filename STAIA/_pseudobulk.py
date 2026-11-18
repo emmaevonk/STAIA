@@ -1,4 +1,5 @@
 import os
+import numpy as np
 import pandas as pd
 import scanpy as sc
 import matplotlib.pyplot as plt
@@ -12,9 +13,6 @@ from itertools import combinations
 """
 This module performs pseudobulk DE analysis per condition
 """
-
-import numpy as np
-
 def _safe_filename(s: str) -> str:
     """Replace characters that are invalid in filenames with underscores."""
     return s.replace("/", "_").replace("\\", "_").replace(" ", "_")

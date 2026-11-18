@@ -5,10 +5,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from anndata import AnnData
-
 from typing import Literal, Optional
 
-# this script is to detect spatially variable genes
 
 def morans_score(
         adata: AnnData,

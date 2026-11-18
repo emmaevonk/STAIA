@@ -20,22 +20,6 @@ from banksy_utils.umap_pca import pca_umap
 from banksy.cluster_methods import run_Leiden_partition
 from banksy.plot_banksy import plot_results
 
-def _preprocess(
-        adata: AnnData,
-):
-    # for now, we assume that the data has already been normalized
-    # check if x_centroid and y_centroid are present in the data
-    if "x_centroid" not in adata.obs:
-        adata.obs['x_centroid'] = adata.obsm['spatial'][:, 0]
-    if "y_centroid" not in adata.obs:
-        adata.obs['y_centroid'] = adata.obsm['spatial'][:, 1]
-
-    sc.pp.highly_variable_genes(adata, n_top_genes=2000, flavor="seurat_v3")
-    # only keep highly variable genes in the data
-    adata = adata[:, adata.var.highly_variable].copy()
-    sc.pp.scale(adata, zero_center=False)
-    return adata
-
 
 def run_banksy(
         adata: AnnData,
@@ -76,7 +60,7 @@ def run_banksy(
     results_df, banksy_matrix
         Results of BANKSY
     """
-    print(f"Please take into account that running the BANKSY algorithm can take " \
+    print("Please take into account that running the BANKSY algorithm can take " \
           "a while before finishing. Have patience... ")
     adata = _preprocess(adata)
 
@@ -131,3 +115,18 @@ def run_banksy(
     )
     return results_df, banksy_matrix
 
+def _preprocess(
+        adata: AnnData,
+):
+    # for now, we assume that the data has already been normalized
+    # check if x_centroid and y_centroid are present in the data
+    if "x_centroid" not in adata.obs:
+        adata.obs['x_centroid'] = adata.obsm['spatial'][:, 0]
+    if "y_centroid" not in adata.obs:
+        adata.obs['y_centroid'] = adata.obsm['spatial'][:, 1]
+
+    sc.pp.highly_variable_genes(adata, n_top_genes=2000, flavor="seurat_v3")
+    # only keep highly variable genes in the data
+    adata = adata[:, adata.var.highly_variable].copy()
+    sc.pp.scale(adata, zero_center=False)
+    return adata
