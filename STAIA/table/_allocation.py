@@ -80,7 +80,7 @@ def add_nuclei(
     return sdata
     
 
-def get_adata_per_nucleus(sdata: SpatialData, table_layer: str = "table", min_qv: float = 20.0):
+def get_adata_per_nucleus(sdata: SpatialData, table_layer: str = "table", min_qv: float = 20.0, shapes_layer: str = "nucleus_boundaries_fixed"):
     """
     Return per-nucleus transcript counts and a matching per-cell fiber AnnData.
 
@@ -100,12 +100,15 @@ def get_adata_per_nucleus(sdata: SpatialData, table_layer: str = "table", min_qv
         - sdata.shapes["cell_boundaries"]
         - sdata.points["transcripts"]  with ``overlaps_nucleus`` and ``qv`` columns
         - sdata.tables[table_layer]
-    table_layer : str, default "table"
+    table_layer : str, default = "table"
         Key of the per-cell table in ``sdata.tables``.
-    min_qv : float, default 20.0
+    min_qv : float, default = 20.0
         Minimum quality score threshold. Transcripts with qv below this
         value are excluded, consistent with XeniumRanger's default filter.
         Set to 0.0 to disable filtering.
+    shapes_layer : str, default = "nucleus_boundaries_fixed"
+        Shapes layer containing the nucleus boundaries per nucleus in the cells.
+        This shapes layer is added by running `STAIA.add_nuclei()`
 
     Returns
     -------
@@ -124,16 +127,16 @@ def get_adata_per_nucleus(sdata: SpatialData, table_layer: str = "table", min_qv
         Both are stored in ``sdata.tables`` as ``"adata_per_nucleus"``
         and ``"adata_fibers_per_nucleus"``.
     """
-    if "nucleus_boundaries_fixed" not in sdata.shapes:
+    if shapes_layer not in sdata.shapes:
         raise ValueError(
-            "Run STAIA.add_nuclei() first — 'nucleus_boundaries_fixed' not found."
+            f"Run STAIA.add_nuclei() first — '{shapes_layer}' not found."
         )
 
     print("Building per-nucleus AnnData using overlaps_nucleus flag...")
     adata = sdata.tables[table_layer]
 
     # PREPARE NUCLEUS SHAPES                                               
-    nuc_shapes = sdata.shapes["nucleus_boundaries_fixed"].copy()
+    nuc_shapes = sdata.shapes[shapes_layer].copy()
     nuc_shapes["geometry"] = nuc_shapes.geometry.apply(make_valid).apply(_to_polygonal)
     nuc_shapes = nuc_shapes[nuc_shapes.geometry.notna()].copy()
     nuc_shapes["nucleus_id"] = nuc_shapes.index
@@ -379,11 +382,11 @@ def get_adata_per_nucleus(sdata: SpatialData, table_layer: str = "table", min_qv
     region_key = adata.uns.get("spatialdata_attrs", {}).get("region_key", "region")
 
     adata_per_nucleus.obs[region_key] = pd.Categorical(
-        ["nucleus_boundaries_fixed"] * len(adata_per_nucleus)
+        [shapes_layer] * len(adata_per_nucleus)
     )
     sdata.tables["adata_per_nucleus"] = TableModel.parse(
         adata_per_nucleus,
-        region="nucleus_boundaries_fixed",
+        region=shapes_layer,
         region_key=region_key,
         instance_key="label_id",
     )

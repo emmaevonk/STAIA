@@ -156,9 +156,7 @@ def plot_labels(
 
     # Flip axis to keep original coordinate system of Xenium
     ax.set_ylim(coords[:, 1].max(), coords[:, 1].min())
-    # ax.invert_yaxis()
-    # ax.set_ylim(22000, 0) TODO: I removed this, test if it's okay now.
-
+    
     # Equal aspect ratio so coordinates are not distorted
     ax.set_aspect("equal", adjustable="box")
 
