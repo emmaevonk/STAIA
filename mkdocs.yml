@@ -5,6 +5,9 @@ site_name: STAIA
 theme: # flatly
   name: readthedocs 
 
+markdown_extensions:
+  - admonition
+
 plugins:
   - search
   - mkdocs-jupyter 
@@ -22,9 +25,9 @@ nav:
   - Home: index.md
   - Installation: installation.md
   - Quickstart: quickstart.md
+  - Changelog: changelog.md
   - Tutorials:
       - Tutorial: tutorials/tutorial.ipynb
-  - Changelog: changelog.md
   - Documentation: 
       - Read Data: documentation/read_spatialobject.md
       - Add Nuclei: documentation/add_nuclei.md
