@@ -12,24 +12,26 @@ STAIA.function()
 
 This makes it easy to build reproducible spatial analysis pipelines with minimal boilerplate.
 
+Link to the GitHub page: [Click here](https://github.com/emmaevonk/STAIA)
+
 ---
 
-## 🔄 Updates
+## 🔔 Updates
 *Changelog tracked from November 19, 2026.*
 
-### v0.2.0 — November 2026
-- 🎉 Revised release
-- ✨ Added: Ligand-receptor analysis
-- ✨ Added: Errorhandling
-- ✨ Added: nuclei functions
-- ✨ Added: changelog
-- 🔧 Changed: pseudobulks
+!!! note "v0.2.0 — November 2026"
+    - 🎉 Revised release
+    - ✨ Added: Ligand-receptor analysis
+    - ✨ Added: Errorhandling
+    - ✨ Added: Nuclei functions
+    - ✨ Added: Changelog
+    - 🔧 Changed: Pseudobulks
 
 ---
 
 ## License
 MIT license is applied:
-Copyright (c) 2026 SpatialAPI
+Copyright (c) 2026 STAIA
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
