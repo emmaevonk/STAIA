@@ -43,21 +43,11 @@
               <ul class="current">
                 <li class="toctree-l1 current"><a class="reference internal current" href="#">Home</a>
     <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#highlights">🌟 Highlights</a>
-    </li>
     <li class="toctree-l2"><a class="reference internal" href="#i-overview">ℹ️ Overview</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#features">✨ Features</a>
+    <li class="toctree-l2"><a class="reference internal" href="#updates">🔄 Updates</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#inputoutput">Input/Output</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#quality-control">Quality control</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#spatial-analysis">Spatial Analysis</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#visualization">Visualization</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#metrics-diagnostics">Metrics &amp; Diagnostics</a>
+    <li class="toctree-l3"><a class="reference internal" href="#v020-november-2026">v0.2.0 — November 2026</a>
     </li>
         </ul>
     </li>
@@ -78,6 +68,10 @@
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="tutorials/tutorial/">Tutorial: using STAIA package</a>
                   </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="changelog/">Changelog</a>
+                </li>
               </ul>
               <p class="caption"><span class="caption-text">Documentation</span></p>
               <ul>
@@ -139,53 +133,26 @@
               
                 <h1 id="staia">📦 STAIA</h1>
 <blockquote>
-<p><em>STAIA is a Python package for spatial transcriptomics with its aim to lower the computational barrier in spatial transcriptomics analysis. The software is currently focused on Xenium data from 10X Genomics.</em></p>
+<p><em>STAIA is a Python package for spatial transcriptomics with its aim to lower the computational barrier. The software is currently focused on Xenium data from 10X Genomics.</em></p>
 </blockquote>
-<h2 id="highlights">🌟 Highlights</h2>
-<ul>
-<li>End-to-end analyses in one pipeline</li>
-<li>Recognizing samples from the same Xenium slide</li>
-<li>Assigning labels to samples</li>
-<li>Performing QC, clustering, multimodal segmentation, assigning conditions and pseudobulk DE analysis</li>
-<li>Errorhandler</li>
-<li>Using well known tools in spatial transcriptomics, e.g. Squidpy and Scanpy</li>
-</ul>
 <h2 id="i-overview">ℹ️ Overview</h2>
-<p>STAIA is a functional API for analyzing spatial transcriptomics data. It provides a Command Line Interface (CLI) to perform quality control, spatial statistics, neighborhood analysis, and visualization for datasets generated with the Xenium platform from 10X Genomics.</p>
+<p>STAIA is a Python package for analyzing spatial transcriptomics data. It provides a Command Line Interface (CLI) to perform quality control, spatial statistics, neighborhood analysis, and visualization for datasets generated with the Xenium platform from 10X Genomics.</p>
 <p>The API is designed around a clean, functional workflow:</p>
 <pre><code class="language-py">STAIA.function()
 </code></pre>
 <p>This makes it easy to build reproducible spatial analysis pipelines with minimal boilerplate.</p>
-<h2 id="features">✨ Features</h2>
-<p>STAIA supports a wide range of spatial transcriptomics analyses. Beneath a few examples are mentioned.</p>
-<h3 id="inputoutput">Input/Output</h3>
-<p>The input and output for every function is mentioned in the documentation. The input is most commonly a SpatialData or an AnnData object.  </p>
-<h3 id="quality-control">Quality control</h3>
+<hr />
+<h2 id="updates">🔄 Updates</h2>
+<p><em>Changelog tracked from November 19, 2026.</em></p>
+<h3 id="v020-november-2026">v0.2.0 — November 2026</h3>
 <ul>
-<li>Automatic QC metric calculation</li>
-<li>Data-driven filtering recommendations</li>
-<li>Cell- and gene-level diagnostics</li>
+<li>🎉 Revised release</li>
+<li>✨ Added: Ligand-receptor analysis</li>
+<li>✨ Added: Errorhandling</li>
+<li>✨ Added: nuclei functions</li>
+<li>🔧 Changed: pseudobulks</li>
 </ul>
-<h3 id="spatial-analysis">Spatial Analysis</h3>
-<ul>
-<li>Neighbor enrichment / cell-cell interaction analysis</li>
-<li>Spatial neighborhood constructuren</li>
-<li>Spatial statistics and summary metrics</li>
-</ul>
-<h3 id="visualization">Visualization</h3>
-<ul>
-<li>High-resolution spatial plotting</li>
-<li>Overlay gene expression or cell annotations</li>
-<li>Quick visualization with:</li>
-</ul>
-<pre><code class="language-py">STAIA.plot_image()
-</code></pre>
-<h3 id="metrics-diagnostics">Metrics &amp; Diagnostics</h3>
-<ul>
-<li>Dataset-level summary statistics</li>
-<li>Spatial structure evaluation</li>
-<li>Analysis-ready feature generation</li>
-</ul>
+<hr />
 <h2 id="license">License</h2>
 <p>MIT license is applied:
 Copyright (c) 2026 SpatialAPI</p>
@@ -204,6 +171,10 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.</p>
+<!-- ### vX.Y.Z — Month YYYY
+- 🐛 Bug fix: ...
+- ✨ New: ...
+- 🔧 Changed: ... -->
               
             </div>
           </div><footer>
@@ -252,5 +223,5 @@ SOFTWARE.</p>
 
 <!--
 MkDocs version : 1.6.1
-Build Date UTC : 2026-11-18 11:07:17.464023+00:00
+Build Date UTC : 2026-11-19 08:18:31.545505+00:00
 -->
