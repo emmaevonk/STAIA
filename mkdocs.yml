@@ -24,6 +24,7 @@ nav:
   - Quickstart: quickstart.md
   - Tutorials:
       - Tutorial: tutorials/tutorial.ipynb
+  - Changelog: changelog.md
   - Documentation: 
       - Read Data: documentation/read_spatialobject.md
       - Add Nuclei: documentation/add_nuclei.md
