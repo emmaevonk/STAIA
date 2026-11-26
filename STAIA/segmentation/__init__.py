@@ -18,7 +18,7 @@ with warnings.catch_warnings():
     )
 
     from .segmentation import (
-        baysor,
+        # baysor,
         xeniumranger
     )
 

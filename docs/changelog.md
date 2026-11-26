@@ -10,6 +10,5 @@ Changelog tracked from November 19, 2026.
     - ✨ Added: Errorhandling
     - ✨ Added: Nuclei functions
     - ✨ Added: Changelog
-    - 🔧 Changed: Pseudobulks
-
+    - 🔧 Changed: Pseudobulk functions
 ---

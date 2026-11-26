@@ -75,17 +75,19 @@ def dotplot(
 
     return fig
 
-def celltype_composition(
+def composition_graph(
         adata: AnnData,
         condition: str = "condition",
-        celltype: str = 'cell_type',
+        composition_key: str = 'cell_type',
         output_path: str | None = None,
         show: bool = True,
-        save: bool = False
+        save: bool = False,
+        plot_title: str ="Composition per assigned treatment",
+        legend_name : str = "Cell type"
 ):
     """
-    Generating a cell type composition graph, showing
-    the fractions of cell types per condition(s)
+    Generating a composition graph, showing
+    the fractions of a categorical label, e.g. cell types, niches, or clusters per condition.
 
     Parameters
     ----------
@@ -95,8 +97,9 @@ def celltype_composition(
     condition : str, default = "condition"
         Column in `adata.obs` containing the conditions
         of the samples.
-    celltype : str, default = 'cell_type'
-        Column in `adata.obs` containing cell types.
+    composition_key : str, default = 'cell_type'
+        Column in ``adata.obs`` containing the categorical labels whose
+        fractions are computed, e.g. cell types, niches, or clusters.
     output_path : str, default = None
         An output path where to write the 
         resulting PNG file.
@@ -105,23 +108,27 @@ def celltype_composition(
     save : bool, default = False
         Boolean deciding whether or not to save
         the cell type composition graph separately.
+    plot_title : str, default = "Composition per assigned treatment"
+        Title shown on top of plot
+    legend_name : str, default = "Cell type"
+        Text shown above legend
     """
-    composition_counts = adata.obs.groupby([condition, celltype]).size().reset_index(name='count')
+    composition_counts = adata.obs.groupby([condition, composition_key]).size().reset_index(name='count')
     composition_counts['fraction'] = composition_counts.groupby(condition)['count'].transform(lambda x: x / x.sum())
 
     # Plot stacked bar chart
-    plot_df = composition_counts.pivot(index=condition, columns=celltype, values='fraction').fillna(0)
+    plot_df = composition_counts.pivot(index=condition, columns=composition_key, values='fraction').fillna(0)
 
     plot_df.plot(kind='bar', stacked=True, figsize=(8,5))
     plt.ylabel('Fraction of cells')
-    plt.title('Cell type composition per assigned treatment')
+    plt.title(plot_title)
     if show:
-        plt.legend(title='Cell type', bbox_to_anchor=(1.05, 1))
+        plt.legend(title=legend_name, bbox_to_anchor=(1.05, 1))
         plt.tight_layout()
         plt.show()
     if save:
         plt.tight_layout()
         if output_path is None:
-            output_path = os.path.join(os.getcwd(), "celltype_composition.png")
+            output_path = os.path.join(os.getcwd(), "composition.png")
         plt.savefig(output_path, dpi=300, bbox_inches="tight")
-        print(f"The celltype composition figure is saved in the current running directory: {output_path}")
+        print(f"The composition figure is saved in the current running directory: {output_path}")

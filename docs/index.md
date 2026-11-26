@@ -19,13 +19,15 @@ Link to the GitHub page: [Click here](https://github.com/emmaevonk/STAIA)
 ## 🔔 Updates
 *Changelog tracked from November 19, 2026.*
 
-!!! note "v0.2.0 — November 2026"
+!!! note "v0.2.2 — November 2026"
     - 🎉 Revised release
     - ✨ Added: Ligand-receptor analysis
     - ✨ Added: Errorhandling
     - ✨ Added: Nuclei functions
     - ✨ Added: Changelog
-    - 🔧 Changed: Pseudobulks
+    - 🔧 Changed: Pseudobulk functions
+    - 🔧 Changed: XeniumRanger segmentation
+    - 🔧 Changed: composition graph function
 
 ---
 
