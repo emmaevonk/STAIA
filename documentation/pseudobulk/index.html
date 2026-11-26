@@ -197,7 +197,7 @@
             <li>
               <b><code>celltype</code></b>
                   (<code><span title="str">str</span></code>, default:
-                      <code>= &#34;Macrophages&#34;</code>
+                      <code>&#34;Macrophages&#34;</code>
 )
               –
               <div class="doc-md-description">
@@ -207,7 +207,7 @@
             <li>
               <b><code>cond</code></b>
                   (<code><span title="list">list</span>[<span title="str">str</span>]</code>, default:
-                      <code>= [&#34;HC&#34;, &#34;TEST&#34;].</code>
+                      <code>[&#34;HC&#34;, &#34;TEST&#34;].</code>
 )
               –
               <div class="doc-md-description">
@@ -218,7 +218,7 @@ LFC is computed as log2(comparison / reference), i.e. log2(TEST / HC).</p>
             <li>
               <b><code>save</code></b>
                   (<code><span title="bool">bool</span></code>, default:
-                      <code>= True</code>
+                      <code>True</code>
 )
               –
               <div class="doc-md-description">
@@ -228,7 +228,7 @@ LFC is computed as log2(comparison / reference), i.e. log2(TEST / HC).</p>
             <li>
               <b><code>output_path</code></b>
                   (<code><span title="str">str</span> or None</code>, default:
-                      <code>= None</code>
+                      <code>None</code>
 )
               –
               <div class="doc-md-description">
@@ -239,7 +239,7 @@ with an automatically generated filename.</p>
             <li>
               <b><code>sample_col</code></b>
                   (<code><span title="str">str</span></code>, default:
-                      <code>= &#34;sample_id&#34;</code>
+                      <code>&#34;sample_id&#34;</code>
 )
               –
               <div class="doc-md-description">
@@ -249,7 +249,7 @@ with an automatically generated filename.</p>
             <li>
               <b><code>condition_col</code></b>
                   (<code><span title="str">str</span></code>, default:
-                      <code>= &#34;condition&#34;</code>
+                      <code>&#34;condition&#34;</code>
 )
               –
               <div class="doc-md-description">
@@ -270,7 +270,7 @@ since the pseudobulk aggregation has already been done.</p>
             <li>
               <b><code>plot</code></b>
                   (<code><span title="bool">bool</span></code>, default:
-                      <code>= True</code>
+                      <code>True</code>
 )
               –
               <div class="doc-md-description">
@@ -280,7 +280,7 @@ since the pseudobulk aggregation has already been done.</p>
             <li>
               <b><code>lfc_threshold</code></b>
                   (<code><span title="float">float</span></code>, default:
-                      <code>= 0.25</code>
+                      <code>0.25</code>
 )
               –
               <div class="doc-md-description">
@@ -290,7 +290,7 @@ since the pseudobulk aggregation has already been done.</p>
             <li>
               <b><code>padj_threshold</code></b>
                   (<code><span title="float">float</span></code>, default:
-                      <code>= 0.05</code>
+                      <code>0.05</code>
 )
               –
               <div class="doc-md-description">
@@ -300,7 +300,7 @@ since the pseudobulk aggregation has already been done.</p>
             <li>
               <b><code>layer</code></b>
                   (<code><span title="str">str</span></code>, default:
-                      <code>= &#34;raw_counts&#34;</code>
+                      <code>&#34;raw_counts&#34;</code>
 )
               –
               <div class="doc-md-description">
@@ -510,30 +510,30 @@ since the pseudobulk aggregation has already been done.</p>
 <span class="sd">    ----------</span>
 <span class="sd">    adata : AnnData</span>
 <span class="sd">        Annotated data matrix containing raw counts and metadata.</span>
-<span class="sd">    celltype : str, default = &quot;Macrophages&quot;</span>
+<span class="sd">    celltype : str, default &quot;Macrophages&quot;</span>
 <span class="sd">        Cell type to analyze.</span>
-<span class="sd">    cond : list[str], default = [&quot;HC&quot;, &quot;TEST&quot;].</span>
+<span class="sd">    cond : list[str], default [&quot;HC&quot;, &quot;TEST&quot;].</span>
 <span class="sd">        Two treatment groups: [reference_condition, comparison_condition].</span>
 <span class="sd">        LFC is computed as log2(comparison / reference), i.e. log2(TEST / HC).</span>
-<span class="sd">    save : bool, default = True</span>
+<span class="sd">    save : bool, default True</span>
 <span class="sd">        Whether to save the significant genes to a CSV file.</span>
-<span class="sd">    output_path : str or None, default = None</span>
+<span class="sd">    output_path : str or None, default None</span>
 <span class="sd">        Path to save the CSV file.. If None, saves to the curent working directory</span>
 <span class="sd">        with an automatically generated filename.</span>
-<span class="sd">    sample_col : str, default = &quot;sample_id&quot;</span>
+<span class="sd">    sample_col : str, default &quot;sample_id&quot;</span>
 <span class="sd">        Column in annotated data matrix referring to the sample IDs in the data</span>
-<span class="sd">    condition_col : str, default = &quot;condition&quot;</span>
+<span class="sd">    condition_col : str, default &quot;condition&quot;</span>
 <span class="sd">        Column in annotated data matrix referring to assigned labels of the samples.</span>
 <span class="sd">    pb_dict : dict, optional</span>
 <span class="sd">        Pre-built pseudobulk dict from outside. If provided, ``layer`` is ignored</span>
 <span class="sd">        since the pseudobulk aggregation has already been done.</span>
-<span class="sd">    plot : bool, default = True</span>
+<span class="sd">    plot : bool, default True</span>
 <span class="sd">        A boolean deciding whether or not to plot the volcano plot.</span>
-<span class="sd">    lfc_threshold : float, default = 0.25</span>
+<span class="sd">    lfc_threshold : float, default 0.25</span>
 <span class="sd">        Minimum absolute log2 fold change for a gene to be considered significant</span>
-<span class="sd">    padj_threshold : float, default = 0.05</span>
+<span class="sd">    padj_threshold : float, default 0.05</span>
 <span class="sd">        Maximum adjusted p-value for a gene to be considered significant</span>
-<span class="sd">    layer : str, default = &quot;raw_counts&quot;</span>
+<span class="sd">    layer : str, default &quot;raw_counts&quot;</span>
 <span class="sd">        Name of the layer in ``adata`` containing raw integer counts. Ignored if</span>
 <span class="sd">        ``pb_dict`` is provided.</span>
 
@@ -664,7 +664,7 @@ collected and optionally saved to disk.</p>
             <li>
               <b><code>condition_col</code></b>
                   (<code><span title="str">str</span></code>, default:
-                      <code>= &#34;label&#34;</code>
+                      <code>&#34;label&#34;</code>
 )
               –
               <div class="doc-md-description">
@@ -675,7 +675,7 @@ It must match values provided in <code>all_conditions</code>.</p>
             <li>
               <b><code>sample_col</code></b>
                   (<code><span title="str">str</span></code>, default:
-                      <code>= &#34;sample_id&#34;</code>
+                      <code>&#34;sample_id&#34;</code>
 )
               –
               <div class="doc-md-description">
@@ -685,7 +685,7 @@ It must match values provided in <code>all_conditions</code>.</p>
             <li>
               <b><code>celltype_col</code></b>
                   (<code><span title="str">str</span></code>, default:
-                      <code>= &#34;cell_type&#34;</code>
+                      <code>&#34;cell_type&#34;</code>
 )
               –
               <div class="doc-md-description">
@@ -695,7 +695,7 @@ It must match values provided in <code>all_conditions</code>.</p>
             <li>
               <b><code>save</code></b>
                   (<code><span title="bool">bool</span></code>, default:
-                      <code>= True</code>
+                      <code>True</code>
 )
               –
               <div class="doc-md-description">
@@ -705,7 +705,7 @@ It must match values provided in <code>all_conditions</code>.</p>
             <li>
               <b><code>output_path</code></b>
                   (<code><span title="str">str</span> or None</code>, default:
-                      <code>= None</code>
+                      <code>None</code>
 )
               –
               <div class="doc-md-description">
@@ -716,7 +716,7 @@ with an automatically generated filename.</p>
             <li>
               <b><code>lfc_threshold</code></b>
                   (<code><span title="float">float</span></code>, default:
-                      <code>= 0.25</code>
+                      <code>0.25</code>
 )
               –
               <div class="doc-md-description">
@@ -727,7 +727,7 @@ Passed to each <code>pseudobulk</code> call.</p>
             <li>
               <b><code>padj_threshold</code></b>
                   (<code><span title="float">float</span></code>, default:
-                      <code>= 0.05</code>
+                      <code>0.05</code>
 )
               –
               <div class="doc-md-description">
@@ -738,7 +738,7 @@ Passed to each <code>pseudobulk</code> call.</p>
             <li>
               <b><code>layer</code></b>
                   (<code><span title="str">str</span></code>, default:
-                      <code>= &#34;raw_counts&#34;</code>
+                      <code>&#34;raw_counts&#34;</code>
 )
               –
               <div class="doc-md-description">
@@ -940,25 +940,25 @@ skipped are excluded.</p>
 <span class="sd">        Annotated data matrix containing raw counts and metadata.</span>
 <span class="sd">    all_conditions : list of str</span>
 <span class="sd">        List of condition labels to compare. All combinations are tested.</span>
-<span class="sd">    condition_col : str, default = &quot;label&quot;</span>
+<span class="sd">    condition_col : str, default &quot;label&quot;</span>
 <span class="sd">        Column in ``adata.obs`` containing the condition/treatment group labels.</span>
 <span class="sd">        It must match values provided in ``all_conditions``.</span>
-<span class="sd">    sample_col : str, default = &quot;sample_id&quot;</span>
+<span class="sd">    sample_col : str, default &quot;sample_id&quot;</span>
 <span class="sd">        Column in ``adata.obs`` identifying biological samples.</span>
-<span class="sd">    celltype_col : str, default = &quot;cell_type&quot;</span>
+<span class="sd">    celltype_col : str, default &quot;cell_type&quot;</span>
 <span class="sd">        Column in ``adata.obs`` specifying cell type annotations.</span>
-<span class="sd">    save : bool, default = True</span>
+<span class="sd">    save : bool, default True</span>
 <span class="sd">        Whether to save the significant genes to a CSV file.</span>
-<span class="sd">    output_path : str or None, default = None</span>
+<span class="sd">    output_path : str or None, default None</span>
 <span class="sd">        Path to save the CSV file. If None, saves to the current working directory</span>
 <span class="sd">        with an automatically generated filename.</span>
-<span class="sd">    lfc_threshold : float, default = 0.25</span>
+<span class="sd">    lfc_threshold : float, default 0.25</span>
 <span class="sd">        Minimum absolute log2 fold change for a gene to be considered significant.</span>
 <span class="sd">        Passed to each ``pseudobulk`` call.</span>
-<span class="sd">    padj_threshold : float, default = 0.05</span>
+<span class="sd">    padj_threshold : float, default 0.05</span>
 <span class="sd">        Maximum adjusted p-value for a gene to be considered significant.</span>
 <span class="sd">        Passed to each ``pseudobulk`` call.</span>
-<span class="sd">    layer : str, default = &quot;raw_counts&quot;</span>
+<span class="sd">    layer : str, default &quot;raw_counts&quot;</span>
 <span class="sd">        Name of the layer in ``adata`` containing raw integer counts.</span>
 <span class="sd">        Passed to each ``pseudobulk`` call.</span>
 

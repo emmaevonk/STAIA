@@ -196,7 +196,7 @@ sdata.points["transcripts"].</p>
             <li>
               <b><code>label_unassigned</code></b>
                   (<code><span title="str">str</span></code>, default:
-                      <code>= &#34;UNASSIGNED&#34;</code>
+                      <code>&#34;UNASSIGNED&#34;</code>
 )
               –
               <div class="doc-md-description">
@@ -206,7 +206,7 @@ sdata.points["transcripts"].</p>
             <li>
               <b><code>tran</code></b>
                   (<code><span title="str">str</span></code>, default:
-                      <code>= &#34;transcripts&#34;</code>
+                      <code>&#34;transcripts&#34;</code>
 )
               –
               <div class="doc-md-description">
@@ -327,9 +327,9 @@ changing the original SpatialData object.</p>
 <span class="sd">    sdata : SpatialData</span>
 <span class="sd">        SpatialData object containing Xenium output containing </span>
 <span class="sd">        sdata.points[&quot;transcripts&quot;].</span>
-<span class="sd">    label_unassigned : str, default = &quot;UNASSIGNED&quot;</span>
+<span class="sd">    label_unassigned : str, default &quot;UNASSIGNED&quot;</span>
 <span class="sd">        The label assigned to unassigned transcripts.</span>
-<span class="sd">    tran : str, default = &quot;transcripts&quot;</span>
+<span class="sd">    tran : str, default &quot;transcripts&quot;</span>
 <span class="sd">        Column name showing the transcripts in sdata.</span>
 
 <span class="sd">    Returns</span>
@@ -565,7 +565,7 @@ mask (e.g., cell boundaries).</p>
             <li>
               <b><code>channel</code></b>
                   (<code><span title="str">str</span></code>, default:
-                      <code>= &#34;ATP1A1/CD45/E-Cadherin&#34;</code>
+                      <code>&#34;ATP1A1/CD45/E-Cadherin&#34;</code>
 )
               –
               <div class="doc-md-description">
@@ -767,9 +767,9 @@ mask (e.g., cell boundaries).</p>
 <span class="sd">        SpatialData object containing:</span>
 <span class="sd">        - sdata.images[&quot;morphology_focus&quot;]</span>
 <span class="sd">        - sdata.labels[&quot;cell_lables&quot;]</span>
-<span class="sd">    channel : str, default = &quot;ATP1A1/CD45/E-Cadherin&quot;</span>
+<span class="sd">    channel : str, default &quot;ATP1A1/CD45/E-Cadherin&quot;</span>
 <span class="sd">        Channel name in the morphology image used for staining detection.</span>
-<span class="sd">    allocation : {&quot;cell&quot;, &quot;nucleus&quot;}, default = &quot;cell&quot;</span>
+<span class="sd">    allocation : {&quot;cell&quot;, &quot;nucleus&quot;}, default &quot;cell&quot;</span>
 <span class="sd">        Segmentation mask used for allocation:</span>
 <span class="sd">        - &quot;cell&quot;: use cell segmentation</span>
 <span class="sd">        - &quot;nucleus&quot;: use nuclear segmentation (if available)</span>

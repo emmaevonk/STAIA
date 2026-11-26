@@ -199,7 +199,7 @@
             <li>
               <b><code>label_id</code></b>
                   (<code><span title="str">str</span></code>, default:
-                      <code>= &#34;label_id&#34;</code>
+                      <code>&#34;label_id&#34;</code>
 )
               –
               <div class="doc-md-description">
@@ -209,7 +209,7 @@
             <li>
               <b><code>cell_id</code></b>
                   (<code><span title="str">str</span></code>, default:
-                      <code>= &#34;cell_id&#34;</code>
+                      <code>&#34;cell_id&#34;</code>
 )
               –
               <div class="doc-md-description">
@@ -219,7 +219,7 @@
             <li>
               <b><code>shapes_layer</code></b>
                   (<code><span title="str">str</span></code>, default:
-                      <code>= &#34;nucleus_boundaries_fixed&#34;</code>
+                      <code>&#34;nucleus_boundaries_fixed&#34;</code>
 )
               –
               <div class="doc-md-description">
@@ -341,11 +341,11 @@
 <span class="sd">        SpatialData object containing spatial transcriptomic information.</span>
 <span class="sd">    path_xenium: str</span>
 <span class="sd">        Path to the Xenium output of the segmentation file. Must contain `nucleus_boundaries.parquet`</span>
-<span class="sd">    label_id : str, default = &quot;label_id&quot;</span>
+<span class="sd">    label_id : str, default &quot;label_id&quot;</span>
 <span class="sd">        column in the Xenium parquet file shown the label IDs (unique per nuclei)</span>
-<span class="sd">    cell_id : str, default = &quot;cell_id&quot;</span>
+<span class="sd">    cell_id : str, default &quot;cell_id&quot;</span>
 <span class="sd">        Column in the parquet file showing the unique cell IDs</span>
-<span class="sd">    shapes_layer : str, default = &quot;nucleus_boundaries_fixed&quot;</span>
+<span class="sd">    shapes_layer : str, default &quot;nucleus_boundaries_fixed&quot;</span>
 <span class="sd">        Shapes layer added to the sdata object containing the nucleus boundaries per nucleus in the cells</span>
 
 <span class="sd">    Returns</span>
@@ -439,7 +439,7 @@ counts (summed to cell level) from the original per-cell counts.</p>
             <li>
               <b><code>table_layer</code></b>
                   (<code><span title="str">str</span></code>, default:
-                      <code>= &#34;table&#34;</code>
+                      <code>&#34;table&#34;</code>
 )
               –
               <div class="doc-md-description">
@@ -449,7 +449,7 @@ counts (summed to cell level) from the original per-cell counts.</p>
             <li>
               <b><code>min_qv</code></b>
                   (<code><span title="float">float</span></code>, default:
-                      <code>= 20.0</code>
+                      <code>20.0</code>
 )
               –
               <div class="doc-md-description">
@@ -461,7 +461,7 @@ Set to 0.0 to disable filtering.</p>
             <li>
               <b><code>shapes_layer</code></b>
                   (<code><span title="str">str</span></code>, default:
-                      <code>= &#34;nucleus_boundaries_fixed&#34;</code>
+                      <code>&#34;nucleus_boundaries_fixed&#34;</code>
 )
               –
               <div class="doc-md-description">
@@ -856,13 +856,13 @@ and <code>"adata_fibers_per_nucleus"</code>.</p>
 <span class="sd">        - sdata.shapes[&quot;cell_boundaries&quot;]</span>
 <span class="sd">        - sdata.points[&quot;transcripts&quot;]  with ``overlaps_nucleus`` and ``qv`` columns</span>
 <span class="sd">        - sdata.tables[table_layer]</span>
-<span class="sd">    table_layer : str, default = &quot;table&quot;</span>
+<span class="sd">    table_layer : str, default &quot;table&quot;</span>
 <span class="sd">        Key of the per-cell table in ``sdata.tables``.</span>
-<span class="sd">    min_qv : float, default = 20.0</span>
+<span class="sd">    min_qv : float, default 20.0</span>
 <span class="sd">        Minimum quality score threshold. Transcripts with qv below this</span>
 <span class="sd">        value are excluded, consistent with XeniumRanger&#39;s default filter.</span>
 <span class="sd">        Set to 0.0 to disable filtering.</span>
-<span class="sd">    shapes_layer : str, default = &quot;nucleus_boundaries_fixed&quot;</span>
+<span class="sd">    shapes_layer : str, default &quot;nucleus_boundaries_fixed&quot;</span>
 <span class="sd">        Shapes layer containing the nucleus boundaries per nucleus in the cells.</span>
 <span class="sd">        This shapes layer is added by running `STAIA.add_nuclei()`</span>
 

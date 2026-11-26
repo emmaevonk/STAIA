@@ -195,7 +195,7 @@ gene expression or features are spatially clustered, dispersed, or random.</p>
             <li>
               <b><code>n_perms</code></b>
                   (<code><span title="int">int</span></code>, default:
-                      <code>= 100</code>
+                      <code>100</code>
 )
               –
               <div class="doc-md-description">
@@ -205,7 +205,7 @@ gene expression or features are spatially clustered, dispersed, or random.</p>
             <li>
               <b><code>coord_type</code></b>
                   (<code><span title="str">str</span></code>, default:
-                      <code>= &#34;generic&#34;</code>
+                      <code>&#34;generic&#34;</code>
 )
               –
               <div class="doc-md-description">
@@ -215,7 +215,7 @@ gene expression or features are spatially clustered, dispersed, or random.</p>
             <li>
               <b><code>delaunay</code></b>
                   (<code><span title="bool">bool</span></code>, default:
-                      <code>= True</code>
+                      <code>True</code>
 )
               –
               <div class="doc-md-description">
@@ -225,7 +225,7 @@ gene expression or features are spatially clustered, dispersed, or random.</p>
             <li>
               <b><code>top_n</code></b>
                   (<code><span title="int">int</span></code>, default:
-                      <code>= 10</code>
+                      <code>10</code>
 )
               –
               <div class="doc-md-description">
@@ -235,7 +235,7 @@ gene expression or features are spatially clustered, dispersed, or random.</p>
             <li>
               <b><code>n_top_svgs</code></b>
                   (<code><span title="int">int</span> or None</code>, default:
-                      <code>= 500</code>
+                      <code>500</code>
 )
               –
               <div class="doc-md-description">
@@ -247,7 +247,7 @@ If None, no flagging is performed.</p>
             <li>
               <b><code>pval_threshold</code></b>
                   (<code><span title="float">float</span></code>, default:
-                      <code>= 0.05</code>
+                      <code>0.05</code>
 )
               –
               <div class="doc-md-description">
@@ -403,19 +403,19 @@ If None, no flagging is performed.</p>
 <span class="sd">    ----------</span>
 <span class="sd">    adata : AnnData</span>
 <span class="sd">        Annotated data matrix containing spatial coordinates.</span>
-<span class="sd">    n_perms : int, default = 100</span>
+<span class="sd">    n_perms : int, default 100</span>
 <span class="sd">        Number of permutations used to assess significance.</span>
-<span class="sd">    coord_type : str, default = &quot;generic&quot;</span>
+<span class="sd">    coord_type : str, default &quot;generic&quot;</span>
 <span class="sd">        Coordinate system type used for spatial nieghbor computation.</span>
-<span class="sd">    delaunay : bool, default = True</span>
+<span class="sd">    delaunay : bool, default True</span>
 <span class="sd">        Whether to compute neighbors using Delaunay triangulation.</span>
-<span class="sd">    top_n : int, default = 10</span>
+<span class="sd">    top_n : int, default 10</span>
 <span class="sd">        Number of top features (by Moran&#39;s I) to return.</span>
-<span class="sd">    n_top_svgs : int or None, default = 500</span>
+<span class="sd">    n_top_svgs : int or None, default 500</span>
 <span class="sd">        Number of top genes to flag as spatially variable in adata.var.</span>
 <span class="sd">        Prioritises FDR-significant genes (q &lt; pval_threshold) first.</span>
 <span class="sd">        If None, no flagging is performed.</span>
-<span class="sd">    pval_threshold : float, default = 0.05</span>
+<span class="sd">    pval_threshold : float, default 0.05</span>
 <span class="sd">        FDR-corrected p-value cutoff used for SVG flagging.</span>
 
 <span class="sd">    Returns</span>
@@ -511,7 +511,7 @@ adata.var["spatially_variable"] and adata.var["morans_I"] exist).</p>
             <li>
               <b><code>n_genes</code></b>
                   (<code><span title="int">int</span></code>, default:
-                      <code>= 6</code>
+                      <code>6</code>
 )
               –
               <div class="doc-md-description">
@@ -521,7 +521,7 @@ adata.var["spatially_variable"] and adata.var["morans_I"] exist).</p>
             <li>
               <b><code>coord_key</code></b>
                   (<code><span title="str">str</span></code>, default:
-                      <code>= &#34;spatial&#34;</code>
+                      <code>&#34;spatial&#34;</code>
 )
               –
               <div class="doc-md-description">
@@ -541,7 +541,7 @@ adata.var["spatially_variable"] and adata.var["morans_I"] exist).</p>
             <li>
               <b><code>ncols</code></b>
                   (<code><span title="int">int</span></code>, default:
-                      <code>= 3</code>
+                      <code>3</code>
 )
               –
               <div class="doc-md-description">
@@ -551,7 +551,7 @@ adata.var["spatially_variable"] and adata.var["morans_I"] exist).</p>
             <li>
               <b><code>cmap</code></b>
                   (<code><span title="str">str</span></code>, default:
-                      <code>= &#34;Reds&#34;</code>
+                      <code>&#34;Reds&#34;</code>
 )
               –
               <div class="doc-md-description">
@@ -561,7 +561,7 @@ adata.var["spatially_variable"] and adata.var["morans_I"] exist).</p>
             <li>
               <b><code>spot_size</code></b>
                   (<code><span title="float">float</span></code>, default:
-                      <code>= 40</code>
+                      <code>40</code>
 )
               –
               <div class="doc-md-description">
@@ -713,17 +713,17 @@ adata.var["spatially_variable"] and adata.var["morans_I"] exist).</p>
 <span class="sd">    ----------</span>
 <span class="sd">    adata : AnnData</span>
 <span class="sd">        Annotated data matrix with spatial coordinates in adata.obsm[coord_key].</span>
-<span class="sd">    n_genes : int, default = 6</span>
+<span class="sd">    n_genes : int, default 6</span>
 <span class="sd">        Number of top SVGs to plot.</span>
-<span class="sd">    coord_key : str, default = &quot;spatial&quot;</span>
+<span class="sd">    coord_key : str, default &quot;spatial&quot;</span>
 <span class="sd">        Key in adata.obsm where 2-D spatial coordinates are stored.</span>
 <span class="sd">    layer : str or None</span>
 <span class="sd">        Expression layer to use. None uses adata.X.</span>
-<span class="sd">    ncols : int, default = 3</span>
+<span class="sd">    ncols : int, default 3</span>
 <span class="sd">        Number of columns in the plot grid.</span>
-<span class="sd">    cmap : str, default = &quot;Reds&quot;</span>
+<span class="sd">    cmap : str, default &quot;Reds&quot;</span>
 <span class="sd">        Matplotlib colormap for expression values.</span>
-<span class="sd">    spot_size : float, default = 40</span>
+<span class="sd">    spot_size : float, default 40</span>
 <span class="sd">        Scatter plot marker size.</span>
 <span class="sd">    save : str or None</span>
 <span class="sd">        File path to save the figure (e.g. &quot;svgs.png&quot;). If None, only displays.</span>
@@ -836,7 +836,7 @@ adata.var["spatially_variable"] and adata.var["morans_I"] exist).</p>
             <li>
               <b><code>top_n</code></b>
                   (<code><span title="int">int</span></code>, default:
-                      <code>= 20</code>
+                      <code>20</code>
 )
               –
               <div class="doc-md-description">
@@ -929,7 +929,7 @@ adata.var["spatially_variable"] and adata.var["morans_I"] exist).</p>
 <span class="sd">    ----------</span>
 <span class="sd">    adata : AnnData</span>
 <span class="sd">        Must have been processed by morans_score().</span>
-<span class="sd">    top_n : int, default = 20</span>
+<span class="sd">    top_n : int, default 20</span>
 <span class="sd">        Number of top SVGs to include in the summary.</span>
 
 <span class="sd">    Returns</span>
