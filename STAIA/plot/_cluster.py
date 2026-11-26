@@ -31,14 +31,14 @@ def cluster(
         Annotated data matrix containing spatial coordinates.
     colors : list
         List of columns present in adata.obs to color the UMAP with.
-    n_comps : int, default = 50
+    n_comps : int, default 50
         Number of principal components to compute for the PCA.
-    n_neighbors : int, default = 15
+    n_neighbors : int, default 15
         Size of the local neighborhood used for manifold approximation.
-    n_pcs : int, default = 30
+    n_pcs : int, default 30
         Amount of principal components to use when computing nearest
         neigbor.
-    color_map : str, default = "viridis"
+    color_map : str, default "viridis"
         Color map to use for continuous variables.
     palette : str
         Palette used for the UMAP.
@@ -46,9 +46,9 @@ def cluster(
         A boolean deciding whether or not the UMAP is being saved. 
         If the data is saved (so not False), provide the path to the 
         output directory.
-    random_state : int, default = 0
+    random_state : int, default 0
         Random seed for reproducibility of the data.
-    resolution : float, default = 0.3
+    resolution : float, default 0.3
         The Leiden resolution used for clustering. If Leiden clustering
         has already been performed on the data, this parameter can be ignored.
 

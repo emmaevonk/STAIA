@@ -148,9 +148,9 @@ def roi(
         Horizontal bounds of the bounding box.
     y_min, y_max : float
         Vertical bounds of the bounding box.
-    spatial_key : str, default = "spatial"
+    spatial_key : str, default "spatial"
         Key in adata.obsm where spatial coordinates are stored.
-    copy : bool, default = True
+    copy : bool, default True
         If True, return a copy of the subset. If False, return a view.
 
     Returns

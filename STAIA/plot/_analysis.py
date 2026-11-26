@@ -26,9 +26,9 @@ def dotplot(
         Annotated data matrix. It must contain the ranked genes.
     markers : list
         List of the markers shown in the dotplot.
-    cluster : str, default = 'leiden'
+    cluster : str, default "leiden"
         Clusters shown in the dotplot.
-    n_genes : int, default = 5
+    n_genes : int, default 5
         Number of genes to show in the dotplot.
 
     Returns
@@ -94,23 +94,23 @@ def composition_graph(
     adata : AnnData
         Annotated data matrix. It must contain the 
         counts in the data.
-    condition : str, default = "condition"
+    condition : str, default "condition"
         Column in `adata.obs` containing the conditions
         of the samples.
-    composition_key : str, default = 'cell_type'
+    composition_key : str, default 'cell_type'
         Column in ``adata.obs`` containing the categorical labels whose
         fractions are computed, e.g. cell types, niches, or clusters.
-    output_path : str, default = None
+    output_path : str, default None
         An output path where to write the 
         resulting PNG file.
-    show : bool, default = True 
+    show : bool, default True 
         Show the cell type composition graph
-    save : bool, default = False
+    save : bool, default False
         Boolean deciding whether or not to save
         the cell type composition graph separately.
-    plot_title : str, default = "Composition per assigned treatment"
+    plot_title : str, default "Composition per assigned treatment"
         Title shown on top of plot
-    legend_name : str, default = "Cell type"
+    legend_name : str, default "Cell type"
         Text shown above legend
     """
     composition_counts = adata.obs.groupby([condition, composition_key]).size().reset_index(name='count')

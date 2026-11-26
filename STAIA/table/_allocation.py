@@ -32,11 +32,11 @@ def add_nuclei(
         SpatialData object containing spatial transcriptomic information.
     path_xenium: str
         Path to the Xenium output of the segmentation file. Must contain `nucleus_boundaries.parquet`
-    label_id : str, default = "label_id"
+    label_id : str, default "label_id"
         column in the Xenium parquet file shown the label IDs (unique per nuclei)
-    cell_id : str, default = "cell_id"
+    cell_id : str, default "cell_id"
         Column in the parquet file showing the unique cell IDs
-    shapes_layer : str, default = "nucleus_boundaries_fixed"
+    shapes_layer : str, default "nucleus_boundaries_fixed"
         Shapes layer added to the sdata object containing the nucleus boundaries per nucleus in the cells
 
     Returns
@@ -100,13 +100,13 @@ def get_adata_per_nucleus(sdata: SpatialData, table_layer: str = "table", min_qv
         - sdata.shapes["cell_boundaries"]
         - sdata.points["transcripts"]  with ``overlaps_nucleus`` and ``qv`` columns
         - sdata.tables[table_layer]
-    table_layer : str, default = "table"
+    table_layer : str, default "table"
         Key of the per-cell table in ``sdata.tables``.
-    min_qv : float, default = 20.0
+    min_qv : float, default 20.0
         Minimum quality score threshold. Transcripts with qv below this
         value are excluded, consistent with XeniumRanger's default filter.
         Set to 0.0 to disable filtering.
-    shapes_layer : str, default = "nucleus_boundaries_fixed"
+    shapes_layer : str, default "nucleus_boundaries_fixed"
         Shapes layer containing the nucleus boundaries per nucleus in the cells.
         This shapes layer is added by running `STAIA.add_nuclei()`
 

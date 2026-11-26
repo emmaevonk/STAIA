@@ -49,7 +49,7 @@ def plot_outliers(
     adata : AnnData
         Must contain spatial coordinates in adata.obsm[coord_key] and 
         the specified metric in adata.obs[metric]
-    sample_id : str, default = "cell_id"
+    sample_id : str, default "cell_id"
         Column in adata.obs used to identify samples. If `sample_id` is
         set to 'all', all samples on the slide are shown.
     sample : str or None
@@ -58,17 +58,17 @@ def plot_outliers(
         Observation column used for color mapping.
     outliers : str or None
         Boolean column indicating outlier cell/spots.
-    point_size : float, default = 2
+    point_size : float, default 2
         Marker size.
     colors : sequence of str
         Colors of defining the gradient colormap.
-    stroke : float, default = 1.0
+    stroke : float, default 1.0
         Outline width for outline markers.
-    coord_key : str, default = "spatial"
+    coord_key : str, default "spatial"
         Key in adata.obsm containing spatial coordinates.
-    legend : bool, default = False
+    legend : bool, default False
         Whether to display outlier legend.
-    ring_overlay : bool, default = True
+    ring_overlay : bool, default True
         Overlay outliers as red rings
 
     Returns
@@ -303,7 +303,7 @@ def plot_qc_metrics(
     ----------
     adata : AnnData
         Must contain total_counts and optionally area metrics.
-    save : bool, default = True
+    save : bool, default True
         Save figure to visuals/cell_statistics.png
     output_path : str, optional
         Output path, if not given, current working directory will be used.
@@ -406,13 +406,13 @@ def recommend_threshold(
     ----------
     adata : anndata.AnnData
         AnnData object (pre QC metrics calculation)
-    nmads : int, default = 3
+    nmads : int, default 3
         Number of MADs away from median to set threshold.
         3 is the standard; lower = stricter filtering.
-    min_genes_floor : int, default = 5
+    min_genes_floor : int, default 5
         Hard minimum for n_genes lower bound (prevents
         negative threshold on very sparse data).
-    min_counts_floor : int, default = 10 
+    min_counts_floor : int, default 10 
         Hard minimum for total_counts lower bound.
 
     Returns
@@ -479,7 +479,7 @@ def is_outlier(
     ----------
     vec : adata.obs.column
         Column of adata.obs containing counts to check for outliers.
-    nmads : int, default = 3
+    nmads : int, default 3
         Number of median absolute deviations used to define the
         outlier threshold.
     log : bool, default=False

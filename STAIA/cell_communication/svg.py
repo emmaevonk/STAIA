@@ -27,19 +27,19 @@ def morans_score(
     ----------
     adata : AnnData
         Annotated data matrix containing spatial coordinates.
-    n_perms : int, default = 100
+    n_perms : int, default 100
         Number of permutations used to assess significance.
-    coord_type : str, default = "generic"
+    coord_type : str, default "generic"
         Coordinate system type used for spatial nieghbor computation.
-    delaunay : bool, default = True
+    delaunay : bool, default True
         Whether to compute neighbors using Delaunay triangulation.
-    top_n : int, default = 10
+    top_n : int, default 10
         Number of top features (by Moran's I) to return.
-    n_top_svgs : int or None, default = 500
+    n_top_svgs : int or None, default 500
         Number of top genes to flag as spatially variable in adata.var.
         Prioritises FDR-significant genes (q < pval_threshold) first.
         If None, no flagging is performed.
-    pval_threshold : float, default = 0.05
+    pval_threshold : float, default 0.05
         FDR-corrected p-value cutoff used for SVG flagging.
 
     Returns
@@ -114,17 +114,17 @@ def plot_svgs(
     ----------
     adata : AnnData
         Annotated data matrix with spatial coordinates in adata.obsm[coord_key].
-    n_genes : int, default = 6
+    n_genes : int, default 6
         Number of top SVGs to plot.
-    coord_key : str, default = "spatial"
+    coord_key : str, default "spatial"
         Key in adata.obsm where 2-D spatial coordinates are stored.
     layer : str or None
         Expression layer to use. None uses adata.X.
-    ncols : int, default = 3
+    ncols : int, default 3
         Number of columns in the plot grid.
-    cmap : str, default = "Reds"
+    cmap : str, default "Reds"
         Matplotlib colormap for expression values.
-    spot_size : float, default = 40
+    spot_size : float, default 40
         Scatter plot marker size.
     save : str or None
         File path to save the figure (e.g. "svgs.png"). If None, only displays.
@@ -209,7 +209,7 @@ def svg_summary(
     ----------
     adata : AnnData
         Must have been processed by morans_score().
-    top_n : int, default = 20
+    top_n : int, default 20
         Number of top SVGs to include in the summary.
 
     Returns

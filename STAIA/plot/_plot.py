@@ -67,7 +67,7 @@ def rank_genes_group(
     ----------
     adata : AnnData
         Must contain adata.obs["leiden"].
-    res : float, default = 0.3
+    res : float, default 0.3
         Resolution used for Leiden clustering
 
     Returns
@@ -108,7 +108,7 @@ def plot_labels(
     ----------
     adata : AnnData
         Annotated data matrix. Must contain ``adata.obsm["spatial"]``
-    label : str, default = "label"
+    label : str, default "label"
         Column name where the label is assigned. ``label`` is default.
 
     Notes
@@ -198,7 +198,7 @@ def plot_count_distr(
         The vertical value line shown in the plot
     zoom: int, optional
         The value on which to zoom in. 
-    sample_dataset : str, default = "sample_dataset"
+    sample_dataset : str, default "sample_dataset"
         Column in `adata.obs` showing the samples of the datasets. It can be a combination of the sample ID and the dataset ID.
     """
     plt.figure(figsize=(8, 5))

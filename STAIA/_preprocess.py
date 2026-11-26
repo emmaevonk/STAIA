@@ -74,17 +74,17 @@ def size_normalization(
     ----------
     sdata: SpatialData
         SpatialData object containing spatial transcriptomic information.
-    table_layer: str, default = "table"
+    table_layer: str, default "table"
         Table layer in the SpatialData object.
-    shape_layer: str, default = "cell_boundaries"
+    shape_layer: str, default "cell_boundaries"
         Shapes layer in the SpatialData object from where area is computed.
-    cellsize_key: str, default = "shapeSize"
+    cellsize_key: str, default "shapeSize"
         Column name for the cell sizes (computed in this function).
-    cell_id_col: str, default = "cell_ID"
+    cell_id_col: str, default "cell_ID"
         Column in object where cell IDs can be found.
-    target_sum: float, default = 100.0
+    target_sum: float, default 100.0
         Scaling factor after area normalization (SPArrOW uses 100).
-    log1p: bool, default = True
+    log1p: bool, default True
         Whether to apply log1p transformation after normalization.
 
     Returns

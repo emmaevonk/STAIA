@@ -42,17 +42,17 @@ def run_banksy(
     ----------
     adata : AnnData
         Annotated data matrix 
-    coord_keys : Tuple[str], default = ("x_centroid", "y_centroid", "spatial")
+    coord_keys : Tuple[str], default ("x_centroid", "y_centroid", "spatial")
         Coordinate keys present in adata.obsm
-    resolutions : List[float], default = [0.5, 1.0]
+    resolutions : List[float], default [0.5, 1.0]
         Leiden resolutions
-    pca_dims : List[int], default = [20]
+    pca_dims : List[int], default [20]
         Amount of dimensions used for the PCA.
-    lambda_list : List[float], default = [0.2, 0.8]
+    lambda_list : List[float], default [0.2, 0.8]
         Lambda values used to generate BANKSY matrix
-    max_m : int, default = 1
+    max_m : int, default 1
         Int value used to initialize BANKSY
-    output_path : str, default = "banksy_output"
+    output_path : str, default "banksy_output"
         File path to the BANKSY output.
 
     Returns

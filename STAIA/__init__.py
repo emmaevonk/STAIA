@@ -1,4 +1,12 @@
 import warnings
+from importlib.metadata import version, PackageNotFoundError
+
+# show package version when asked by the user
+try:
+    __version__ = version("staia")
+except PackageNotFoundError:
+    __version__ = "unknown"
+
 
 with warnings.catch_warnings():
     warnings.filterwarnings(

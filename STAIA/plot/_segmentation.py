@@ -77,7 +77,7 @@ def multimodal_segmentation(
         Must contain ``sdata["morphology_focus"]``.
     channelnames : list of str or None
         Channels to display. If None, all channels are shown.
-    img_layer : str, default = "morphology_focus"
+    img_layer : str, default "morphology_focus"
         The image layer of the SpatialData object
 
     Notes
@@ -114,7 +114,7 @@ def multimodal_segmentation_slice(
         Minimum [x, y] crop coordinates.
     max_coord : list or None
         Maximum [x, y] crop coordinates.
-    img_layer : str, default = "morphology_focus"
+    img_layer : str, default "morphology_focus"
         The image layer of the SpatialData object
 
     Notes

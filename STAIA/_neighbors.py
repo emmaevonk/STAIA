@@ -25,9 +25,9 @@ def nhood_enrichment(
         Annotated data matrix with spatial connectivity information.
         Spatial neighbors must be computed beforehand using 
         ``sq.gr.spatial_neighbors``
-    cluster_key : str, default = "leiden"
+    cluster_key : str, default "leiden"
         Column in adata.obs containing cluster labels.
-    show : bool, default = True
+    show : bool, default True
         Whether to display the plot.
     save : bool, default=False
         A boolean deciding whether or not the neighborhood enrichment is being saved. 

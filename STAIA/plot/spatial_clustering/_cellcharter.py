@@ -38,7 +38,7 @@ def run_cellcharter(
         Annotated data matrix containing raw gene expression counts and
         spatial coordinates. Must contain a ``sample_id`` column in 
         ``adata.obs`` to distinguish tissue sections.
-    n_clusters : int, default = 18
+    n_clusters : int, default 18
         Number of spatial domains (GMM components) to identify. Use
         :func:`stability_cellcharter` beforehand to inform this choice.
     output_dir : Path or None, optional
@@ -50,19 +50,19 @@ def run_cellcharter(
         (only relevant if ``X_cellcharter`` doesn't already exist, or if
         ``force_recompute=True``).
         Default is ``True``.
-    epoch: int, default = 20
+    epoch: int, default 20
         Maximum number of training epochs. Only takes effect if
         ``X_cellcharter`` doesn't already exist or ``force_recompute=True``
         — otherwise it's silently unused, so a warning is printed if it
         differs from being applied.
-    library_key : str, default = "sample"
+    library_key : str, default "sample"
         Column in ``adata.obs`` used to distinguish tissue sections or 
         samples. Same caveat as ``epoch`` above.
-    force_recompute : bool, default = False
+    force_recompute : bool, default False
         If ``True``, always re-run scVI + neighbor aggregation even if
         ``adata.obsm["X_cellcharter"]`` already exists, using the ``epoch``
         and ``library_key`` given here.
-    accelerator : str, default = "cpu"
+    accelerator : str, default "cpu"
         parameter showing either `gpu` or `cpu`
 
     Returns
@@ -137,12 +137,12 @@ def prepare_cellcharter(
     adata : AnnData
         Annotated data matrix containing raw gene expression counts and
         spatial coordinates.
-    epoch : int, default = 20
+    epoch : int, default 20
         Maximum number of scVI training epochs. Early stopping may halt
         training before this limit is reached.
-    plot : bool, default = True
+    plot : bool, default True
         If ``True``, display the scVI training loss curve after model fitting.
-    library_key : str, default = "sample"
+    library_key : str, default "sample"
         Column in ``adata.obs`` used to distinguish tissue sections or
         samples.
 
@@ -192,15 +192,15 @@ def stability_cellcharter(
         ``adata.obsm["X_cellcharter"]`` must already exist. Call
         :func:`prepare_cellcharter` (or :func:`run_cellcharter`, which calls
         it automatically) first.
-    n_clusters : tuple[int], default = (2, 10)
+    n_clusters : tuple[int], default (2, 10)
         The amount of clusters checked (min, max).
-    max_runs : int, default = 10
+    max_runs : int, default 10
         Maximum number of repititions for each value of number of clusters.
-    convergence_tol : float, default = 0.01
+    convergence_tol : float, default 0.01
         Convergence tolerance for the clustering stability. If the Mean Absolute Percentage
         Error between consecutive iterations is below `convergence_tol` the algorithm stops
         at `max_runs`.
-    output_dir : Path or str, default = ""
+    output_dir : Path or str, default ""
         Directory the stability plot is saved to. Coerced to a ``Path``
         internally and created if it doesn't exist yet.
 
@@ -249,7 +249,7 @@ def _dim_red(
     adata : AnnData
         Annotated data matrix containing gene expression counts. Must be compatible
         with scVI's data requirements (raw counts recommended).
-    epoch: int, default = 20
+    epoch: int, default 20
         Maximum number of training epochs. Early stopping may halt training before
         this limit is reached. Default is 20.
 
@@ -349,7 +349,7 @@ def _neigh_aggr(
     ----------
     adata : AnnData
         Annotated data matrix with spatial coordinates in ``adata.obsm``.
-    library_key : str, default = "sample"
+    library_key : str, default "sample"
         Column in ``adata.obs`` used to distinguish tissue sections or 
         samples. 
 
@@ -405,7 +405,7 @@ def _cluster(
     adata : AnnData
         Annotated data matrix with CellCharter embeddings in
         ``adata.obsm["X_cellcharter"]``.
-    n_cluster : int, default = 18
+    n_cluster : int, default 18
         Number of spatial domains (GMM components) to identify. 
         This value should be informed by prior knowledge of the tissue 
         architecture of tuned using stability matrices (ARI across runs).

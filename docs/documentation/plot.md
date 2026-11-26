@@ -3,7 +3,7 @@
     options:
       members:
         - dotplot
-        - celltype_composition
+        - composition_graph
         - cluster
         - plot_image
         - rank_genes_group

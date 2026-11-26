@@ -21,9 +21,9 @@ def frac_transcripts(
     sdata : SpatialData
         SpatialData object containing Xenium output containing 
         sdata.points["transcripts"].
-    label_unassigned : str, default = "UNASSIGNED"
+    label_unassigned : str, default "UNASSIGNED"
         The label assigned to unassigned transcripts.
-    tran : str, default = "transcripts"
+    tran : str, default "transcripts"
         Column name showing the transcripts in sdata.
     
     Returns
@@ -80,9 +80,9 @@ def staining_positive(
         SpatialData object containing:
         - sdata.images["morphology_focus"]
         - sdata.labels["cell_lables"]
-    channel : str, default = "ATP1A1/CD45/E-Cadherin"
+    channel : str, default "ATP1A1/CD45/E-Cadherin"
         Channel name in the morphology image used for staining detection.
-    allocation : {"cell", "nucleus"}, default = "cell"
+    allocation : {"cell", "nucleus"}, default "cell"
         Segmentation mask used for allocation:
         - "cell": use cell segmentation
         - "nucleus": use nuclear segmentation (if available)

@@ -163,30 +163,30 @@ def pseudobulk(
     ----------
     adata : AnnData
         Annotated data matrix containing raw counts and metadata.
-    celltype : str, default = "Macrophages"
+    celltype : str, default "Macrophages"
         Cell type to analyze.
-    cond : list[str], default = ["HC", "TEST"].
+    cond : list[str], default ["HC", "TEST"].
         Two treatment groups: [reference_condition, comparison_condition].
         LFC is computed as log2(comparison / reference), i.e. log2(TEST / HC).
-    save : bool, default = True
+    save : bool, default True
         Whether to save the significant genes to a CSV file.
-    output_path : str or None, default = None
+    output_path : str or None, default None
         Path to save the CSV file.. If None, saves to the curent working directory
         with an automatically generated filename.
-    sample_col : str, default = "sample_id"
+    sample_col : str, default "sample_id"
         Column in annotated data matrix referring to the sample IDs in the data
-    condition_col : str, default = "condition"
+    condition_col : str, default "condition"
         Column in annotated data matrix referring to assigned labels of the samples.
     pb_dict : dict, optional
         Pre-built pseudobulk dict from outside. If provided, ``layer`` is ignored
         since the pseudobulk aggregation has already been done.
-    plot : bool, default = True
+    plot : bool, default True
         A boolean deciding whether or not to plot the volcano plot.
-    lfc_threshold : float, default = 0.25
+    lfc_threshold : float, default 0.25
         Minimum absolute log2 fold change for a gene to be considered significant
-    padj_threshold : float, default = 0.05
+    padj_threshold : float, default 0.05
         Maximum adjusted p-value for a gene to be considered significant
-    layer : str, default = "raw_counts"
+    layer : str, default "raw_counts"
         Name of the layer in ``adata`` containing raw integer counts. Ignored if
         ``pb_dict`` is provided.
 
@@ -292,25 +292,25 @@ def pseudobulk_per_condition(
         Annotated data matrix containing raw counts and metadata.
     all_conditions : list of str
         List of condition labels to compare. All combinations are tested.
-    condition_col : str, default = "label"
+    condition_col : str, default "label"
         Column in ``adata.obs`` containing the condition/treatment group labels.
         It must match values provided in ``all_conditions``.
-    sample_col : str, default = "sample_id"
+    sample_col : str, default "sample_id"
         Column in ``adata.obs`` identifying biological samples.
-    celltype_col : str, default = "cell_type"
+    celltype_col : str, default "cell_type"
         Column in ``adata.obs`` specifying cell type annotations.
-    save : bool, default = True
+    save : bool, default True
         Whether to save the significant genes to a CSV file.
-    output_path : str or None, default = None
+    output_path : str or None, default None
         Path to save the CSV file. If None, saves to the current working directory
         with an automatically generated filename.
-    lfc_threshold : float, default = 0.25
+    lfc_threshold : float, default 0.25
         Minimum absolute log2 fold change for a gene to be considered significant.
         Passed to each ``pseudobulk`` call.
-    padj_threshold : float, default = 0.05
+    padj_threshold : float, default 0.05
         Maximum adjusted p-value for a gene to be considered significant.
         Passed to each ``pseudobulk`` call.
-    layer : str, default = "raw_counts"
+    layer : str, default "raw_counts"
         Name of the layer in ``adata`` containing raw integer counts.
         Passed to each ``pseudobulk`` call.
 
