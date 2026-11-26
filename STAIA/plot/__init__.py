@@ -10,7 +10,7 @@ with warnings.catch_warnings():
     warnings.filterwarnings("ignore", message=".*rpy2.*")
     from ._analysis import (
         dotplot,
-        celltype_composition
+        composition_graph
     )
 
     from ._cluster import (

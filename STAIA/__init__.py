@@ -19,7 +19,7 @@ with warnings.catch_warnings():
 
     from .plot import (
         dotplot,
-        celltype_composition,
+        composition_graph,
         cluster,
         plot_image,
         rank_genes_group,
@@ -55,7 +55,7 @@ with warnings.catch_warnings():
         annotate_consensus,
     )
     from .segmentation import(
-        baysor,
+        # baysor,
         xeniumranger
     )
     from .cell_communication import (
