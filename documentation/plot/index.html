@@ -442,7 +442,7 @@ counts in the data.</p>
             <li>
               <b><code>condition</code></b>
                   (<code><span title="str">str</span></code>, default:
-                      <code>= &#34;condition&#34;</code>
+                      <code>&#34;condition&#34;</code>
 )
               –
               <div class="doc-md-description">
@@ -453,7 +453,7 @@ of the samples.</p>
             <li>
               <b><code>composition_key</code></b>
                   (<code><span title="str">str</span></code>, default:
-                      <code>= &#39;cell_type&#39;</code>
+                      <code>&#39;cell_type&#39;</code>
 )
               –
               <div class="doc-md-description">
@@ -464,7 +464,7 @@ fractions are computed, e.g. cell types, niches, or clusters.</p>
             <li>
               <b><code>output_path</code></b>
                   (<code><span title="str">str</span></code>, default:
-                      <code>= None</code>
+                      <code>None</code>
 )
               –
               <div class="doc-md-description">
@@ -475,7 +475,7 @@ resulting PNG file.</p>
             <li>
               <b><code>show</code></b>
                   (<code><span title="bool">bool</span></code>, default:
-                      <code>= True </code>
+                      <code>True </code>
 )
               –
               <div class="doc-md-description">
@@ -485,7 +485,7 @@ resulting PNG file.</p>
             <li>
               <b><code>save</code></b>
                   (<code><span title="bool">bool</span></code>, default:
-                      <code>= False</code>
+                      <code>False</code>
 )
               –
               <div class="doc-md-description">
@@ -496,7 +496,7 @@ the cell type composition graph separately.</p>
             <li>
               <b><code>plot_title</code></b>
                   (<code><span title="str">str</span></code>, default:
-                      <code>= &#34;Composition per assigned treatment&#34;</code>
+                      <code>&#34;Composition per assigned treatment&#34;</code>
 )
               –
               <div class="doc-md-description">
@@ -506,7 +506,7 @@ the cell type composition graph separately.</p>
             <li>
               <b><code>legend_name</code></b>
                   (<code><span title="str">str</span></code>, default:
-                      <code>= &#34;Cell type&#34;</code>
+                      <code>&#34;Cell type&#34;</code>
 )
               –
               <div class="doc-md-description">
@@ -596,23 +596,23 @@ the cell type composition graph separately.</p>
 <span class="sd">    adata : AnnData</span>
 <span class="sd">        Annotated data matrix. It must contain the </span>
 <span class="sd">        counts in the data.</span>
-<span class="sd">    condition : str, default = &quot;condition&quot;</span>
+<span class="sd">    condition : str, default &quot;condition&quot;</span>
 <span class="sd">        Column in `adata.obs` containing the conditions</span>
 <span class="sd">        of the samples.</span>
-<span class="sd">    composition_key : str, default = &#39;cell_type&#39;</span>
+<span class="sd">    composition_key : str, default &#39;cell_type&#39;</span>
 <span class="sd">        Column in ``adata.obs`` containing the categorical labels whose</span>
 <span class="sd">        fractions are computed, e.g. cell types, niches, or clusters.</span>
-<span class="sd">    output_path : str, default = None</span>
+<span class="sd">    output_path : str, default None</span>
 <span class="sd">        An output path where to write the </span>
 <span class="sd">        resulting PNG file.</span>
-<span class="sd">    show : bool, default = True </span>
+<span class="sd">    show : bool, default True </span>
 <span class="sd">        Show the cell type composition graph</span>
-<span class="sd">    save : bool, default = False</span>
+<span class="sd">    save : bool, default False</span>
 <span class="sd">        Boolean deciding whether or not to save</span>
 <span class="sd">        the cell type composition graph separately.</span>
-<span class="sd">    plot_title : str, default = &quot;Composition per assigned treatment&quot;</span>
+<span class="sd">    plot_title : str, default &quot;Composition per assigned treatment&quot;</span>
 <span class="sd">        Title shown on top of plot</span>
-<span class="sd">    legend_name : str, default = &quot;Cell type&quot;</span>
+<span class="sd">    legend_name : str, default &quot;Cell type&quot;</span>
 <span class="sd">        Text shown above legend</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">composition_counts</span> <span class="o">=</span> <span class="n">adata</span><span class="o">.</span><span class="n">obs</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="n">condition</span><span class="p">,</span> <span class="n">composition_key</span><span class="p">])</span><span class="o">.</span><span class="n">size</span><span class="p">()</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;count&#39;</span><span class="p">)</span>
